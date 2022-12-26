@@ -9,25 +9,63 @@ Purpose: Preliminary analysis of the LSMS-ESS5 data
 
 clear all
 
-global root "C:\Users\tayel\Dropbox\Documents\SPIA\Ethiopia\LSMS_W5"
+* to be added to master later
+global root     "C:\Users\tayel\Dropbox\Documents\SPIA\Ethiopia\LSMS_W5"
+global rawdata  "$root\2_raw_data"
+global data     "$root\3_report_data"
 
-* COVER:
-use "$root\PP\sect_cover_pp_w5", clear
+********************************************************************************
+* COVER - PP
+******************************************************************************** 
 
-* SECTION 1: HOUSEHOLD ROSTER
-use "$root\PP\sect1_pp_w5", clear
+use "${rawdata}\data\PP\sect_cover_pp_w5", clear
 
-* SECTION 2: PARCEL ROSTER
-use "$root\PP\sect2_pp_w5", clear
+count //2,110
+* tostring saq12, force replace   // What is the reason for converting hh_size (saq12) to string
+* destring saq16, force replace
 
-* SECTION 3: FIELD ROSTER
-use "$root\PP\sect3_pp_w5", clear
+tab saq14      // PP moduls is available only for rural households.
+/*
 
-* SECTION 4: CROP ROSTER
-use "$root\PP\sect4_pp_w5", clear
+        14. |
+  Location: |
+     rural, |
+town, small |
+       town |      Freq.     Percent        Cum.
+------------+-----------------------------------
+   1. RURAL |      2,110      100.00      100.00
+------------+-----------------------------------
+      Total |      2,110      100.00
 
-* SECTION 5: SEEDS ROSTER
-use "$root\PP\sect5_pp_w5", clear
+*/
 
-* SECTION 9: CROP ROSTER
-use "$root\PP\sect9a_pp_w5", clear
+tab saq01  // The entire region of Tigray is missing
+/*
+         Region code |      Freq.     Percent        Cum.
+---------------------+-----------------------------------
+             2. AFAR |         85        4.03        4.03
+           3. AMHARA |        302       14.31       18.34
+           4. OROMIA |        413       19.57       37.91
+           5. SOMALI |        261       12.37       50.28
+6. BENISHANGUL GUMUZ |        109        5.17       55.45
+             7. SNNP |        434       20.57       76.02
+         12. GAMBELA |        178        8.44       84.45
+           13. HARAR |        185        8.77       93.22
+       15. DIRE DAWA |        143        6.78      100.00
+---------------------+-----------------------------------
+               Total |      2,110      100.00
+*/  
+
+isid holder_id   // holder_id is a uniuqe ID 
+
+* # of households per EA from PP cover
+egen hh_ea = count(household_id), by(ea_id)
+lab var hh_ea "Number of households per EA"
+
+duplicates drop household_id ea_id saq01 saq02 saq03 saq04 saq05 saq06 saq07 /// 
+                saq08, force
+
+tempfile w5_coverPP
+save `w5_coverPP'
+
+save "${data}\w5_coverPP_new", replace
