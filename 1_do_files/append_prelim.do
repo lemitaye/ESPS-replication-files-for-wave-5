@@ -21,7 +21,7 @@ restore
 append using `wave5_pp', force
 
 * The following variables were flagged:
-label list s3q02b s3q03b s3q04 s3q07 s3q10 s3q11 s3q12 s3q18 s3q19 s3q20 \\\ 
+label list s3q02b s3q03b s3q04 s3q07 s3q10 s3q11 s3q12 s3q18 s3q19 s3q20 /// 
 s3q25a s3q26a s3q27a s3q32 s3q35 s3q36 s3q37 s3q39 s3q41 s3q42 saq01 saq14 saq15
 
 * Value labels have changed for the following:
