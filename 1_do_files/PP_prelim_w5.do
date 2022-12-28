@@ -443,41 +443,67 @@ foreach i in treadle motorpump rdisp rotlegume cresidue1 cresidue2 mintillage //
 } 
  
 
-/*
+*/*
 * Plot size (by SR and GPS) [need to be updated using ESS4 conversion factors]
 
 *Change names of vars.
-generate zone=substr(saq02, -2, .)
-generate woreda=substr(saq03, -2, .)
+generate zone = substr(saq02, -2, .)
+generate woreda = substr(saq03, -2, .)
 
 rename saq01 region
 rename saq04 city
 rename saq05 subcity
 rename saq06 kebele
+rename s3q02b unit  // for matching 
 
 destring region zone woreda city subcity kebele, force replace
 
-merge m:1 region zone woreda using "${rawdata}\Auxiliary_data\ESS3_ET_local_area_unit_conversion"
+preserve
+    tempfile ET_local_area_unit_conversion
+    use "${rawdata}\ET_local_area_unit_conversion", clear
+    rename local_unit unit
+    save `ET_local_area_unit_conversion'
+restore    
+
+merge m:1 region zone woreda unit using `ET_local_area_unit_conversion', keepusing(conversion)
 
 /*
-Result	#	of obs.
-		
-not matched		12,865
-from master		12,721	(_merge= = 1)
-from using		144	(_merge  ==  2)
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                        13,534
+        from master                    13,312  (_merge==1)
+        from using                        222  (_merge==2)
 
-matched		6,618	(_merge  ==  3)
+    Matched                             1,566  (_merge==3)
+    -----------------------------------------
 		
 */
 
 drop if _m  ==  2
 drop _merge
 
+rename unit s3q02b  // rename back
+label list s3q02b
+
+/*
+           1 1. HECTARE
+           2 2. SQUARE METERS
+           3 3. TIMAD
+           4 4. BOY
+           5 5. SENGA
+           6 6. KERT
+           7 7. TILM
+           8 8. Medeb
+           9 9. Rope (Gemed)
+          10 10. Ermija
+          11 11. Other(Specify)
+*/
+
 *Self reported plot area
 generate plotarea_sr = .
-replace plotarea_sr=s3q02a                       if s3q02b= = 1 //ha
-replace plotarea_sr=s3q02a/10000                 if (s3q02b  ==  2 | s3q2b_os == "METER" | s3q2b_os == "SQUIRE METER") //sq meters
-replace plotarea_sr=(s3q02a*conv_timad  )/10000  if s3q02b  ==  3 & conv_timad! = .
+replace plotarea_sr = s3q02a                       if s3q02b == 1 // ha
+replace plotarea_sr = s3q02a/10000                 if (s3q02b == 2 | s3q2b_os == "METER" | s3q2b_os == "SQUIRE METER") //sq meters
+replace plotarea_sr = (s3q02a*conversion)/10000  if s3q02b  ==  3 & conv_timad! = .
 replace plotarea_sr=(s3q02a*conv_timad_z)/10000  if s3q02b  ==  3 & conv_timad= = .
 replace plotarea_sr=(s3q02a*conv_timad_r)/10000  if s3q02b  ==  3 & conv_timad_z= = . & conv_timad= = . //timad
 replace plotarea_sr=(s3q02a*0.25)                if s3q02b  ==  3 & conv_timad_r= = . & conv_timad_z= = . & conv_timad= = .
@@ -521,7 +547,7 @@ lab var plotarea_gps "Plot area in HA - GPS"
 generate plotarea_full=plotarea_gps 
 replace plotarea_full=plotarea_sr if plotarea_gps= = .
 lab var plotarea_full "Plot area: GPS imputed with SR"
-*/
+**/
 
 * Crop type
 tab s3q03b, gen(cropt)
@@ -789,7 +815,6 @@ use "${rawdata}\PP\sect4_pp_w5", clear
 // we want status of filed during this season (s3q03 & s3q03b)
 merge m:1 holder_id household_id parcel_id field_id using "${rawdata}\PP\sect3_pp_w5", keepusing(s3q03 s3q03b) 
 /*
-
     Result                           # of obs.
     -----------------------------------------
     not matched                         5,967
@@ -1100,7 +1125,11 @@ foreach i in ofsp awassa83 {
 
 }
 
-foreach i in avocado mango papaya sweetpotato fieldp impcr1 impcr2 impcr3 impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 impcr10 impcr11 impcr12 impcr13 impcr14 impcr15 impcr18 impcr19 impcr23 impcr24 impcr25 impcr26 impcr27 impcr42 impcr49 impcr60 impcr62 impcr71 impcr72  impveg impftr improot impccr {
+foreach i in avocado mango papaya sweetpotato fieldp impcr1 impcr2 impcr3 ///
+             impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 impcr10 impcr11 ///
+             impcr12 impcr13 impcr14 impcr15 impcr18 impcr19 impcr23 impcr24 /// 
+             impcr25 impcr26 impcr27 impcr42 impcr49 impcr60 impcr62 impcr71 ///
+             impcr72  impveg impftr improot impccr {
 
     g sh_plothh_`i'=(`i'_sumhh/hh_plot2)*100 if `i'_sumhh!=.   & hhd_`i'==1 // Share of plots per HH
     g sh_plotea_`i'=(`i'_sumea/ea_plot2)*100 if `i'_sumea!=.   & hhd_`i'==1 // Share of plots per EA
@@ -1361,6 +1390,15 @@ foreach i of varlist *impcr72{
 	
 tempfile pp_w5s4
 save `pp_w5s4'
+
+
+********************************************************************************
+*** LS - Sec.8_1 - Crossbred animals
+********************************************************************************
+
+/*
+Data is missing for this part!
+*/
 
 
 
