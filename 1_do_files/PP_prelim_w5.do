@@ -93,7 +93,7 @@ preserve
     reshape long s2q04b_, i(holder_id household_id parcel_id) j(membernb)
     // s2q04b_: Which HH members are listed as owners or use rights holders
 
-    drop if s2q04b_  ==  .a & title  ==  1   // removes hh members who are not owners of parcels
+    drop if s2q04b_  == .a & title  ==  1   // removes hh members who are not owners of parcels
     rename  s2q04b_ s1q00         // s1q00 is Individual ID in the hh roster (sect1_pp_w4)
 
     * Individual characteristics
@@ -104,7 +104,7 @@ preserve
 
     generate fow = 1 if s1q03  ==  2    // fow is dummy for female owner
     bysort household_id holder_id parcel_id: egen fowner = max(fow) if title  ==  1  // dummy for at least 1 female owner in hh
-    replace fowner = 0 if fowner  ==  . & s1q03  ==  1  
+    replace fowner = 0 if fowner  == . & s1q03  ==  1  
     drop fow
 
     rename s1q00  s2q04b_
@@ -122,7 +122,7 @@ preserve
     reshape long s2q07_, i(holder_id household_id parcel_id) j(membernb) 
     // s2q07_: Who in this household can decide whether to sell [PARCEL]?
 
-    drop if s2q07_  ==  .a & s2q06  ==  1
+    drop if s2q07_  == .a & s2q06  ==  1
     // s2q06: Does anyone in HH have the right to sell [PARCEL] or use as collateral?
     rename  s2q07_ s1q00
     merge m:1 holder_id household_id s1q00 using  "${rawdata}\PP\sect1_pp_w5"
@@ -130,8 +130,8 @@ preserve
     drop _merge
 
     generate fow = 1 if s1q03  ==  2
-    bysort household_id holder_id parcel_id: egen frsell=max(fow) if s2q06= = 1
-    replace frsell = 0 if frsell= = . & s1q03= = 1
+    bysort household_id holder_id parcel_id: egen frsell=max(fow) if s2q06 ==  1
+    replace frsell = 0 if frsell == . & s1q03 ==  1
     drop fow
     rename s1q00  s2q07_
     drop s1*
@@ -454,18 +454,10 @@ rename saq01 region
 rename saq04 city
 rename saq05 subcity
 rename saq06 kebele
-rename s3q02b unit  // for matching 
 
 destring region zone woreda city subcity kebele, force replace
 
-preserve
-    tempfile ET_local_area_unit_conversion
-    use "${rawdata}\ET_local_area_unit_conversion", clear
-    rename local_unit unit
-    save `ET_local_area_unit_conversion'
-restore    
-
-merge m:1 region zone woreda unit using `ET_local_area_unit_conversion', keepusing(conversion)
+merge m:1 region zone woreda using "${rawdata}\ESS3_ET_local_area_unit_conversion"
 
 /*
     Result                      Number of obs
@@ -482,49 +474,32 @@ merge m:1 region zone woreda unit using `ET_local_area_unit_conversion', keepusi
 drop if _m  ==  2
 drop _merge
 
-rename unit s3q02b  // rename back
-label list s3q02b
-
-/*
-           1 1. HECTARE
-           2 2. SQUARE METERS
-           3 3. TIMAD
-           4 4. BOY
-           5 5. SENGA
-           6 6. KERT
-           7 7. TILM
-           8 8. Medeb
-           9 9. Rope (Gemed)
-          10 10. Ermija
-          11 11. Other(Specify)
-*/
-
 *Self reported plot area
 generate plotarea_sr = .
 replace plotarea_sr = s3q02a                       if s3q02b == 1 // ha
 replace plotarea_sr = s3q02a/10000                 if (s3q02b == 2 | s3q2b_os == "METER" | s3q2b_os == "SQUIRE METER") //sq meters
-replace plotarea_sr = (s3q02a*conversion)/10000  if s3q02b  ==  3 & conv_timad! = .
-replace plotarea_sr=(s3q02a*conv_timad_z)/10000  if s3q02b  ==  3 & conv_timad= = .
-replace plotarea_sr=(s3q02a*conv_timad_r)/10000  if s3q02b  ==  3 & conv_timad_z= = . & conv_timad= = . //timad
-replace plotarea_sr=(s3q02a*0.25)                if s3q02b  ==  3 & conv_timad_r= = . & conv_timad_z= = . & conv_timad= = .
+replace plotarea_sr = (s3q02a*conv_timad)/10000  if s3q02b  ==  3 & conv_timad! = .
+replace plotarea_sr=(s3q02a*conv_timad_z)/10000  if s3q02b  ==  3 & conv_timad == .
+replace plotarea_sr=(s3q02a*conv_timad_r)/10000  if s3q02b  ==  3 & conv_timad_z == . & conv_timad == . //timad
+replace plotarea_sr=(s3q02a*0.25)                if s3q02b  ==  3 & conv_timad_r == . & conv_timad_z == . & conv_timad == .
 
 replace plotarea_sr=(s3q02a*conv_boy  )/10000 if (s3q02b  ==  4 | s3q2b_os == "BOY") & conv_boy! = .
-replace plotarea_sr=(s3q02a*conv_boy_z)/10000 if (s3q02b  ==  4 | s3q2b_os == "BOY")  & conv_boy= = .
-replace plotarea_sr=(s3q02a*conv_boy_r)/10000 if (s3q02b  ==  4 | s3q2b_os == "BOY")  & conv_boy_z= = . & conv_boy= = . //boy
-replace plotarea_sr=(s3q02a*227.76)/10000     if (s3q02b  ==  4 | s3q2b_os == "BOY") & conv_boy_r= = . & conv_boy_z= = . & conv_boy= = .
+replace plotarea_sr=(s3q02a*conv_boy_z)/10000 if (s3q02b  ==  4 | s3q2b_os == "BOY")  & conv_boy == .
+replace plotarea_sr=(s3q02a*conv_boy_r)/10000 if (s3q02b  ==  4 | s3q2b_os == "BOY")  & conv_boy_z == . & conv_boy == . //boy
+replace plotarea_sr=(s3q02a*227.76)/10000     if (s3q02b  ==  4 | s3q2b_os == "BOY") & conv_boy_r == . & conv_boy_z == . & conv_boy == .
 
 replace plotarea_sr=(s3q02a*conv_senga  )/10000 if s3q02b == 5 & conv_senga! = .
-replace plotarea_sr=(s3q02a*conv_senga_z)/10000 if s3q02b == 5 & conv_senga= = .
-replace plotarea_sr=(s3q02a*conv_senga_r)/10000 if s3q02b == 5 & conv_senga_z= = . & conv_senga= = . //senga
-replace plotarea_sr=(s3q02a*1339.289)/10000 if s3q02b == 5 & conv_senga_r= = . & conv_senga_z= = . & conv_senga= = .
+replace plotarea_sr=(s3q02a*conv_senga_z)/10000 if s3q02b == 5 & conv_senga == .
+replace plotarea_sr=(s3q02a*conv_senga_r)/10000 if s3q02b == 5 & conv_senga_z == . & conv_senga == . //senga
+replace plotarea_sr=(s3q02a*1339.289)/10000 if s3q02b == 5 & conv_senga_r == . & conv_senga_z == . & conv_senga == .
 
 
 
 replace plotarea_sr=(s3q02a*conv_kert  )/10000 if s3q02b == 6 & conv_kert! = .
-replace plotarea_sr=(s3q02a*conv_kert_z)/10000 if s3q02b == 6 & conv_kert= = .
-replace plotarea_sr=(s3q02a*conv_kert_r)/10000 if s3q02b == 6 & conv_kert_z= = . & conv_kert= = . //kert
+replace plotarea_sr=(s3q02a*conv_kert_z)/10000 if s3q02b == 6 & conv_kert == .
+replace plotarea_sr=(s3q02a*conv_kert_r)/10000 if s3q02b == 6 & conv_kert_z == . & conv_kert == . //kert
 
-replace plotarea_sr=(s3q02a*0.25)/10000 if s3q02b == 6 & conv_kert_r= = . & conv_kert_z= = . & conv_kert= = . 
+replace plotarea_sr=(s3q02a*0.25)/10000 if s3q02b == 6 & conv_kert_r == . & conv_kert_z == . & conv_kert == . 
 
 
 replace plotarea_sr=(s3q02a* 204.4169)/10000 if s3q02b == 7 //tilm
@@ -545,7 +520,7 @@ lab var plotarea_gps "Plot area in HA - GPS"
 * Variable without missing: order of importance: 1.Rope and compass, 2. GPS, 3. Self-reported
 
 generate plotarea_full=plotarea_gps 
-replace plotarea_full=plotarea_sr if plotarea_gps= = .
+replace plotarea_full=plotarea_sr if plotarea_gps == .
 lab var plotarea_full "Plot area: GPS imputed with SR"
 **/
 
@@ -629,7 +604,7 @@ lab var hiredlab "Hired labor used"
 
 generate lprep = .
 replace  lprep = 1 if s3q35 != .  // s3q35: How was [FIELD] prepared for planting?
-replace  lprep = 0 if s3q35  ==  .
+replace  lprep = 0 if s3q35  == .
 lab var lprep "Plot prepared for planting"
 
 generate soiler = .
@@ -700,7 +675,7 @@ lab var hh_plot_irr_nb   "Number of irrigated plots per household"
 lab var hh_plot_cult_nb  "Number of cultivated plots per household"
 
 foreach i in hh_plot_nb hh_plot_irr_nb hh_plot_cult_nb {
-    replace `i' = 0 if `i'  ==  .  // replace by 0 if missing
+    replace `i' = 0 if `i'  == .  // replace by 0 if missing
 }
 
 
