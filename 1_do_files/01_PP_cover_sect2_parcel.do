@@ -51,9 +51,6 @@ lab var hh_ea "Number of households per EA"
 duplicates drop household_id ea_id saq01 saq02 saq03 saq04 saq05 saq06 saq07 /// 
                 saq08, force
 
-tempfile w5_coverPP
-save `w5_coverPP'
-
 save "${data}\w5_coverPP_new", replace
 
 ********************************************************************************

@@ -562,7 +562,8 @@ forvalues x = 1/6 {
     lab var sh_plothh_ploc_cond`x' "Plough along the contour conditional on `x'* (see notes)"
 }
 
-/*  This section produces error "interactions not allowed"
+/*  
+This section produces error "interactions not allowed"
 #delimit ;
 global conditional sh_plothh_cresidue1_cond`x' sh_plothh_cresidue2_cond`x' 
 	    sh_plothh_mintillage_cond`x' sh_plothh_zerotill_cond`x' sh_plothh_consag1_cond`x' 
@@ -585,5 +586,4 @@ foreach var in  $conditional {
 }
 */
 
-tempfile  PP_W5S3
-save     `PP_W5S3'
+save "${tmp}\PP_W5S3", replace

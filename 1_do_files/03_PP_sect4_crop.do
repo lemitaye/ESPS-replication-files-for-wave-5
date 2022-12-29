@@ -582,5 +582,5 @@ foreach i of varlist *impcr72{
 	lab var `i' "Improved   COFFEE-SR"
 	}
 	
-tempfile pp_w5s4
-save `pp_w5s4'
+	
+save "${tmp}\pp_w5s4", replace

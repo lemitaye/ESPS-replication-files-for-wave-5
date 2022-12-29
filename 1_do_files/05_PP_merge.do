@@ -4,9 +4,9 @@
 * MERGE DIFFERENT MODULES *
 ********************************************************************************
 
-use `w5_coverPP', clear
+use "${data}\w5_coverPP_new", clear
 
-merge 1:1 household_id using `PP_W5S3'
+merge 1:1 household_id using "${tmp}\PP_W5S3"
 /*
 
     Result                           # of obs.
@@ -26,7 +26,7 @@ drop _merge
 
 *drop _merge
 
-merge 1:1 household_id using `pp_w5s4'
+merge 1:1 household_id using "${tmp}\pp_w5s4"
 /*
    Result                           # of obs.
     -----------------------------------------

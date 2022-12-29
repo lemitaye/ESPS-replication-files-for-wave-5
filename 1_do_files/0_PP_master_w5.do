@@ -14,6 +14,7 @@ global root     "C:\Users\tayel\Dropbox\Documents\SPIA\Ethiopia\LSMS_W5"
 global code     "$root\1_do_files"
 global rawdata  "$root\2_raw_data\data"
 global data     "$root\3_report_data"
+global tmp      "$root\tmp"
 
 
 do "${code}\01_PP_cover_sect2_parcel.do"
