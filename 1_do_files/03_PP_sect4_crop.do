@@ -48,6 +48,14 @@ lab var improv "Improved crop used"
 
 
 * Improved by crop *
+
+// numbers in the below are taken from "label list s4q01b"
+foreach num of numlist 1/86 97/99 108 110 112/121 123 {
+    display `num'  
+	generate cr`num' = 0
+	replace  cr`num' = 1 if s4q01b == `num'
+}
+
 generate cr1 = 0
 generate cr2 = 0
 generate cr3 = 0
@@ -357,7 +365,7 @@ replace hsell=1 if s4q22==1
 replace hsell=0 if s4q22==2
 
 * Merge with plot area to gen % of plot area under maize, sorghum and barley
-merge m:1 parcel_id field_id   holder_id household_id ea_id using "${data}\ess4_pp_nrm_plot_new", keepusing(plotarea_full)
+merge m:1 parcel_id field_id holder_id household_id ea_id using "${data}\ess5_pp_nrm_plot_new", keepusing(plotarea_full)
 /*
 
     Result                           # of obs.
