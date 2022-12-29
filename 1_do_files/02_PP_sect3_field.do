@@ -439,17 +439,16 @@ lab var motorpump  "Motor pump used for irrigation"
 * Plot level - NRM
 
 preserve 
-    #delimit ;
-    keep holder_id household_id ea_id saq01 region saq02 saq03 city subcity kebele 
-        saq07 saq08 saq09 saq14 saq15 parcel_id field_id rdisp treadle motorpump 
-        rotlegume cresidue1 cresidue2 mintillage zerotill swc terr wcatch affor 
-        ploc consag1 consag2 hh_plot_nb ea_plot_nb hh_plot_irr_nb ea_plot_irr_nb 
-        hh_plot_cult_nb ea_plot_cult_nb hh_plot_uses_nb ea_plot_uses_nb 
-        hh_plot_eros_nb ea_plot_eros_nb hh_plot_cplus_nb ea_plot_cplus_nb 
-        hh_plot_lprep_nb ea_plot_lprep_nb plotarea_sr plotarea_gps plotarea_full 
-        cropt1 cropt2 cropt3 cropm1 cropm2 falloq fplotm extprog irr irrm1 urea 
-        dap nps othfert manure hiredlab lprep soiler plotirr 
-    #delimit cr
+    keep holder_id household_id ea_id saq01 region saq02 saq03 city subcity kebele ///
+    saq07 saq08 saq09 saq14 saq15 parcel_id field_id rdisp treadle motorpump ///
+    rotlegume cresidue1 cresidue2 mintillage zerotill swc terr wcatch affor ///
+    ploc consag1 consag2 hh_plot_nb ea_plot_nb hh_plot_irr_nb ea_plot_irr_nb ///
+    hh_plot_cult_nb ea_plot_cult_nb hh_plot_uses_nb ea_plot_uses_nb ///
+    hh_plot_eros_nb ea_plot_eros_nb hh_plot_cplus_nb ea_plot_cplus_nb ///
+    hh_plot_lprep_nb ea_plot_lprep_nb plotarea_sr plotarea_gps plotarea_full ///
+    cropt1 cropt2 cropt3 cropm1 cropm2 falloq fplotm extprog irr irrm1 urea ///
+    dap nps othfert manure hiredlab lprep soiler plotirr 
+
     save "${data}\ess5_pp_nrm_plot_new", replace
 restore
 
