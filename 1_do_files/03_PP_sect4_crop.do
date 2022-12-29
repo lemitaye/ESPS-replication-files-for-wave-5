@@ -406,31 +406,31 @@ foreach x in 1 3 4 7 0  {
 	
 *Plot level - Crop variety
 preserve 
-keep saq01 sp_ofsp sp_awassa83 avocado mango papaya sweetpotato fieldp improv /// 
-     cdam1 cdam2 cdam3 cdam4 cdam5 cdamoth hsell  parcel_id field_id crop_id ///
-	 holder_id household_id ea_id impcr2 impcr1 pw_w4
-	 
-collapse (max) saq01 sp_ofsp sp_awassa83 improv avocado mango papaya sweetpotato ///
-               fieldp  cdam1 cdam2 cdam3 cdam4 cdam5 cdamoth hsell impcr2 impcr1 ///
-		 (firstnm) pw_w4, by(parcel_id field_id holder_id household_id ea_id)
+	keep saq01 sp_ofsp sp_awassa83 avocado mango papaya sweetpotato fieldp improv /// 
+		cdam1 cdam2 cdam3 cdam4 cdam5 cdamoth hsell  parcel_id field_id crop_id ///
+		holder_id household_id ea_id impcr2 impcr1 pw_w4
+		
+	collapse (max) saq01 sp_ofsp sp_awassa83 improv avocado mango papaya sweetpotato ///
+				fieldp  cdam1 cdam2 cdam3 cdam4 cdam5 cdamoth hsell impcr2 impcr1 ///
+			(firstnm) pw_w4, by(parcel_id field_id holder_id household_id ea_id)
 
-lab var improv      "Improved crop used"
-lab var cdam1       "Crop damage due to: Too Much Rain "
-lab var cdam2       "Crop damage due to: Too Little Rain"
-lab var cdam3       "Crop damage due to: Insects"
-lab var cdam4       "Crop damage due to: Crop Disease "
-lab var cdam5       "Crop damage due to: Weeds"
-lab var cdamoth     "Crop damage due to: Other "
-lab var hsell       "Farmer intends to sell parts of the harvest"
-lab var sp_ofsp     "Orange Fleshed sweet potato"
-lab var sp_awassa83 "Awassa83 sweet potato"
-lab var avocado     "Avocado tree"
-lab var mango       "Mango tree"
-lab var papaya      "Papaya tree"
-lab var sweetpotato "Sweetpotato SR"
-lab var fieldp		"Field peas"
+	lab var improv      "Improved crop used"
+	lab var cdam1       "Crop damage due to: Too Much Rain "
+	lab var cdam2       "Crop damage due to: Too Little Rain"
+	lab var cdam3       "Crop damage due to: Insects"
+	lab var cdam4       "Crop damage due to: Crop Disease "
+	lab var cdam5       "Crop damage due to: Weeds"
+	lab var cdamoth     "Crop damage due to: Other "
+	lab var hsell       "Farmer intends to sell parts of the harvest"
+	lab var sp_ofsp     "Orange Fleshed sweet potato"
+	lab var sp_awassa83 "Awassa83 sweet potato"
+	lab var avocado     "Avocado tree"
+	lab var mango       "Mango tree"
+	lab var papaya      "Papaya tree"
+	lab var sweetpotato "Sweetpotato SR"
+	lab var fieldp		"Field peas"
 
-save "${data}\ess4_pp_cropvar_plot_new", replace
+	save "${data}\ess4_pp_cropvar_plot_new", replace
 restore
 
 
