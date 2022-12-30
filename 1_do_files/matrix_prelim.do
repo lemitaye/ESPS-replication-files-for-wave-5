@@ -123,18 +123,20 @@ foreach var in $hhlevel {
 
 local rname ""
 foreach var in $hhlevel {
-	local lbl : variable label `var'
-	local rname `"  `rname'   "`lbl'" "'		
-}	
+	local lbl: variable label `var'
+	local rname " '`rname'' '`lbl'' "
+}
+di "`rname'"   // "rname" is a local containing row names
 
 mat C = B3, B4, B7, B0, BN
 
 
 #delimit;
 xml_tab C,  save("$table\Sec6_ESS5.xml") replace sheet("Table 1_hh", nogridlines)  
-rnames(`rname' "Total No. of obs. per region") cnames(`cnames') ceq("Tigray" "Tigray" "Tigray" "Tigray" "Tigray" "Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia" "Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Other regions" "Other regions" "Other regions" "Other regions" "Other regions" "National" "National" "National" "National" "National" ) showeq 
-rblanks(COL_NAMES "Animal Agriculture"       S2149, 
-hhd_grass_r "Crop germplasm improvementes"   S2149,
+rnames(`rname' "Total No. of obs. per region") cnames(`cnames') 
+ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia" "Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Other regions" "Other regions" "Other regions" "Other regions" "Other regions" "National" "National" "National" "National" "National" ) 
+showeq 
+rblanks(hhd_grass_r "Crop germplasm improvementes"   S2149,
 hhd_awassa83_r "Natural resource management" S2149)	 
 title(Table 1: ESS5 - Rural Household level - Section 6)  font("Times New Roman" 10) 
 cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
@@ -143,7 +145,7 @@ cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40,
 16 55, 17 55, 18 30, 19 30, 20 40,
 21 55, 22 55, 23 30, 24 30, 25 40,
 26 55, 27 55, 28 30, 29 30, 30 40) 
-format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0))  
+format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0))  
 	star(.1 .05 .01)  
 	lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 13)   
 	notes(Point estimates are weighted sample means. ) 
