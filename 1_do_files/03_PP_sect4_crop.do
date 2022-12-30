@@ -194,14 +194,13 @@ replace hsell=0 if s4q22==2
 * Merge with plot area to gen % of plot area under maize, sorghum and barley
 merge m:1 parcel_id field_id holder_id household_id ea_id using "${data}\ess5_pp_nrm_plot_new", keepusing(plotarea_full)
 /*
-
-    Result                           # of obs.
+    Result                      Number of obs
     -----------------------------------------
-    not matched                         5,967
+    Not matched                         4,338
         from master                         0  (_merge==1)
-        from using                      5,967  (_merge==2)
+        from using                      4,338  (_merge==2)
 
-    matched                            16,913  (_merge==3)
+    Matched                            14,239  (_merge==3)
     -----------------------------------------
 */
 
@@ -243,11 +242,11 @@ foreach x in 1 3 4 7 0  {
 preserve 
 	keep saq01 sp_ofsp sp_awassa83 avocado mango papaya sweetpotato fieldp improv /// 
 		cdam1 cdam2 cdam3 cdam4 cdam5 cdamoth hsell  parcel_id field_id crop_id ///
-		holder_id household_id ea_id impcr2 impcr1 pw_w4
+		holder_id household_id ea_id impcr2 impcr1 pw_w5
 		
 	collapse (max) saq01 sp_ofsp sp_awassa83 improv avocado mango papaya sweetpotato ///
 				fieldp  cdam1 cdam2 cdam3 cdam4 cdam5 cdamoth hsell impcr2 impcr1 ///
-			(firstnm) pw_w4, by(parcel_id field_id holder_id household_id ea_id)
+			(firstnm) pw_w5, by(parcel_id field_id holder_id household_id ea_id)
 
 	lab var improv      "Improved crop used"
 	lab var cdam1       "Crop damage due to: Too Much Rain "
@@ -265,7 +264,7 @@ preserve
 	lab var sweetpotato "Sweetpotato SR"
 	lab var fieldp		"Field peas"
 
-	save "${data}\ess4_pp_cropvar_plot_new", replace
+	save "${data}\ess5_pp_cropvar_plot_new", replace
 restore
 
 

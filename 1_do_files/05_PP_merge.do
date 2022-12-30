@@ -8,16 +8,14 @@ use "${data}\w5_coverPP_new", clear
 
 merge 1:1 household_id using "${tmp}\PP_W5S3"
 /*
-
-    Result                           # of obs.
+    Result                      Number of obs
     -----------------------------------------
-    not matched                            20
-        from master                        20  (_merge==1)
+    Not matched                            60
+        from master                        60  (_merge==1)
         from using                          0  (_merge==2)
 
-    matched                             2,879  (_merge==3)
+    Matched                             2,019  (_merge==3)
     -----------------------------------------
-
 */
 
 drop _merge
@@ -28,13 +26,13 @@ drop _merge
 
 merge 1:1 household_id using "${tmp}\pp_w5s4"
 /*
-   Result                           # of obs.
+    Result                      Number of obs
     -----------------------------------------
-    not matched                           700
-        from master                       700  (_merge==1)
+    Not matched                           449
+        from master                       449  (_merge==1)
         from using                          0  (_merge==2)
 
-    matched                             2,199  (_merge==3)
+    Matched                             1,630  (_merge==3)
     -----------------------------------------
 */
 
