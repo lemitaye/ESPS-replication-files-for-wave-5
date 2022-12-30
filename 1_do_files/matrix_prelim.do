@@ -61,17 +61,11 @@ foreach x in 3 4 7 0 {  // these are the three main regions (Tigray excluded) an
 
 		matrix A1`x' = nullmat(A1`x')\ mat`var'`x'  // "\" is a column join operator
         // appends row vector to matrix
-		mat A2`x'=(`obsr`x'', . , ., .,.)  
+		mat A2`x'=(., . , ., .,`obsr`x'')  
 		mat B`x'=A1`x'\A2`x'
 
 		matrix colnames B`x' = "Mean" "SE" "Min" "Max" "N"
 	}
-
-	local rname ""
-	foreach var in $hhlevel {
-		local lbl : variable label `var'
-		local rname `"  `rname'   "`lbl'" " " "'		
-	}	
 
 }	
 
@@ -114,7 +108,7 @@ foreach var in $hhlevel {
 
 	matrix A1N = nullmat(A1N)\ mat`var'N
 
-	mat A2N=(`obsrN', . , ., .,.)
+	mat A2N=(., . , ., .,`obsrN')
 	mat BN=A1N\A2N
 
 	matrix colnames BN = "Mean" "SE" "Min" "Max" "N"
@@ -124,17 +118,20 @@ foreach var in $hhlevel {
 local rname ""
 foreach var in $hhlevel {
 	local lbl: variable label `var'
-	local rname " '`rname'' '`lbl'' "
+	local rname `"  `rname'   "`lbl'" "'
 }
-di "`rname'"   // "rname" is a local containing row names
 
+// Create final matrix:
 mat C = B3, B4, B7, B0, BN
 
 
 #delimit;
 xml_tab C,  save("$table\Sec6_ESS5.xml") replace sheet("Table 1_hh", nogridlines)  
 rnames(`rname' "Total No. of obs. per region") cnames(`cnames') 
-ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia" "Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Other regions" "Other regions" "Other regions" "Other regions" "Other regions" "National" "National" "National" "National" "National" ) 
+ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia" 
+"Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Other regions" 
+"Other regions" "Other regions" "Other regions" "Other regions" "National" 
+"National" "National" "National" "National" ) 
 showeq 
 rblanks(hhd_grass_r "Crop germplasm improvementes"   S2149,
 hhd_awassa83_r "Natural resource management" S2149)	 
@@ -145,7 +142,10 @@ cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40,
 16 55, 17 55, 18 30, 19 30, 20 40,
 21 55, 22 55, 23 30, 24 30, 25 40,
 26 55, 27 55, 28 30, 29 30, 30 40) 
-format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0))  
+format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0))  
 	star(.1 .05 .01)  
 	lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 13)   
 	notes(Point estimates are weighted sample means. ) 
@@ -153,4 +153,95 @@ format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (
 #delimit cr		
 
 
+**** Other regions: wave5 ****************************************************** 
 
+matrix drop _all
+
+foreach x in 2 5 6 12 13 15  {
+
+	foreach var in $hhlevel {
+
+		cap: mean `var' [pw=pw_w5] if othregion==`x' & wave==5
+		
+		if _rc==2000 {
+			matrix  `var'meanr`x'=0
+			matrix define `var'V`x'= 0
+			scalar `var'se`x'=0
+						}
+		else if _rc!=0 {
+			error _rc
+						}
+		else {				
+			matrix  `var'meanr`x'=e(b)'
+			matrix define `var'V`x'= e(V)'
+			matrix define `var'VV`x'=(vecdiag(`var'V`x'))'
+			matrix list `var'VV`x'
+			scalar `var'se`x'=sqrt(`var'VV`x'[1,1])
+		}
+
+		sum    `var'  if othregion==`x' & wave==5
+		if r(N)==0 {
+			scalar `var'minr`x'=0
+			scalar `var'maxr`x'=0
+			scalar `var'n`x'=0
+					}
+		else {
+			scalar `var'minr`x'=r(min)
+			scalar `var'maxr`x'=r(max)
+			scalar `var'n`x'=r(N)
+		}
+
+		qui sum region if othregion==`x' & wave==5
+		local obsr`x'=r(N)
+
+		matrix mat`var'`x' = (`var'meanr`x', `var'se`x', `var'minr`x', `var'maxr`x', `var'n`x')
+
+		matrix list mat`var'`x'
+
+		matrix A1`x' = nullmat(A1`x')\ mat`var'`x'
+
+		mat A2`x'=(., . , ., .,`obsr`x'')
+		mat B`x'=A1`x'\A2`x'
+
+		matrix colnames B`x' = "Mean" "SE" "Min" "Max" "N"
+
+	}	
+
+}
+
+local rname ""
+foreach var in $hhlevel {
+	local lbl : variable label `var'
+	local rname `"  `rname'   "`lbl'" "'	
+}
+
+mat C = B2, B5, B6, B12, B13, B15
+
+# delimit;
+xml_tab C,  save("$table\Sec6_ESS5.xml") append sheet("Table 1_hh_oth regions", nogridlines) 
+rnames(`rname' "Total No. of obs. per region") cnames(`cnames') 
+ceq("Afar" "Afar" "Afar" "Afar" "Afar" "Somali" "Somali" "Somali" "Somali" "Somali" 
+"Benshangul Gumuz" "Benshangul Gumuz" "Benshangul Gumuz"  "Benshangul Gumuz"  "Benshangul Gumuz"  
+"Gambela"  "Gambela" "Gambela"    "Gambela"  "Gambela"  "Harar" "Harar" "Harar" "Harar" "Harar" 
+"Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa") showeq 
+rblanks(COL_NAMES "Percentage of hh that adopt on at least one plot :" S2149, 
+hhd_impccr  "Share of plots per household" S2149)	
+title(Table 1: ESS4 - Rural Household level - Section 6 - Other regions)  
+font("Times New Roman" 10) 
+cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
+6 55, 7 55, 8 30, 9 30, 10 40,
+11 55, 12 55, 13 30, 14 30, 15 40,
+16 55, 17 55, 18 30, 19 30, 20 40,
+21 55, 22 55, 23 30, 24 30, 25 40,
+26 55, 27 55, 28 30, 29 30, 30 40,
+) 
+format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0))   
+	star(.1 .05 .01)  
+	lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 13)  
+	notes( Point estimates are weighted sample means.  ) //Add your notes here
+; 
+# delimit cr
