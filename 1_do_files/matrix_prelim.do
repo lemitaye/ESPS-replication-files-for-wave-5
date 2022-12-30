@@ -1,12 +1,17 @@
 
-use "${data}\wave4_hh_new", clear
+use "${data}\wave5_hh_new", clear
+
+/*
+The following varaibles corresponding to livestock are removed from global call
+above:
+hhd_livIA hhd_cross_largerum hhd_cross_smallrum hhd_cross_poultry hhd_grass 
+*/
 
 #delimit ;
 global hhlevel     
-hhd_livIA hhd_cross_largerum hhd_cross_smallrum hhd_cross_poultry hhd_grass 
-hhd_ofsp hhd_awassa83
-hhd_rdisp hhd_motorpump hhd_swc hhd_consag1 hhd_consag2 hhd_affor hhd_mango hhd_papaya hhd_avocado
-hhd_impcr13 hhd_impcr19 hhd_impcr11 hhd_impcr24 hhd_impcr14 hhd_impcr3 hhd_impcr5 hhd_impcr60 hhd_impcr62
+hhd_ofsp hhd_awassa83 hhd_rdisp hhd_motorpump hhd_swc hhd_consag1 hhd_consag2 
+hhd_affor hhd_mango hhd_papaya hhd_avocado hhd_impcr13 hhd_impcr19 hhd_impcr11 
+hhd_impcr24 hhd_impcr14 hhd_impcr3 hhd_impcr5 hhd_impcr60 hhd_impcr62
 ;
 #delimit cr
 
