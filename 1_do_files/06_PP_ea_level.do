@@ -11,7 +11,7 @@ foreach i in  treadle motorpump rotlegume cresidue1 cresidue2 mintillage ///
 
     generate ead_`i'=.
     replace ead_`i'=0 if hhd_`i'==0
-    replace ead_`i'=1 if hhd_`i'==100
+    replace ead_`i'=1 if hhd_`i'==100  // multiplied by 100 in 05_PP_merge.do
 
     egen nbhhd_`i'=sum(hhd_`i'), by(ea_id)
     generate sh_ea_`i'=(nbhhd_`i'/hh_ea) if nbhhd_`i'!=.  
@@ -64,10 +64,13 @@ foreach var of varlist `ead' {
 
 collapse (max) ead* sh_plotea* sh_ea_* wave region othregion (firstnm) pw_w5, by(ea_id)
 
+/*
+The following (livestock variables) removed from the loop below:
+livIA elepgrass gaya sasbaniya alfa indprod cross 
+*/
 foreach i in treadle motorpump rotlegume cresidue1 cresidue2 mintillage zerotill ///
-        consag1 consag2 swc terr wcatch affor ploc rdisp livIA elepgrass gaya ///
-        sasbaniya alfa indprod cross  ofsp awassa83 avocado mango fieldp papaya ///
-        sweetpotato impcr1 impcr2 impcr3 impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 
+        consag1 consag2 swc terr wcatch affor ploc rdisp ofsp awassa83 avocado mango fieldp papaya ///
+        sweetpotato impcr1 impcr2 impcr3 impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 ///
         impcr10 impcr11 impcr12 impcr13 impcr14 impcr15 impcr18 impcr19 impcr23 ///
         impcr24 impcr25 impcr26 impcr27 impcr42 impcr49 impcr60 impcr62 impcr71 ///
         impcr72  impveg impftr improot impccr {
@@ -233,7 +236,7 @@ lab var ead_terr        "Terracing"
 lab var ead_wcatch      "Water catchments"
 lab var ead_affor       "Afforestation"
 lab var ead_ploc        "Plough along the contour"
-
+/*
 lab var ead_livIA       "Livestock AI"
 lab var ead_elepgrass   "Feed and Forage: Elephant Grass"
 lab var ead_gaya        "Feed and Forage: Gaya"
@@ -242,7 +245,7 @@ lab var ead_alfa        "Feed and Forage: Alfalfa"
 lab var ead_indprod     "Feed and Forage: Industry by-product"
 lab var ead_feed		"Feed and forages"
 lab var ead_grass        "Elephant grass, gaya, sasbaniya, alfalfa"
-
+*/
 lab var sh_ea_treadle    "Treadle pump" 
 lab var sh_ea_motorpump  "Motor pump"
 lab var sh_ea_rdisp      "River dispersion" 
@@ -259,7 +262,7 @@ lab var sh_ea_affor      "Afforestation"
 lab var sh_ea_ploc       "Plough along the contour"
 
 
-
+/*
 lab var sh_ea_livIA      "Livestock AI"
 lab var sh_ea_elepgrass  "Feed and Forage: Elephant Grass"
 lab var sh_ea_gaya       "Feed and Forage: Gaya"
@@ -280,26 +283,23 @@ lab var sh_ea_poultry_k   "Poultry crossbred"
 lab var sh_ea_largerum_o  "Large ruminants crossbred"
 lab var sh_ea_smallrum_o  "Small ruminants crossbred"
 lab var sh_ea_poultry_o   "Poultry crossbred"
+*/
 
 
-
-merge 1:1 ea_id using "${data}\ess4_community_new"
+merge 1:1 ea_id using "${data}\ess5_community_new"
 /*
-
-    Result                           # of obs.
+    Result                      Number of obs
     -----------------------------------------
-    not matched                           285
-        from master                        11  (_merge==1)
-        from using                        274  (_merge==2)
+    Not matched                           239
+        from master                         6  (_merge==1)
+        from using                        233  (_merge==2)
 
-    matched                               253  (_merge==3)
+    Matched                               199  (_merge==3)
     -----------------------------------------
-
-
 */
 
 drop if _m==2
 drop _merge
 
-save "${data}\wave4_ea_new", replace
-save "${data}\ess4_pp_ea_new", replace
+save "${data}\wave5_ea_new", replace
+save "${data}\ess5_pp_ea_new", replace
