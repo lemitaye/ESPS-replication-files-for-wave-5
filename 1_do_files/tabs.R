@@ -1,6 +1,7 @@
 
 library(haven)
 library(tidyverse)
+library(thatssorandom)
 
 setwd("C:/Users/tayel/Dropbox/Documents/SPIA/Ethiopia")
 
@@ -14,7 +15,7 @@ select_hh_level <- function(tbl, pw) {
   tbl %>% 
     mutate_if(is.labelled, as.character, levels = "labels") %>% 
     select(
-      region, {{pw}}, wave, hhd_ofsp, hhd_awassa83, hhd_rdisp, hhd_motorpump, hhd_swc, hhd_consag1, hhd_consag2, 
+      household_id, region, {{pw}}, wave, hhd_ofsp, hhd_awassa83, hhd_rdisp, hhd_motorpump, hhd_swc, hhd_consag1, hhd_consag2, 
       hhd_affor, hhd_mango, hhd_papaya, hhd_avocado, hhd_impcr13, hhd_impcr19, hhd_impcr11, 
       hhd_impcr24, hhd_impcr14, hhd_impcr3, hhd_impcr5, hhd_impcr60, hhd_impcr62
     ) %>% 
@@ -27,16 +28,26 @@ select_hh_level <- function(tbl, pw) {
   
 }
 
-hh_level_w4 <- select_hh_level(wave4_hh_new, pw_w4)
-hh_level_w5 <- select_hh_level(wave5_hh_new, pw_w5)
+hh_level_w5 <- select_hh_level(wave5_hh_new, pw_w5) %>% 
+  rename(pw = "pw_w5")
 
-mean_tbl <- function(tbl, pw) {
+hh_level_w4 <- select_hh_level(wave4_hh_new, pw_w4) %>% 
+  left_join(
+    hh_level_w5 %>% 
+      select(household_id, pw),
+    by = c("household_id")
+  ) %>% 
+  mutate(pw = case_when(!is.na(pw) ~ pw, TRUE ~ pw_w4))
+
+
+
+mean_tbl <- function(tbl) {
   
   tbl %>% 
     group_by(wave, region) %>% 
     summarise(
       across(hhd_ofsp:hhd_impcr62, 
-             ~ weighted.mean(., w = {{pw}}, na.rm = TRUE)),
+             ~ weighted.mean(., w = pw, na.rm = TRUE)),
       .groups = "drop"
     ) %>% 
     pivot_longer(hhd_ofsp:hhd_impcr62, 
@@ -46,8 +57,8 @@ mean_tbl <- function(tbl, pw) {
 }
 
 hh_level_mean <- bind_rows(
-  mean_tbl(hh_level_w4, pw_w4),
-  mean_tbl(hh_level_w5, pw_w5)
+  mean_tbl(hh_level_w4),
+  mean_tbl(hh_level_w5)
   ) %>% 
   mutate(wave = paste("wave", wave) %>% 
            fct_relevel("wave 5", "wave 4"))
