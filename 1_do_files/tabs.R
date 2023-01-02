@@ -45,10 +45,19 @@ mean_tbl <- function(tbl, pw) {
   
 }
 
-mean_tbl(hh_level_w4, pw_w4)
-mean_tbl(hh_level_w5, pw_w5)
+hh_level_mean <- bind_rows(
+  mean_tbl(hh_level_w4, pw_w4),
+  mean_tbl(hh_level_w5, pw_w5)
+  ) %>% 
+  mutate(wave = paste("wave", wave) %>% 
+           fct_relevel("wave 5", "wave 4"))
 
-# values in hh_level_w4 have been multiplied by 100 somewhere (?)
+
+hh_level_mean %>% 
+  filter(region != "Tigray") %>% 
+  ggplot(aes(mean, variable, fill = wave)) +
+  geom_col(position = "dodge") +
+  facet_wrap(~ region)
 
 
 
