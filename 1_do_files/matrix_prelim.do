@@ -59,7 +59,7 @@ foreach x in 3 4 7 0 {  // these are the three main regions (Tigray excluded) an
 
 		matrix list mat`var'`x'  // "matrix list" - Display the contents of a matrix
 
-		matrix A1`x' = nullmat(A1`x')\ mat`var'`x'  // "\" is a column join operator
+		matrix A1`x' = nullmat(A1`x')\ mat`var'`x'  // "\" is a row join operator
         // appends row vector to matrix
 		mat A2`x'=(., . , ., .,`obsr`x'')  
 		mat B`x'=A1`x'\A2`x'
