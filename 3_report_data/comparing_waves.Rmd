@@ -1,0 +1,130 @@
+---
+title: "Comparing innovations across waves - Ethiopian Panel Socioeconomic Survey"
+author: "Lemi Daba"
+date: "`r Sys.Date()`"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+```
+
+```{r}
+# packages:
+library(tidyverse)
+```
+
+
+```{r}
+# read csv:
+national_hh_level <- read_csv("national_hh_level.csv")
+regions_hh_level <- read_csv("regions_hh_level.csv")
+
+```
+
+
+## Household Level
+
+
+```{r fig.height=8}
+
+national_hh_level %>% 
+  mutate(wave = fct_relevel(wave, "wave 5", "wave 4")) %>%
+  ggplot(aes(mean, label, fill = wave)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = paste0( round(mean, 2), "%", " (", nobs, ")" ) ),
+            position = position_dodge(width = 1),
+            hjust = -.15, size = 2.1) +
+  expand_limits(x = 80) +
+  theme(legend.position = "top") +
+  labs(x = "Percent of households", 
+       y = "", 
+       fill = "",
+       title = "Percent of Rural Households Adopting\nInnovations - National",
+       caption = "Percent are weighted sample means using latest (wave 5) weights where avaialbe.\nNumber of households responding in parenthesis")
+
+```
+
+```{r fig.height=8}
+
+regions_hh_level %>% 
+  mutate(wave = fct_relevel(wave, "wave 5", "wave 4")) %>%
+  filter(region == "Amhara") %>% 
+  ggplot(aes(mean, label, fill = wave)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = paste0( round(mean, 2), "%", " (", nobs, ")" ) ),
+            position = position_dodge(width = 1),
+            hjust = -.15, size = 2.1) +
+  expand_limits(x = 80) +
+  theme(legend.position = "top") +
+  labs(x = "Percent of households", 
+       y = "", 
+       fill = "",
+       title = "Percent of Rural Households Adopting\nInnovations - Amhara",
+       caption = "Percent are weighted sample means using latest (wave 5) weights where avaialbe.\nNumber of households responding in parenthesis")
+
+```
+
+```{r fig.height=8}
+
+regions_hh_level %>% 
+  mutate(wave = fct_relevel(wave, "wave 5", "wave 4")) %>%
+  filter(region == "Oromia") %>% 
+   ggplot(aes(mean, label, fill = wave)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = paste0( round(mean, 2), "%", " (", nobs, ")" ) ),
+            position = position_dodge(width = 1),
+            hjust = -.15, size = 2.1) +
+  expand_limits(x = 80) +
+  theme(legend.position = "top") +
+  labs(x = "Percent of households", 
+       y = "", 
+       fill = "",
+       title = "Percent of Rural Households Adopting\nInnovations - Oromia",
+       caption = "Percent are weighted sample means using latest (wave 5) weights where avaialbe.\nNumber of households responding in parenthesis")
+
+```
+
+```{r fig.height=8}
+
+regions_hh_level %>% 
+  filter(region == "SNNP") %>% 
+  mutate(wave = fct_relevel(wave, "wave 5", "wave 4")) %>%
+    ggplot(aes(mean, label, fill = wave)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = paste0( round(mean, 2), "%", " (", nobs, ")" ) ),
+            position = position_dodge(width = 1),
+            hjust = -.15, size = 2.1) +
+  expand_limits(x = 80) +
+  theme(legend.position = "top") +
+  labs(x = "Percent of households", 
+       y = "", 
+       fill = "",
+       title = "Percent of Rural Households Adopting\nInnovations - SNNP",
+       caption = "Percent are weighted sample means using latest (wave 5) weights where avaialbe.\nNumber of households responding in parenthesis")
+
+```
+
+```{r fig.height=8}
+
+regions_hh_level %>% 
+    mutate(wave = fct_relevel(wave, "wave 5", "wave 4")) %>%
+  filter(region == "Other regions") %>% 
+    ggplot(aes(mean, label, fill = wave)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = paste0( round(mean, 2), "%", " (", nobs, ")" ) ),
+            position = position_dodge(width = 1),
+            hjust = -.15, size = 2.1) +
+  expand_limits(x = 80) +
+  theme(legend.position = "top") +
+  labs(x = "Percent of households", 
+       y = "", 
+       fill = "",
+       title = "Percent of Rural Households Adopting\nInnovations - Other regions",
+       caption = "Percent are weighted sample means using latest (wave 5) weights where avaialbe.\nNumber of households responding in parenthesis")
+
+```
+
+
+
+
