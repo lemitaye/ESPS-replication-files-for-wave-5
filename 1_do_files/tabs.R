@@ -49,26 +49,28 @@ mean_tbl <- function(tbl, by_region = TRUE) {
   if (by_region) {
     
     tbl %>% 
-      group_by(wave, region) %>% 
-      summarise(
-        across(hhd_ofsp:hhd_impcr62, 
-               ~ weighted.mean(., w = pw, na.rm = TRUE)),
-        .groups = "drop"
-      ) %>% 
       pivot_longer(hhd_ofsp:hhd_impcr62, 
                    names_to = "variable",
-                   values_to = "mean")
+                   values_to = "value") %>% 
+      group_by(wave, region, variable) %>% 
+      summarise(
+        mean = weighted.mean(value, w = pw, na.rm = TRUE),
+        nobs = sum(!is.na(value)),
+        .groups = "drop"
+      )
     
   } else {
     
     tbl %>% 
-      summarise(
-        across(hhd_ofsp:hhd_impcr62, 
-               ~ weighted.mean(., w = pw, na.rm = TRUE))
-      ) %>% 
       pivot_longer(hhd_ofsp:hhd_impcr62, 
                    names_to = "variable",
-                   values_to = "mean")
+                   values_to = "value") %>% 
+      group_by(wave, variable) %>% 
+      summarise(
+        mean = weighted.mean(value, w = pw, na.rm = TRUE),
+        nobs = sum(!is.na(value)),
+        .groups = "drop"
+      )
     
   }
   
@@ -83,15 +85,6 @@ labels <- var_label(hh_level_w5) %>%
     names_to = "variable", 
     values_to = "label"
     ) 
-  
-
-regions_hh_level <- bind_rows(
-  mean_tbl(hh_level_w4),
-  mean_tbl(hh_level_w5)
-  ) %>% 
-  mutate(wave = paste("wave", wave) %>% 
-           fct_relevel("wave 5", "wave 4")) %>% 
-  left_join(labels, by = "variable")
 
 national_hh_level <- bind_rows(
   mean_tbl(hh_level_w4, by_region = FALSE) %>% 
@@ -100,8 +93,33 @@ national_hh_level <- bind_rows(
     mutate(wave = "wave 5")
 ) %>% 
   mutate(wave = fct_relevel(wave, "wave 5", "wave 4")) %>% 
-  left_join(labels, by = "variable")
+  left_join(labels, by = "variable") %>% 
+  select(wave, variable, label, mean, nobs)  
 
+regions_hh_level <- bind_rows(
+  mean_tbl(hh_level_w4),
+  mean_tbl(hh_level_w5)
+  ) %>% 
+  mutate(wave = paste("wave", wave) %>% 
+           fct_relevel("wave 5", "wave 4")) %>% 
+  left_join(labels, by = "variable") %>% 
+  select(wave, region, variable, label, mean, nobs)
+
+# save as csv
+write_csv(national_hh_level, "LSMS_W5/3_report_data/national_hh_level.csv")
+write_csv(regions_hh_level, "LSMS_W5/3_report_data/regions_hh_level.csv")
+
+
+national_hh_level %>% 
+  ggplot(aes(mean, label, fill = wave)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = round(mean, 2)),
+            position = position_dodge(width = 1),
+            size = 1.5) +
+  labs(x = "Percent of households", 
+       y = "", 
+       fill = "Wave",
+       title = "Percent of Rural Households Adopting Innovations - Waves 4 and 5")
 
 regions_hh_level %>% 
   filter(region != "Tigray") %>% 
@@ -109,11 +127,9 @@ regions_hh_level %>%
   geom_col(position = "dodge") +
   facet_wrap(~ region, scales = "free_y")
 
+
 national_hh_level %>% 
-  ggplot(aes(mean, label, fill = wave)) +
-  geom_col(position = "dodge")
-
-
+  filter(wave == "wave 5")
 
 # Add no. of obs
 
