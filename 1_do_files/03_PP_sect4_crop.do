@@ -298,6 +298,7 @@ collapse (max) cr1 cr2 cr6 hhd_ofsp ead_ofsp hhd_awassa83 ead_awassa83 hhd_desi 
 			   ead_avocado hhd_mango ead_mango ead_papaya hhd_papaya hhd_sweetpotato /// 
 			   ead_sweetpotato  ead_fieldp hhd_fieldp sh_plothh_ofsp sh_plotea_ofsp ///
 			   sh_hhea_ofsp sh_plothh_awassa83 sh_plotea_awassa83 sh_hhea_awassa83 ///
+			   sh_hhea_desi sh_plothh_desi sh_plotea_desi sh_hhea_kabuli sh_plothh_kabuli sh_plotea_kabuli ///
 			   sh_plothh_avocado sh_plotea_avocado sh_hhea_avocado sh_plothh_mango ///
 			   sh_plotea_mango sh_hhea_mango sh_plothh_papaya sh_plotea_papaya ///
 			   sh_hhea_papaya sh_plothh_sweetpotato sh_plotea_sweetpotato ///
