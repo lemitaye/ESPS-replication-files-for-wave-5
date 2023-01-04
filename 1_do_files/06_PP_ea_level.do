@@ -3,7 +3,7 @@
 * EA - LEVEL ANALYSIS *
 ********************************************************************************
 
-use "${data}\wave5_hh_new", replace
+use "${data}\wave5_hh_new", clear
 
 // livIA elepgrass gaya sasbaniya alfa indprod cross grass [livestock vars.]
 foreach i in  treadle motorpump rotlegume cresidue1 cresidue2 mintillage ///
@@ -22,9 +22,11 @@ foreach i in  treadle motorpump rotlegume cresidue1 cresidue2 mintillage ///
 generate ead_feed=0
 replace ead_feed=1 if nbhhd_elepgrass>0 | nbhhd_gaya>0 | nbhhd_sasbaniya>0 | nbhhd_alfa>0 | nbhhd_indprod>0
 */
-
+ 
 rename sh_hhea_ofsp        sh_ea_ofsp
 rename sh_hhea_awassa83    sh_ea_awassa83
+rename sh_hhea_desi        sh_ea_desi
+rename sh_hhea_kabuli      sh_ea_kabuli
 rename sh_hhea_avocado     sh_ea_avocado
 rename sh_hhea_mango       sh_ea_mango
 rename sh_hhea_papaya      sh_ea_papaya
@@ -69,7 +71,8 @@ The following (livestock variables) removed from the loop below:
 livIA elepgrass gaya sasbaniya alfa indprod cross 
 */
 foreach i in treadle motorpump rotlegume cresidue1 cresidue2 mintillage zerotill ///
-        consag1 consag2 swc terr wcatch affor ploc rdisp ofsp awassa83 avocado mango fieldp papaya ///
+        consag1 consag2 swc terr wcatch affor ploc rdisp ofsp awassa83 desi kabuli ///
+		avocado mango fieldp papaya ///
         sweetpotato impcr1 impcr2 impcr3 impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 ///
         impcr10 impcr11 impcr12 impcr13 impcr14 impcr15 impcr18 impcr19 impcr23 ///
         impcr24 impcr25 impcr26 impcr27 impcr42 impcr49 impcr60 impcr62 impcr71 ///
@@ -80,7 +83,7 @@ foreach i in treadle motorpump rotlegume cresidue1 cresidue2 mintillage zerotill
 
 }
 
-foreach i in ofsp awassa83  {
+foreach i in ofsp awassa83 desi kabuli {
     replace sh_plotea_`i'=. if ead_`i'==0
 }
 
@@ -107,13 +110,20 @@ foreach i of varlist *impccr* {
     lab var `i' "Improved (SR) cash crop" 
 }
 
-
 foreach i in ead_ofsp sh_plotea_ofsp sh_ea_ofsp {
     lab var `i' "Sweet potato OFSP variety"
 }
 
 foreach i in  ead_awassa83  sh_plotea_awassa83 sh_ea_awassa83 {
     lab var `i' "Sweet potato Awassa83 variety"
+}
+
+foreach i in  ead_desi  sh_plotea_desi sh_ea_desi {
+    lab var `i' "Chickpea Desi variety"
+}
+
+foreach i in  ead_kabuli  sh_plotea_kabuli sh_ea_kabuli {
+    lab var `i' "Chickpea Kabuli variety"
 }
 
 foreach i in ead_avocado sh_plotea_avocado sh_ea_avocado {
