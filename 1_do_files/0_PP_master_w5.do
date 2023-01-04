@@ -1,10 +1,8 @@
 
 /*
-
 Created on: November 24, 2022
 Author: Lemi Taye Daba (tayelemi@gmail.com)
 Purpose: Preliminary analysis of the LSMS-ESS5 data
-
 */
 
 clear all
