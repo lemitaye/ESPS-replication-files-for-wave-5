@@ -33,6 +33,10 @@ lab var sp_awassa83 "SP- Awassa83"
 // s4q26: What does the sweet potato skin looks like? (visual aid)
 * s4q25 and s4q26 need to be checked if the pictures are the same as in ESS4
 
+generate cpea_desi=(s4q14b==1)  // Chickpea Desi
+generate cpea_kabuli=(s4q14b==2) // Chickpea Kabuli
+// s4q14b: What does the chickpea flowers on [FIELD] looks like?
+
 generate avocado = (s4q01b  ==  84)
 generate mango = (s4q01b  ==  46)
 generate papaya = (s4q01b  ==  48)
@@ -99,7 +103,7 @@ replace  impccr = 0 if  cr76 == 1
 replace  impccr = 1 if (cr76 == 1 & improv == 1)
 
 
-foreach i in sp_ofsp sp_awassa83 avocado mango papaya sweetpotato fieldp /// 
+foreach i in sp_ofsp sp_awassa83 cpea_desi cpea_kabuli avocado mango papaya sweetpotato fieldp /// 
 			 impcr1 impcr2 impcr3 impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 /// 
              impcr10 impcr11 impcr12 impcr13 impcr14 impcr15 impcr18 impcr19 ///
              impcr23 impcr24 impcr25 impcr26 impcr27 impcr42 impcr49 impcr60 ///
@@ -132,6 +136,16 @@ foreach i in ofsp awassa83 {
 
 }
 
+foreach i in desi kabuli {
+
+	egen hhd_`i'=max(cpea_`i')         if cpea_desimax!=. , by(household_id)  
+	egen ead_`i'=max(cpea_`i')         if cpea_desimax!=.,  by(ea_id)          
+	egen `i'_sumhh=sum(cpea_`i')       if cpea_desimax!=. , by(household_id)  
+	egen `i'_sumea=sum(cpea_`i')       if cpea_desimax!=. , by(ea_id)          
+	egen `i'_sumhhea=sum(hhd_`i')      if cpea_desimax!=. , by(ea_id)  
+			
+}
+
 
 egen ea_plot1=count(field_id)   if sp_ofspmax!=., by(ea_id)          //Tot no of plot per EA
        
@@ -151,6 +165,14 @@ foreach i in ofsp awassa83 {
     g sh_plothh_`i'=(`i'_sumhh/hh_plot1)*100 if `i'_sumhh!=.   & hhd_`i'==1 // Share of plots per HH
     g sh_plotea_`i'=(`i'_sumea/ea_plot1)*100 if `i'_sumea!=.   & hhd_`i'==1 // Share of plots per EA
     g sh_hhea_`i'  =(`i'_sumhhea/hh_ea1)*100 if `i'_sumhhea!=. & hhd_`i'==1 // Share of HH per EA
+
+}
+
+foreach i in desi kabuli {
+
+	g sh_plothh_`i'=(`i'_sumhh/hh_plot2)*100 if `i'_sumhh!=.       & hhd_`i'==1
+	g sh_plotea_`i'=(`i'_sumea/ea_plot2)*100 if `i'_sumea!=.       & hhd_`i'==1
+	g sh_hhea_`i'  =(`i'_sumhhea/hh_ea2)*100 if `i'_sumhhea!=.     & hhd_`i'==1
 
 }
 
@@ -240,11 +262,11 @@ foreach x in 1 3 4 7 0  {
 	
 *Plot level - Crop variety
 preserve 
-	keep saq01 sp_ofsp sp_awassa83 avocado mango papaya sweetpotato fieldp improv /// 
+	keep saq01 sp_ofsp sp_awassa83 cpea_desi cpea_kabuli avocado mango papaya sweetpotato fieldp improv /// 
 		cdam1 cdam2 cdam3 cdam4 cdam5 cdamoth hsell  parcel_id field_id crop_id ///
 		holder_id household_id ea_id impcr2 impcr1 pw_w5
 		
-	collapse (max) saq01 sp_ofsp sp_awassa83 improv avocado mango papaya sweetpotato ///
+	collapse (max) saq01 sp_ofsp sp_awassa83 cpea_desi cpea_kabuli improv avocado mango papaya sweetpotato ///
 				fieldp  cdam1 cdam2 cdam3 cdam4 cdam5 cdamoth hsell impcr2 impcr1 ///
 			(firstnm) pw_w5, by(parcel_id field_id holder_id household_id ea_id)
 
@@ -258,6 +280,8 @@ preserve
 	lab var hsell       "Farmer intends to sell parts of the harvest"
 	lab var sp_ofsp     "Orange Fleshed sweet potato"
 	lab var sp_awassa83 "Awassa83 sweet potato"
+	lab var cpea_desi   "Desi chickpea"
+	lab var cpea_kabuli "Kabuli chickpea"
 	lab var avocado     "Avocado tree"
 	lab var mango       "Mango tree"
 	lab var papaya      "Papaya tree"
@@ -269,7 +293,8 @@ restore
 
 
 
-collapse (max) cr1 cr2 cr6 hhd_ofsp ead_ofsp hhd_awassa83 ead_awassa83 hhd_avocado ///
+collapse (max) cr1 cr2 cr6 hhd_ofsp ead_ofsp hhd_awassa83 ead_awassa83 hhd_desi /// 
+			   ead_desi hhd_kabuli ead_kabuli hhd_avocado ///
 			   ead_avocado hhd_mango ead_mango ead_papaya hhd_papaya hhd_sweetpotato /// 
 			   ead_sweetpotato  ead_fieldp hhd_fieldp sh_plothh_ofsp sh_plotea_ofsp ///
 			   sh_hhea_ofsp sh_plothh_awassa83 sh_plotea_awassa83 sh_hhea_awassa83 ///
@@ -284,9 +309,11 @@ foreach i in impcr1 impcr2 impcr3 impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 ///
 			 impcr10 impcr11 impcr12 impcr13 impcr14 impcr15 impcr18 impcr19 impcr23 impcr24 ///
 	         impcr25 impcr26 impcr27 impcr42 impcr49 impcr60 impcr62 impcr71 impcr72  ///
 	         impveg impftr improot impccr  {
-replace sh_plothh_`i'=. if hhd_`i'==0
-replace sh_plotea_`i'=. if ead_`i'==0
-replace sh_hhea_`i'=. if ead_`i'==0
+
+	replace sh_plothh_`i'=. if hhd_`i'==0
+	replace sh_plotea_`i'=. if ead_`i'==0
+	replace sh_hhea_`i'=. if ead_`i'==0
+
 }
 
 
@@ -312,6 +339,14 @@ lab var `i' "Sweet potato OFSP variety"
 
 foreach i in hhd_awassa83 ead_awassa83 sh_plothh_awassa83 sh_plotea_awassa83 sh_hhea_awassa83 {
 lab var `i' "Sweet potato Awassa83 variety"
+}
+
+foreach i in hhd_desi ead_desi {
+lab var `i' "Chickpea Desi variety"
+}
+
+foreach i in hhd_kabuli ead_kabuli {
+lab var `i' "Chickpea Kabuli variety"
 }
 
 foreach i in hhd_avocado ead_avocado sh_plothh_avocado sh_plotea_avocado sh_hhea_avocado {
