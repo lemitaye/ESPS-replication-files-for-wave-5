@@ -342,11 +342,11 @@ foreach i in hhd_awassa83 ead_awassa83 sh_plothh_awassa83 sh_plotea_awassa83 sh_
 lab var `i' "Sweet potato Awassa83 variety"
 }
 
-foreach i in hhd_desi ead_desi {
+foreach i in hhd_desi ead_desi sh_plothh_desi sh_plotea_desi sh_hhea_desi {
 lab var `i' "Chickpea Desi variety"
 }
 
-foreach i in hhd_kabuli ead_kabuli {
+foreach i in hhd_kabuli ead_kabuli sh_plothh_kabuli sh_plotea_kabuli sh_hhea_kabuli {
 lab var `i' "Chickpea Kabuli variety"
 }
 
