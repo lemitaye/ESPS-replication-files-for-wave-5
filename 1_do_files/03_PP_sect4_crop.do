@@ -102,12 +102,21 @@ generate impccr = .
 replace  impccr = 0 if  cr76 == 1
 replace  impccr = 1 if (cr76 == 1 & improv == 1)
 
+* Durum wheat and Malt Barley (added in ESPS5)
+generate durum=.
+replace durum=1 if s4q14c==1
+replace durum=0 if s4q14c==2 | s4q14c==3
+
+generate malt=.
+replace malt=1 if s4q14d==1
+replace malt=0 if s4q14d==2 | s4q14d==3
+
 
 foreach i in sp_ofsp sp_awassa83 cpea_desi cpea_kabuli avocado mango papaya sweetpotato fieldp /// 
 			 impcr1 impcr2 impcr3 impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 /// 
              impcr10 impcr11 impcr12 impcr13 impcr14 impcr15 impcr18 impcr19 ///
              impcr23 impcr24 impcr25 impcr26 impcr27 impcr42 impcr49 impcr60 ///
-             impcr62 impcr71 impcr72  impveg impftr improot impccr {
+             impcr62 impcr71 impcr72  impveg impftr improot impccr durum malt {
 
     egen `i'max = max(`i'), by(household_id)  // dummy for at least 1 in hh
 
@@ -116,7 +125,7 @@ foreach i in sp_ofsp sp_awassa83 cpea_desi cpea_kabuli avocado mango papaya swee
 foreach i in avocado mango papaya sweetpotato fieldp impcr1 impcr2 impcr3 impcr4 impcr5 ///
 		     impcr6 impcr7 impcr8 impcr9 impcr10 impcr11 impcr12 impcr13 impcr14 impcr15 impcr18 ///
              impcr19 impcr23 impcr24 impcr25 impcr26 impcr27 impcr42 impcr49 impcr60 impcr62 impcr71 ///
-             impcr72  impveg impftr improot impccr {
+             impcr72  impveg impftr improot impccr durum malt {
 
     egen hhd_`i'=max(`i')         if `i'max!=., by(household_id)    // HH dummy  (at least 1 in hh)
     egen ead_`i'=max(`i')         if `i'max!=., by(ea_id)           // Ea dummy  (at least 1 in EA)
@@ -180,7 +189,7 @@ foreach i in avocado mango papaya sweetpotato fieldp impcr1 impcr2 impcr3 ///
              impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 impcr10 impcr11 ///
              impcr12 impcr13 impcr14 impcr15 impcr18 impcr19 impcr23 impcr24 /// 
              impcr25 impcr26 impcr27 impcr42 impcr49 impcr60 impcr62 impcr71 ///
-             impcr72  impveg impftr improot impccr {
+             impcr72  impveg impftr improot impccr durum malt {
 
     g sh_plothh_`i'=(`i'_sumhh/hh_plot2)*100 if `i'_sumhh!=.   & hhd_`i'==1 // Share of plots per HH
     g sh_plotea_`i'=(`i'_sumea/ea_plot2)*100 if `i'_sumea!=.   & hhd_`i'==1 // Share of plots per EA
@@ -264,10 +273,10 @@ foreach x in 1 3 4 7 0  {
 preserve 
 	keep saq01 sp_ofsp sp_awassa83 cpea_desi cpea_kabuli avocado mango papaya sweetpotato fieldp improv /// 
 		cdam1 cdam2 cdam3 cdam4 cdam5 cdamoth hsell  parcel_id field_id crop_id ///
-		holder_id household_id ea_id impcr2 impcr1 pw_w5
+		holder_id household_id ea_id impcr2 impcr1 durum malt pw_w5
 		
 	collapse (max) saq01 sp_ofsp sp_awassa83 cpea_desi cpea_kabuli improv avocado mango papaya sweetpotato ///
-				fieldp  cdam1 cdam2 cdam3 cdam4 cdam5 cdamoth hsell impcr2 impcr1 ///
+				fieldp  cdam1 cdam2 cdam3 cdam4 cdam5 cdamoth hsell impcr2 impcr1 durum malt ///
 			(firstnm) pw_w5, by(parcel_id field_id holder_id household_id ea_id)
 
 	lab var improv      "Improved crop used"
@@ -287,6 +296,8 @@ preserve
 	lab var papaya      "Papaya tree"
 	lab var sweetpotato "Sweetpotato SR"
 	lab var fieldp		"Field peas"
+	lab var durum		"Durum wheat variety"
+	lab var malt		"Malt barley variety"
 
 	save "${data}\ess5_pp_cropvar_plot_new", replace
 restore
@@ -296,20 +307,22 @@ restore
 collapse (max) cr1 cr2 cr6 hhd_ofsp ead_ofsp hhd_awassa83 ead_awassa83 hhd_desi /// 
 			   ead_desi hhd_kabuli ead_kabuli hhd_avocado ///
 			   ead_avocado hhd_mango ead_mango ead_papaya hhd_papaya hhd_sweetpotato /// 
-			   ead_sweetpotato  ead_fieldp hhd_fieldp sh_plothh_ofsp sh_plotea_ofsp ///
-			   sh_hhea_ofsp sh_plothh_awassa83 sh_plotea_awassa83 sh_hhea_awassa83 ///
-			   sh_hhea_desi sh_plothh_desi sh_plotea_desi sh_hhea_kabuli sh_plothh_kabuli sh_plotea_kabuli ///
+			   ead_sweetpotato  ead_fieldp hhd_malt ead_malt hhd_durum ead_durum /// 
+			   hhd_fieldp sh_plothh_ofsp sh_plotea_ofsp sh_hhea_ofsp sh_plothh_awassa83 ///
+			   sh_plotea_awassa83 sh_hhea_awassa83 sh_hhea_desi sh_plothh_desi ///
+			   sh_plotea_desi sh_hhea_kabuli sh_plothh_kabuli sh_plotea_kabuli ///
 			   sh_plothh_avocado sh_plotea_avocado sh_hhea_avocado sh_plothh_mango ///
 			   sh_plotea_mango sh_hhea_mango sh_plothh_papaya sh_plotea_papaya ///
 			   sh_hhea_papaya sh_plothh_sweetpotato sh_plotea_sweetpotato ///
-			   sh_hhea_sweetpotato sh_plothh_fieldp sh_plotea_fieldp ///
-			   sh_hhea_fieldp *impcr*  *impveg *impftr *improot *impccr ///
+			   sh_hhea_sweetpotato sh_plothh_fieldp sh_plotea_fieldp sh_hhea_fieldp ///
+			   sh_hhea_durum sh_plothh_durum sh_plotea_durum sh_hhea_malt sh_plothh_malt ///
+			   sh_plotea_malt *impcr* *impveg *impftr *improot *impccr ///
 		 (firstnm) saq01 saq14 ea_id, by(household_id)
 
 foreach i in impcr1 impcr2 impcr3 impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 ///
 			 impcr10 impcr11 impcr12 impcr13 impcr14 impcr15 impcr18 impcr19 impcr23 impcr24 ///
 	         impcr25 impcr26 impcr27 impcr42 impcr49 impcr60 impcr62 impcr71 impcr72  ///
-	         impveg impftr improot impccr  {
+	         impveg impftr improot impccr {
 
 	replace sh_plothh_`i'=. if hhd_`i'==0
 	replace sh_plotea_`i'=. if ead_`i'==0
@@ -367,6 +380,14 @@ lab var `i' "Sweetpotato"
 foreach i in hhd_fieldp ead_fieldp sh_plothh_fieldp sh_plotea_fieldp sh_hhea_fieldp {
 lab var `i' "Field peas"
 }
+
+foreach i in hhd_durum ead_durum sh_hhea_durum sh_plothh_durum sh_plotea_durum {
+	lab var `i' "Durum wheat variety"
+}
+foreach i in hhd_malt ead_malt sh_hhea_malt sh_plothh_malt sh_plotea_malt {
+	lab var `i' "Malt barley variety"
+}
+
 foreach i of varlist *impcr1{
 	lab var `i' "Improved   BARLEY-SR"
 	}
