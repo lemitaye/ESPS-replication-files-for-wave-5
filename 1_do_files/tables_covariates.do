@@ -25,7 +25,7 @@ preserve
 restore
 
 merge 1:1 household_id using `cover_pp_w4'
-keep if _merge==3
+keep if _merge==3  // retain only panel households (count=1823)
 drop region_w4 location_w4 ea_id_w4
 
 #delimit;
