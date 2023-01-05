@@ -9,7 +9,24 @@
 
 use "${data}\ess5_pp_cov_new", clear
 
-merge 1:1 holder_id household_id using "${rawdata}\PP\sect_cover_pp_w5", force
+*merge 1:1 holder_id household_id using "${rawdata}\PP\sect_cover_pp_w5", force
+*drop _merge
+
+preserve
+    use "${rawdata}\sect_cover_pp_w4", clear
+
+    collapse (firstnm) ea_id saq14 pw_w4 saq01, by(household_id)
+    rename saq01 region_w4
+    rename saq14 location_w4
+    rename ea_id ea_id_w4
+
+    tempfile cover_pp_w4
+    save `cover_pp_w4'
+restore
+
+merge 1:1 household_id using `cover_pp_w4'
+keep if _merge==3
+drop region_w4 location_w4 ea_id_w4
 
 #delimit;
 global hhlevel   parcesizeHA fem_head fowner flivman hhd_flab  age_head nom_totcons_aeq consq1 consq2 asset_index pssetindex income_offfarm
