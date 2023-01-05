@@ -10,14 +10,15 @@ setwd("C:/Users/tayel/Dropbox/Documents/SPIA/Ethiopia")
 wave4_hh_new <- read_dta("replication_files/3_report_data/wave4_hh_new.dta")
 wave5_hh_new <- read_dta("LSMS_W5/3_report_data/wave5_hh_new.dta")
 
-glimpse(wave4_hh_new) 
+wave4_hh_new <- wave4_hh_new %>% 
+  mutate(hhd_kabuli = NA)
 
 select_hh_level <- function(tbl, pw) {
   
   tbl %>% 
     mutate_if(is.labelled, as.character, levels = "labels") %>% 
     select(
-      household_id, region, {{pw}}, wave, hhd_ofsp, hhd_awassa83, hhd_rdisp, 
+      household_id, region, {{pw}}, wave, hhd_ofsp, hhd_awassa83, hhd_kabuli, hhd_rdisp, 
       hhd_motorpump, hhd_swc, hhd_consag1, hhd_consag2, hhd_affor, hhd_mango, 
       hhd_papaya, hhd_avocado, hhd_impcr13, hhd_impcr19, hhd_impcr11, 
       hhd_impcr24, hhd_impcr14, hhd_impcr3, hhd_impcr5, hhd_impcr60, hhd_impcr62
@@ -131,14 +132,57 @@ regions_hh_level %>%
 national_hh_level %>% 
   filter(wave == "wave 5")
 
-# Add no. of obs
-
 # Next: EA level (replicate first in stata)
 
 
+hh_level_panel <- inner_join(
+  x = select_hh_level(wave4_hh_new, pw_w4) %>% 
+    select(-wave, -pw_w4, -region),
+  y = select_hh_level(wave5_hh_new, pw_w5) %>% 
+    select(-wave), 
+  by = "household_id",
+  suffix = c(".w4", ".w5")
+) %>% 
+  select(household_id, region, pw = pw_w5, everything()) %>% 
+  pivot_longer(hhd_ofsp.w4:hhd_impcr62.w5, 
+               names_to = "variable",
+               values_to = "value") %>% 
+  separate(variable, into = c("variable", "wave"), sep = "\\.") %>% 
+  mutate(wave = recode(wave, "w4" = "wave 4", "w5" = "wave 5")) %>% 
+  left_join(labels, by = "variable")  
 
+regions_hh_panel <- hh_level_panel %>% 
+  group_by(wave, region, label) %>% 
+  summarise(
+    mean = weighted.mean(value, w = pw, na.rm = TRUE),
+    nobs = sum(!is.na(value)),
+    .groups = "drop"
+  )
 
+national_hh_panel <- hh_level_panel %>% 
+  group_by(wave, label) %>% 
+  summarise(
+    mean = weighted.mean(value, w = pw, na.rm = TRUE),
+    nobs = sum(!is.na(value)),
+    .groups = "drop"
+  )
 
+national_hh_panel %>% 
+  mutate(wave = fct_relevel(wave, "wave 5", "wave 4")) %>%
+  ggplot(aes(mean, label, fill = wave)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = paste0( round(mean, 2), "%", " (", nobs, ")" ) ),
+            position = position_dodge(width = 1),
+            hjust = -.15, size = 2.1) +
+  expand_limits(x = 80) +
+  theme(legend.position = "top") +
+  labs(x = "Percent of households", 
+       y = "", 
+       fill = "",
+       title = "Percent of Rural Households Adopting 
+       Innovations - National",
+       caption = "Percent are weighted sample means using the latest (wave 5) weights.
+       Number of households responding in parenthesis")
 
 
 
