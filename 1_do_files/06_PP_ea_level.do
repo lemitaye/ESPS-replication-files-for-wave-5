@@ -32,6 +32,8 @@ rename sh_hhea_mango       sh_ea_mango
 rename sh_hhea_papaya      sh_ea_papaya
 rename sh_hhea_sweetpotato sh_ea_sweetpotato
 rename sh_hhea_fieldp      sh_ea_fieldp
+rename sh_hhea_malt        sh_ea_malt
+rename sh_hhea_durum       sh_ea_durum
 
 
 foreach i in impcr1 impcr2 impcr3 impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 /// 
@@ -72,7 +74,7 @@ livIA elepgrass gaya sasbaniya alfa indprod cross
 */
 foreach i in treadle motorpump rotlegume cresidue1 cresidue2 mintillage zerotill ///
         consag1 consag2 swc terr wcatch affor ploc rdisp ofsp awassa83 desi kabuli ///
-		avocado mango fieldp papaya ///
+		avocado mango fieldp papaya malt durum ///
         sweetpotato impcr1 impcr2 impcr3 impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 ///
         impcr10 impcr11 impcr12 impcr13 impcr14 impcr15 impcr18 impcr19 impcr23 ///
         impcr24 impcr25 impcr26 impcr27 impcr42 impcr49 impcr60 impcr62 impcr71 ///
@@ -141,6 +143,13 @@ foreach i in ead_fieldp sh_plotea_fieldp sh_ea_fieldp {
 foreach i in ead_mango sh_plotea_mango sh_ea_mango {
     lab var `i' "Mango tree"
 }
+foreach i in ead_durum sh_plotea_durum sh_ea_durum {
+    lab var `i' "Durum wheat variety"
+}
+foreach i in ead_malt sh_plotea_malt sh_ea_malt {
+    lab var `i' "Malt barley variety"
+}
+
 foreach i of varlist *impcr1{
 	lab var `i' "Improved   BARLEY-SR"
 	}

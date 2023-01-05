@@ -11,7 +11,7 @@ hhd_livIA hhd_cross_largerum hhd_cross_smallrum hhd_cross_poultry hhd_grass
 global hhlevel     
 hhd_ofsp hhd_awassa83 hhd_kabuli hhd_rdisp hhd_motorpump hhd_swc hhd_consag1 hhd_consag2 
 hhd_affor hhd_mango hhd_papaya hhd_avocado hhd_impcr13 hhd_impcr19 hhd_impcr11 
-hhd_impcr24 hhd_impcr14 hhd_impcr3 hhd_impcr5 hhd_impcr60 hhd_impcr62
+hhd_impcr24 hhd_impcr14 hhd_impcr3 hhd_impcr5 hhd_impcr60 hhd_impcr62 hhd_malt hhd_durum
 ;
 #delimit cr
 
@@ -260,7 +260,7 @@ ead_livIA  ead_cross_largerum ead_cross_smallrum ead_cross_poultry ead_grass
 #delimit ;
 global ealevel
 ead_ofsp ead_awassa83 ead_kabuli ead_rdisp ead_motorpump ead_swc  ead_consag1 ead_consag2 
-ead_affor ead_mango ead_papaya ead_avocado commirr ead_impcr13 ead_impcr19 
+ead_affor ead_mango ead_papaya ead_avocado ead_malt ead_durum commirr ead_impcr13 ead_impcr19 
 ead_impcr11 ead_impcr24 ead_impcr14 ead_impcr3 ead_impcr5 ead_impcr60 ead_impcr62;
 #delimit cr
 	
