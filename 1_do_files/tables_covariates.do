@@ -19,11 +19,11 @@ global hhlevel   parcesizeHA fem_head fowner flivman hhd_flab  age_head nom_totc
 
 * TABLES * Table 13 -Household level variables
 matrix drop _all
-foreach x in 1 3 4 7 0 {
+foreach x in 3 4 7 0 {
 foreach var in $hhlevel {
 
  
-cap:mean `var' [pw=pw_w4] if region==`x' & wave==4
+cap:mean `var' [pw=pw_w5] if region==`x' & wave==5
 if _rc==2000 {
 matrix  `var'meanr`x'=0
 matrix define `var'V`x'= 0
@@ -43,12 +43,12 @@ matrix list `var'VV`x'
 scalar `var'se`x'=sqrt(`var'VV`x'[1,1])
 }
 
-sum    `var'  if region==`x' & wave==4
+sum    `var'  if region==`x' & wave==5
 scalar `var'minr`x'=r(min)
 scalar `var'maxr`x'=r(max)
 scalar `var'n`x'=r(N)
 
-qui sum region if region==`x' & wave==4
+qui sum region if region==`x' & wave==5
 local obsr`x'=r(N)
 
 
@@ -61,7 +61,7 @@ matrix list mat`var'`x'
 matrix A1`x' = nullmat(A1`x')\ mat`var'`x'
 
 
-mat A2`x'=(`obsr`x'', . , ., .,.)
+mat A2`x'=(., . , ., .,`obsr`x'')
 mat B`x'=A1`x'\A2`x'
 
 matrix colnames B`x' = "Mean" "SE" "Min" "Max" "N"
@@ -79,7 +79,7 @@ local rname `"  `rname'   "`lbl'" " " "'
 foreach var in $hhlevel {
 
  
-cap:mean `var' [pw=pw_w4] if wave==4
+cap:mean `var' [pw=pw_w5] if wave==5
 if _rc==2000 {
 	matrix  `var'meanrN=0
 	matrix define `var'VN= 0
@@ -97,12 +97,12 @@ matrix list `var'VVN
 scalar `var'seN=sqrt(`var'VVN[1,1])
 }
 
-sum    `var'  if  wave==4
+sum    `var'  if  wave==5
 scalar `var'minrN=r(min)
 scalar `var'maxrN=r(max)
 scalar `var'nN=r(N)
 
-qui sum region if  wave==4
+qui sum region if  wave==5
 local obsrN=r(N)
 
 
@@ -115,7 +115,7 @@ matrix list mat`var'N
 matrix A1N = nullmat(A1N)\ mat`var'N
 
 
-mat A2N=(`obsrN', . , ., .,.)
+mat A2N=(., . , ., .,`obsrN')
 mat BN=A1N\A2N
 
 matrix colnames BN = "Mean" "SE" "Min" "Max" "N"
@@ -126,12 +126,16 @@ foreach var in $hhlevel {
 local lbl : variable label `var'
 local rname `"  `rname'   "`lbl'" "'		
 }	
-mat C= B1, B3, B4, B7, B0, BN											
+mat C= B3, B4, B7, B0, BN											
 
 #delimit;
 xml_tab C,  save("$table\Table13_ess5.xml") replace sheet("HH level", nogridlines)  ///
-rnames(`rname' "Total No. of obs. per region") cnames(`cnames') ceq("Tigray" "Tigray" "Tigray" "Tigray" "Tigray" "Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia" "Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Other regions" "Other regions" "Other regions" "Other regions" "Other regions" "National" "National" "National" "National" "National" ) showeq 
-title(Table 1: ESS4 - Household characteristics )  font("Times New Roman" 10) 
+rnames(`rname' "Total No. of obs. per region") cnames(`cnames') 
+ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia" 
+"Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Other regions" "Other regions" 
+"Other regions" "Other regions" "Other regions" "National" "National" "National" 
+"National" "National" ) showeq 
+title(Table 1: ESS5 - Household characteristics )  font("Times New Roman" 10) 
 cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
 6 55, 7 55, 8 30, 9 30, 10 40,
 11 55, 12 55, 13 30, 14 30, 15 40,
