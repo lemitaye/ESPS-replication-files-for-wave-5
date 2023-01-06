@@ -20,7 +20,7 @@ foreach i in  treadle motorpump rotlegume cresidue1 cresidue2 mintillage ///
 
 generate ead_hotline=.
 replace ead_hotline=0 if hotline==0
-replace ead_hotline=1 if hotline==1
+replace ead_hotline=1 if hotline==100
 
 egen nbhhd_hotline=sum(hotline), by(ea_id)
 generate sh_ea_hotline=(nbhhd_hotline/hh_ea) if nbhhd_hotline!=.

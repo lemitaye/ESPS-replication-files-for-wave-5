@@ -97,7 +97,7 @@ preserve
 
     tab s7q03b  // s7q03b: Have you ever called the '8028', or agricultural hotline?
     generate hotline=.
-    replace hotline=1 if s7q03b==1
+    replace hotline=100 if s7q03b==1
     replace hotline=0 if s7q03b==2 | s7q03b==3
 
     collapse (max) hotline, by(household_id)
