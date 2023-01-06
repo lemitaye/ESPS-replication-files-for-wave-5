@@ -146,13 +146,13 @@ local rname `"  `rname'   "`lbl'" "'
 mat C= B3, B4, B7, B0, BN											
 
 #delimit;
-xml_tab C,  save("$table\Table13_ess5.xml") replace sheet("HH level", nogridlines)  ///
+xml_tab C,  save("$table\Table13_ess4_panel.xml") replace sheet("HH level", nogridlines)  ///
 rnames(`rname' "Total No. of obs. per region") cnames(`cnames') 
 ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia" 
 "Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Other regions" "Other regions" 
 "Other regions" "Other regions" "Other regions" "National" "National" "National" 
 "National" "National" ) showeq 
-title(Table 1: ESS5 - Household characteristics )  font("Times New Roman" 10) 
+title(Table 1: ESS4 - Household characteristics (only panel households) )  font("Times New Roman" 10) 
 cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
 6 55, 7 55, 8 30, 9 30, 10 40,
 11 55, 12 55, 13 30, 14 30, 15 40,
