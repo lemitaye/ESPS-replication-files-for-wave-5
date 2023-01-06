@@ -14,15 +14,13 @@ setwd("C:/Users/tayel/Dropbox/Documents/SPIA/Ethiopia")
 wave4_hh_new <- read_dta("replication_files/3_report_data/wave4_hh_new.dta")
 wave5_hh_new <- read_dta("LSMS_W5/3_report_data/wave5_hh_new.dta")
 
-wave4_hh_new <- wave4_hh_new %>% 
-  mutate(hhd_kabuli = NA, hhd_malt = NA, hhd_durum = NA, hhd_seed_source = NA)
 
 select_hh_level <- function(tbl, pw) {
   
   tbl %>% 
     mutate_if(is.labelled, as.character, levels = "labels") %>% 
     select(
-      household_id, region, {{pw}}, wave, hhd_ofsp, hhd_awassa83, hhd_kabuli, hhd_rdisp, 
+      household_id, region, {{pw}}, wave, hhd_ofsp, hhd_awassa83, hhd_rdisp, 
       hhd_motorpump, hhd_swc, hhd_consag1, hhd_consag2, hhd_affor, hhd_mango, 
       hhd_papaya, hhd_avocado, hhd_impcr13, hhd_impcr19, hhd_impcr11, 
       hhd_impcr24, hhd_impcr14, hhd_impcr3, hhd_impcr5, hhd_impcr60, hhd_impcr62
