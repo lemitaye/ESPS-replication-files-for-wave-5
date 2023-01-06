@@ -3,7 +3,8 @@ library(haven)
 library(tidyverse)
 library(thatssorandom)
 library(labelled)
-
+library(janitor)
+library(kableExtra)
 
 setwd("C:/Users/tayel/Dropbox/Documents/SPIA/Ethiopia")
 
@@ -148,7 +149,7 @@ hh_level_panel <- inner_join(
                names_to = "variable",
                values_to = "value") %>% 
   separate(variable, into = c("variable", "wave"), sep = "\\.") %>% 
-  mutate(wave = recode(wave, "w4" = "wave 4", "w5" = "wave 5")) %>% 
+  mutate(wave = recode(wave, "w4" = "Wave 4", "w5" = "Wave 5")) %>% 
   left_join(labels, by = "variable")  
 
 regions_hh_panel <- hh_level_panel %>% 
@@ -157,7 +158,11 @@ regions_hh_panel <- hh_level_panel %>%
     mean = weighted.mean(value, w = pw, na.rm = TRUE),
     nobs = sum(!is.na(value)),
     .groups = "drop"
-  )
+  ) %>% 
+  mutate(improv = case_when(
+    str_detect(label, "Improved") ~ 1,
+    TRUE ~ 0
+  ))
 
 national_hh_panel <- hh_level_panel %>% 
   group_by(wave, label) %>% 
@@ -165,26 +170,87 @@ national_hh_panel <- hh_level_panel %>%
     mean = weighted.mean(value, w = pw, na.rm = TRUE),
     nobs = sum(!is.na(value)),
     .groups = "drop"
-  )
+  ) %>% 
+  mutate(improv = case_when(
+    str_detect(label, "Improved") ~ 1,
+    TRUE ~ 0
+  ))
 
-national_hh_panel %>% 
-  mutate(wave = fct_relevel(wave, "wave 5", "wave 4")) %>%
+nat_panel <- national_hh_panel %>% 
+  mutate(
+    wave = fct_relevel(wave, "Wave 5", "Wave 4"),
+    label = fct_reorder(label, -improv)
+    ) %>%
   ggplot(aes(mean, label, fill = wave)) +
   geom_col(position = "dodge") +
   geom_text(aes(label = paste0( round(mean, 2), "%", " (", nobs, ")" ) ),
             position = position_dodge(width = 1),
             hjust = -.15, size = 2.1) +
+  scale_y_discrete(labels = function(x) str_wrap(x, width = 35)) +
   expand_limits(x = 80) +
   theme(legend.position = "top") +
   labs(x = "Percent of households", 
        y = "", 
        fill = "",
-       title = "Percent of Rural Households Adopting 
-       Innovations - National",
+       title = "Percent of Rural Households Adopting Innovations - National",
+       subtitle = "Only panel households included",
        caption = "Percent are weighted sample means using the latest (wave 5) weights.
        Number of households responding in parenthesis")
 
+ggsave(
+  filename = "LSMS_W5/tmp/figures/nat_panel.pdf",
+  plot = nat_panel,
+  device = cairo_pdf,
+  width = 200,
+  height = 285,
+  units = "mm"
+)
 
+
+plot_compar <- function(tbl, title) {
+  
+  tbl %>% 
+    mutate(
+      wave = fct_relevel(wave, "Wave 5", "Wave 4"),
+      label = fct_reorder(label, -improv)
+    ) %>%
+      ggplot(aes(mean, label, fill = wave)) +
+      geom_col(position = "dodge") +
+      geom_text(aes(label = paste0( round(mean, 2), "%", " (", nobs, ")" ) ),
+                position = position_dodge(width = 1),
+                hjust = -.15, size = 2.1) +
+      scale_y_discrete(labels = function(x) str_wrap(x, width = 35)) +
+      expand_limits(x = 80) +
+      theme(legend.position = "top") +
+      labs(x = "Percent of households", 
+           y = "", 
+           fill = "",
+           title = paste0("Percent of Rural Households Adopting Innovations - ", title),
+           subtitle = "Only panel households included",
+           caption = "Percent are weighted sample means using the latest (wave 5) weights.
+         Number of households responding in parenthesis")
+  
+}
+
+national_hh_panel %>% 
+  plot_compar("National")
+  
+
+regions_hh_panel %>% 
+  filter(region == "Amhara") %>% 
+  plot_compar("Amhara")
+
+regions_hh_panel %>% 
+  filter(region == "Oromia") %>% 
+  plot_compar("Oromia")
+
+regions_hh_panel %>% 
+  filter(region == "SNNP") %>% 
+  plot_compar("SNNP")
+
+regions_hh_panel %>% 
+  filter(region == "Other regions") %>% 
+  plot_compar("Other Regions")
 
 
 
