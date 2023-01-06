@@ -1,0 +1,131 @@
+---
+title: "ESPS Exploratory Analysis - Tracking"
+author: "Lemi Daba"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+```{r}
+# set up:
+library(haven)
+library(tidyverse)
+library(thatssorandom)
+library(labelled)
+library(janitor)
+library(kableExtra)
+
+```
+
+## Tracking
+
+```{r}
+
+# tracking table
+
+track_hh_raw <- read_dta("track_hh_w5.dta") %>% 
+  clean_names() 
+
+track_ea_raw <- read_dta("track_ea_w5.dta") %>% 
+  clean_names()
+
+
+# dealing with region:
+
+summ_region <- function(tbl) {
+  
+  tbl %>% 
+    mutate(region = case_when(!is.na(region_w5) ~ region_w5, 
+                              TRUE ~ region_w4)) %>% 
+    select(-region_w4, -region_w5) %>% 
+    mutate(
+      region = recode(region,
+                      `1` = "Tigray",
+                      `2` = "Afar",
+                      `3` = "Amhara",
+                      `4` = "Oromia",
+                      `5` = "Somali",
+                      `6` = "Benishangul Gumuz",
+                      `7` = "SNNP",
+                      `12` = "Gambela",
+                      `13` = "Harar",
+                      `15` = "Dire Dawa" ),
+      
+      merge = recode(merge, 
+                     `1` = "new_added", 
+                     `2` = "dropped",
+                     `3` = "matched" )
+    ) 
+  
+}
+
+track_hh <- summ_region(track_hh_raw)
+track_ea <- summ_region(track_ea_raw)
+
+form_tab <- function(tbl) {
+  
+  bind_rows(
+    tbl %>% 
+      count(region, merge) %>% 
+      complete(region, merge, fill = list(n = 0)),
+    
+    tbl %>% 
+      count(merge) %>% 
+      mutate(region = "National")
+  ) %>% 
+    pivot_wider(names_from = "merge", values_from = "n") %>% 
+    mutate(
+      region = fct_relevel(
+        factor(region), "Tigray", "Afar", "Amhara", "Oromia", "Somali", "Benishangul Gumuz", "SNNP", "Gambela", "Harar", "Dire Dawa" 
+      ),
+      nobs_ess4 = matched + dropped,
+      nobs_ess5 = matched + new_added
+      ) %>% 
+    arrange(region) %>% 
+    select(region, matched, dropped, new_added, nobs_ess4, nobs_ess5)  
+    
+}
+
+track_hh_tbl <- form_tab(track_hh)
+track_ea_tbl <- form_tab(track_ea)
+
+```
+
+```{r}
+
+kbl(
+  track_hh_tbl,
+  caption = "Number of households in ESPS4 and ESPS5 by region",
+  booktabs = TRUE,
+  align = c("l", "c", "c", "c", "c", "c"),
+  col.names = c("Region", "Matched", "Dropped in ESPS5 (only in ESPS4)", "Newly added in ESPS5", "No. of hhs in ESPS4 (col. 1 + col. 2)", "No. of hhs in ESPS5 (col. 1 + col. 3)")
+) %>% 
+  column_spec(2:6, width = "5em", latex_valign = "b") %>% 
+  row_spec(11, bold = T)  %>%
+  kable_styling(latex_options = c("striped", "hold_position"))
+  
+
+```
+
+```{r}
+
+kbl(
+  track_ea_tbl,
+  caption = "Number of EAs in ESPS4 and ESPS5 by region",
+  booktabs = TRUE,
+  align = c("l", "c", "c", "c", "c", "c"),
+  col.names = c("Region", "Matched", "Dropped in ESPS5 (only in ESPS4)", "Newly added in ESPS5", "No. of EAs in ESPS4 (col. 1 + col. 2)", "No. of EAs in ESPS5 (col. 1 + col. 3)")
+  
+) %>% 
+  column_spec(2:6, width = "5em", latex_valign = "b") %>% 
+  row_spec(11, bold = T)  %>%
+  kable_styling(latex_options = c("striped", "hold_position"))
+
+```
+
+![](figures/nat_panel.pdf)
