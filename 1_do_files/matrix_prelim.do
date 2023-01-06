@@ -260,7 +260,8 @@ ead_livIA  ead_cross_largerum ead_cross_smallrum ead_cross_poultry ead_grass
 #delimit ;
 global ealevel
 ead_ofsp ead_awassa83 ead_kabuli ead_rdisp ead_motorpump ead_swc  ead_consag1 ead_consag2 
-ead_affor ead_mango ead_papaya ead_avocado ead_malt ead_durum commirr ead_impcr13 ead_impcr19 
+ead_affor ead_mango ead_papaya ead_avocado ead_malt ead_durum commirr comm_video 
+comm_video_all comm_2wt_own comm_2wt_use comm_psnp ead_impcr13 ead_impcr19 
 ead_impcr11 ead_impcr24 ead_impcr14 ead_impcr3 ead_impcr5 ead_impcr60 ead_impcr62;
 #delimit cr
 	
