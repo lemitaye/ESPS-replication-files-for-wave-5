@@ -91,5 +91,26 @@ foreach i in cr1 cr2 cr6 {
 *Cleaning intermediate variables
 drop impcr*max impcr*_sum*  sh_plothh_swc2_cond*
 
+* 8028 Farmer hotline (IVR)
+preserve
+    use "${rawdata}\PP\sect7_pp_w5", clear
+
+    tab s7q03b  // s7q03b: Have you ever called the '8028', or agricultural hotline?
+    generate hotline=.
+    replace hotline=1 if s7q03b==1
+    replace hotline=0 if s7q03b==2 | s7q03b==3
+
+    collapse (max) hotline, by(household_id)
+
+    label var hotline "Called the 8028, or agricultural hotline"
+
+    tempfile hotline
+    save `hotline'
+restore
+
+merge 1:1 household_id using `hotline'
+drop _m
+
+
 save "${data}\wave5_hh_new", replace
 save "${data}\ess5_pp_hh_new", replace

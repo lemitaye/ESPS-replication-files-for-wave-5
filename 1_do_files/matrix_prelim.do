@@ -10,7 +10,7 @@ hhd_livIA hhd_cross_largerum hhd_cross_smallrum hhd_cross_poultry hhd_grass
 #delimit ;
 global hhlevel     
 hhd_ofsp hhd_awassa83 hhd_kabuli hhd_rdisp hhd_motorpump hhd_swc hhd_consag1 hhd_consag2 
-hhd_affor hhd_mango hhd_papaya hhd_avocado hhd_impcr13 hhd_impcr19 hhd_impcr11 
+hhd_affor hhd_mango hhd_papaya hhd_avocado hotline hhd_seed_source hhd_impcr13 hhd_impcr19 hhd_impcr11 
 hhd_impcr24 hhd_impcr14 hhd_impcr3 hhd_impcr5 hhd_impcr60 hhd_impcr62 hhd_malt hhd_durum
 ;
 #delimit cr
@@ -133,8 +133,7 @@ ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia"
 "Other regions" "Other regions" "Other regions" "Other regions" "National" 
 "National" "National" "National" "National" ) 
 showeq 
-rblanks(hhd_grass_r "Crop germplasm improvementes"   S2149,
-hhd_awassa83_r "Natural resource management" S2149)	 
+rblanks(COL_NAMES "Percentage of hh that adopt on at least one plot :" S2149, hhd_impccr  "Share of plots per household" S2149)	 
 title(Table 1: ESS5 - Rural Household level - Section 6)  font("Times New Roman" 10) 
 cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
 6 55, 7 55, 8 30, 9 30, 10 40,
@@ -224,8 +223,7 @@ ceq("Afar" "Afar" "Afar" "Afar" "Afar" "Somali" "Somali" "Somali" "Somali" "Soma
 "Benshangul Gumuz" "Benshangul Gumuz" "Benshangul Gumuz"  "Benshangul Gumuz"  "Benshangul Gumuz"  
 "Gambela"  "Gambela" "Gambela"    "Gambela"  "Gambela"  "Harar" "Harar" "Harar" "Harar" "Harar" 
 "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa") showeq 
-rblanks(COL_NAMES "Percentage of hh that adopt on at least one plot :" S2149, 
-hhd_impccr  "Share of plots per household" S2149)	
+rblanks(COL_NAMES "Percentage of hh that adopt on at least one plot :" S2149, hhd_impccr  "Share of plots per household" S2149)	
 title(Table 1: ESS4 - Rural Household level - Section 6 - Other regions)  
 font("Times New Roman" 10) 
 cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
@@ -260,8 +258,8 @@ ead_livIA  ead_cross_largerum ead_cross_smallrum ead_cross_poultry ead_grass
 #delimit ;
 global ealevel
 ead_ofsp ead_awassa83 ead_kabuli ead_rdisp ead_motorpump ead_swc  ead_consag1 ead_consag2 
-ead_affor ead_mango ead_papaya ead_avocado ead_malt ead_durum commirr comm_video 
-comm_video_all comm_2wt_own comm_2wt_use comm_psnp ead_impcr13 ead_impcr19 
+ead_affor ead_mango ead_papaya ead_avocado ead_malt ead_durum ead_hotline ead_seed_source 
+commirr comm_video comm_video_all comm_2wt_own comm_2wt_use comm_psnp ead_impcr13 ead_impcr19 
 ead_impcr11 ead_impcr24 ead_impcr14 ead_impcr3 ead_impcr5 ead_impcr60 ead_impcr62;
 #delimit cr
 	

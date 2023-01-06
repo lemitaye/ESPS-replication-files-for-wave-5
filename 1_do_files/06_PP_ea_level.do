@@ -18,6 +18,13 @@ foreach i in  treadle motorpump rotlegume cresidue1 cresidue2 mintillage ///
 
 }
 
+generate ead_hotline=.
+replace ead_hotline=0 if hotline==0
+replace ead_hotline=1 if hotline==1
+
+egen nbhhd_hotline=sum(hotline), by(ea_id)
+generate sh_ea_hotline=(nbhhd_hotline/hh_ea) if nbhhd_hotline!=.
+
 /*
 generate ead_feed=0
 replace ead_feed=1 if nbhhd_elepgrass>0 | nbhhd_gaya>0 | nbhhd_sasbaniya>0 | nbhhd_alfa>0 | nbhhd_indprod>0
@@ -34,6 +41,7 @@ rename sh_hhea_sweetpotato sh_ea_sweetpotato
 rename sh_hhea_fieldp      sh_ea_fieldp
 rename sh_hhea_malt        sh_ea_malt
 rename sh_hhea_durum       sh_ea_durum
+rename sh_hhea_seed_source sh_ea_seed_source
 
 
 foreach i in impcr1 impcr2 impcr3 impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 /// 
@@ -74,7 +82,7 @@ livIA elepgrass gaya sasbaniya alfa indprod cross
 */
 foreach i in treadle motorpump rotlegume cresidue1 cresidue2 mintillage zerotill ///
         consag1 consag2 swc terr wcatch affor ploc rdisp ofsp awassa83 desi kabuli ///
-		avocado mango fieldp papaya malt durum ///
+		avocado mango fieldp papaya malt durum seed_source ///
         sweetpotato impcr1 impcr2 impcr3 impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 ///
         impcr10 impcr11 impcr12 impcr13 impcr14 impcr15 impcr18 impcr19 impcr23 ///
         impcr24 impcr25 impcr26 impcr27 impcr42 impcr49 impcr60 impcr62 impcr71 ///
@@ -148,6 +156,14 @@ foreach i in ead_durum sh_plotea_durum sh_ea_durum {
 }
 foreach i in ead_malt sh_plotea_malt sh_ea_malt {
     lab var `i' "Malt barley variety"
+}
+
+foreach i in ead_seed_source sh_plotea_seed_source sh_ea_seed_source {
+	lab var `i' "Tree seed centers"
+}
+
+foreach i in ead_hotline sh_ea_hotline {
+	lab var `i' "Called the 8028, or agricultural hotline"
 }
 
 foreach i of varlist *impcr1{
