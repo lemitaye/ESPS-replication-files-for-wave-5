@@ -5,6 +5,9 @@ library(thatssorandom)
 library(labelled)
 library(janitor)
 library(kableExtra)
+library(scales)
+
+# theme_set(theme_light())
 
 setwd("C:/Users/tayel/Dropbox/Documents/SPIA/Ethiopia")
 
@@ -12,7 +15,7 @@ wave4_hh_new <- read_dta("replication_files/3_report_data/wave4_hh_new.dta")
 wave5_hh_new <- read_dta("LSMS_W5/3_report_data/wave5_hh_new.dta")
 
 wave4_hh_new <- wave4_hh_new %>% 
-  mutate(hhd_kabuli = NA)
+  mutate(hhd_kabuli = NA, hhd_malt = NA, hhd_durum = NA, hhd_seed_source = NA)
 
 select_hh_level <- function(tbl, pw) {
   
@@ -176,26 +179,52 @@ national_hh_panel <- hh_level_panel %>%
     TRUE ~ 0
   ))
 
-nat_panel <- national_hh_panel %>% 
-  mutate(
-    wave = fct_relevel(wave, "Wave 5", "Wave 4"),
-    label = fct_reorder(label, -improv)
+
+plot_compar <- function(tbl, title, xlim = 80) {
+  
+  tbl %>% 
+    mutate(
+      wave = fct_relevel(wave, "Wave 5", "Wave 4"),
+      label = fct_reorder(label, -improv)
     ) %>%
-  ggplot(aes(mean, label, fill = wave)) +
-  geom_col(position = "dodge") +
-  geom_text(aes(label = paste0( round(mean, 2), "%", " (", nobs, ")" ) ),
-            position = position_dodge(width = 1),
-            hjust = -.15, size = 2.1) +
-  scale_y_discrete(labels = function(x) str_wrap(x, width = 35)) +
-  expand_limits(x = 80) +
-  theme(legend.position = "top") +
-  labs(x = "Percent of households", 
-       y = "", 
-       fill = "",
-       title = "Percent of Rural Households Adopting Innovations - National",
-       subtitle = "Only panel households included",
-       caption = "Percent are weighted sample means using the latest (wave 5) weights.
-       Number of households responding in parenthesis")
+    ggplot(aes(mean, label, fill = wave)) +
+    geom_col(position = "dodge") +
+    geom_text(aes(label = paste0( round(mean, 2), "%", " (", nobs, ")" ) ),
+              position = position_dodge(width = 1),
+              hjust = -.15, size = 2.5) +
+    scale_y_discrete(labels = function(x) str_wrap(x, width = 35)) +
+    expand_limits(x = xlim) +
+    theme(legend.position = "top") +
+    labs(x = "Percent of households", 
+         y = "", 
+         fill = "",
+         title = paste0("Percent of Rural Households Adopting Innovations - ", title),
+         subtitle = "Only panel households included",
+         caption = "Percent are weighted sample means using the latest (wave 5) weights.
+         Number of households responding in parenthesis")
+  
+}
+
+
+nat_panel <- national_hh_panel %>% 
+  plot_compar("National")
+  
+amhara_panel <- regions_hh_panel %>% 
+  filter(region == "Amhara") %>% 
+  plot_compar("Amhara", xlim = 90)
+
+oromia_panel <- regions_hh_panel %>% 
+  filter(region == "Oromia") %>% 
+  plot_compar("Oromia")
+
+snnp_panel <- regions_hh_panel %>% 
+  filter(region == "SNNP") %>% 
+  plot_compar("SNNP", xlim = 75)
+
+other_panel <- regions_hh_panel %>% 
+  filter(region == "Other regions") %>% 
+  plot_compar("Other Regions")
+
 
 ggsave(
   filename = "LSMS_W5/tmp/figures/nat_panel.pdf",
@@ -206,62 +235,110 @@ ggsave(
   units = "mm"
 )
 
+ggsave(
+  filename = "LSMS_W5/tmp/figures/amhara_panel.pdf",
+  plot = amhara_panel,
+  device = cairo_pdf,
+  width = 200,
+  height = 285,
+  units = "mm"
+)
 
-plot_compar <- function(tbl, title) {
+ggsave(
+  filename = "LSMS_W5/tmp/figures/oromia_panel.pdf",
+  plot = oromia_panel,
+  device = cairo_pdf,
+  width = 200,
+  height = 285,
+  units = "mm"
+)
+
+ggsave(
+  filename = "LSMS_W5/tmp/figures/snnp_panel.pdf",
+  plot = snnp_panel,
+  device = cairo_pdf,
+  width = 200,
+  height = 285,
+  units = "mm"
+)
+
+ggsave(
+  filename = "LSMS_W5/tmp/figures/other_panel.pdf",
+  plot = other_panel,
+  device = cairo_pdf,
+  width = 200,
+  height = 285,
+  units = "mm"
+)
+
+
+# New innovations incorporated in ESPS5
+w5_hh_new <- wave5_hh_new %>% 
+  select(
+    household_id, region, pw_w5, hhd_kabuli, hhd_malt, hhd_durum, 
+         hhd_seed_source, hotline
+    ) %>% 
+  mutate(region = recode(
+    region, `0` = "Other regions", `1` = "Tigray", `3` = "Amhara", 
+    `4` = "Oromia", `7` = "SNNP")
+  ) %>% 
+  pivot_longer(hhd_kabuli:hotline, 
+               names_to = "variable",
+               values_to = "value") 
+
+w5_means_new <- left_join(
+  x = bind_rows(
+    w5_hh_new %>% 
+      group_by(region, variable) %>% 
+      summarise(
+        mean = weighted.mean(value, w = pw_w5, na.rm = TRUE),
+        nobs = sum(!is.na(value)),
+        .groups = "drop"
+      ),
+    w5_hh_new %>% 
+      group_by(variable) %>% 
+      summarise(
+        mean = weighted.mean(value, w = pw_w5, na.rm = TRUE),
+        nobs = sum(!is.na(value)),
+        .groups = "drop"
+      ) %>% 
+      mutate(region = "National")
+  ),
   
-  tbl %>% 
-    mutate(
-      wave = fct_relevel(wave, "Wave 5", "Wave 4"),
-      label = fct_reorder(label, -improv)
-    ) %>%
-      ggplot(aes(mean, label, fill = wave)) +
-      geom_col(position = "dodge") +
-      geom_text(aes(label = paste0( round(mean, 2), "%", " (", nobs, ")" ) ),
-                position = position_dodge(width = 1),
-                hjust = -.15, size = 2.1) +
-      scale_y_discrete(labels = function(x) str_wrap(x, width = 35)) +
-      expand_limits(x = 80) +
-      theme(legend.position = "top") +
-      labs(x = "Percent of households", 
-           y = "", 
-           fill = "",
-           title = paste0("Percent of Rural Households Adopting Innovations - ", title),
-           subtitle = "Only panel households included",
-           caption = "Percent are weighted sample means using the latest (wave 5) weights.
-         Number of households responding in parenthesis")
-  
-}
-
-national_hh_panel %>% 
-  plot_compar("National")
-  
-
-regions_hh_panel %>% 
-  filter(region == "Amhara") %>% 
-  plot_compar("Amhara")
-
-regions_hh_panel %>% 
-  filter(region == "Oromia") %>% 
-  plot_compar("Oromia")
-
-regions_hh_panel %>% 
-  filter(region == "SNNP") %>% 
-  plot_compar("SNNP")
-
-regions_hh_panel %>% 
-  filter(region == "Other regions") %>% 
-  plot_compar("Other Regions")
+  y = var_label(select(wave5_hh_new, hhd_kabuli, hhd_malt, hhd_durum, 
+                   hhd_seed_source, hotline)) %>% 
+    as_tibble() %>% 
+    pivot_longer(
+      cols = everything(), 
+      names_to = "variable", 
+      values_to = "label"
+    ),
+  by = "variable"
+)
 
 
+new_innov <- w5_means_new %>% 
+  mutate(region = fct_relevel(region, "Amhara", "Oromia", "SNNP", "Other regions", "National")) %>% 
+  ggplot(aes(region, mean/100, fill = region)) +
+  geom_col() +
+  geom_text(aes(label = paste0(round(mean, 2), " %")),
+            vjust = 1, size = 2.5) +
+  facet_wrap(~ label, scales = "free", nrow = 3) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+  scale_y_continuous(labels = percent_format()) +
+  theme(legend.position = "none") +
+  labs(y = "Percent of households adopting", 
+       x = "",
+       title = "Adoption of innovations incorporated only in ESPS5")
 
-
-
-
-
-
-
-
-
+ggsave(
+  filename = "LSMS_W5/tmp/figures/new_innov.pdf",
+  plot = new_innov,
+  device = cairo_pdf,
+  width = 200,
+  height = 185,
+  units = "mm"
+)  
 
 
 
