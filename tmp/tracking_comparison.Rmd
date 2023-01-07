@@ -100,7 +100,7 @@ track_ea_tbl <- form_tab(track_ea)
 
 kbl(
   track_hh_tbl,
-  caption = "Number of households in ESPS4 and ESPS5 by region",
+  caption = "Number of rural households in ESPS4 and ESPS5 by region",
   booktabs = TRUE,
   align = c("l", "c", "c", "c", "c", "c"),
   col.names = c("Region", "Matched", "Dropped in ESPS5 (only in ESPS4)", "Newly added in ESPS5", "No. of hhs in ESPS4 (col. 1 + col. 2)", "No. of hhs in ESPS5 (col. 1 + col. 3)")
@@ -116,7 +116,7 @@ kbl(
 
 kbl(
   track_ea_tbl,
-  caption = "Number of EAs in ESPS4 and ESPS5 by region",
+  caption = "Number of rural EAs in ESPS4 and ESPS5 by region",
   booktabs = TRUE,
   align = c("l", "c", "c", "c", "c", "c"),
   col.names = c("Region", "Matched", "Dropped in ESPS5 (only in ESPS4)", "Newly added in ESPS5", "No. of EAs in ESPS4 (col. 1 + col. 2)", "No. of EAs in ESPS5 (col. 1 + col. 3)")
@@ -128,4 +128,50 @@ kbl(
 
 ```
 
+## Comparison
+
 ![](figures/nat_panel.pdf)
+
+![](figures/amhara_panel.pdf)
+
+![](figures/oromia_panel.pdf)
+
+![](figures/snnp_panel.pdf)
+
+![](figures/other_panel.pdf)
+
+![](figures/new_innov.pdf)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
