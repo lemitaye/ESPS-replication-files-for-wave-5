@@ -209,7 +209,7 @@ nat_panel <- national_hh_panel %>%
   
 amhara_panel <- regions_hh_panel %>% 
   filter(region == "Amhara") %>% 
-  plot_compar("Amhara", xlim = 90)
+  plot_compar("Amhara", xlim = 100)
 
 oromia_panel <- regions_hh_panel %>% 
   filter(region == "Oromia") %>% 
