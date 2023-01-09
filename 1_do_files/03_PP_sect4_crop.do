@@ -112,17 +112,21 @@ replace malt=1 if s4q14d==1
 replace malt=0 if s4q14d==2 | s4q14d==3
 
 * Tree seed centers
-// 3. Youth group, 4. NGO, & 5. Research centers
-generate seed_source=.
-replace seed_source=1 if s4q19b==3 | s4q19b==4 | s4q19b==5
-replace seed_source=0 if s4q19b==1 | s4q19b==2 | s4q19b==6 | s4q19b==7
+// 1st version: 3. Youth group, 4. NGO, & 5. Research centers
+generate seedv1=.
+replace seedv1=1 if s4q19b==3 | s4q19b==4 | s4q19b==5
+replace seedv1=0 if s4q19b==1 | s4q19b==2 | s4q19b==6 | s4q19b==7
 
+// 2nd version: 1-6 vs 7. Others
+generate seedv2=.
+replace seedv2=1 if s4q19b==1 | s4q19b==2 | s4q19b==3 | s4q19b==4 | s4q19b==5 | s4q19b==6
+replace seedv2=0 if s4q19b==7 
 
 foreach i in sp_ofsp sp_awassa83 cpea_desi cpea_kabuli avocado mango papaya sweetpotato fieldp /// 
 			 impcr1 impcr2 impcr3 impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 /// 
              impcr10 impcr11 impcr12 impcr13 impcr14 impcr15 impcr18 impcr19 ///
              impcr23 impcr24 impcr25 impcr26 impcr27 impcr42 impcr49 impcr60 ///
-             impcr62 impcr71 impcr72  impveg impftr improot impccr durum malt seed_source {
+             impcr62 impcr71 impcr72  impveg impftr improot impccr durum malt seedv1 seedv2 {
 
     egen `i'max = max(`i'), by(household_id)  // dummy for at least 1 in hh
 
@@ -131,7 +135,7 @@ foreach i in sp_ofsp sp_awassa83 cpea_desi cpea_kabuli avocado mango papaya swee
 foreach i in avocado mango papaya sweetpotato fieldp impcr1 impcr2 impcr3 impcr4 impcr5 ///
 		     impcr6 impcr7 impcr8 impcr9 impcr10 impcr11 impcr12 impcr13 impcr14 impcr15 impcr18 ///
              impcr19 impcr23 impcr24 impcr25 impcr26 impcr27 impcr42 impcr49 impcr60 impcr62 impcr71 ///
-             impcr72  impveg impftr improot impccr durum malt seed_source {
+             impcr72  impveg impftr improot impccr durum malt seedv1 seedv2 {
 
     egen hhd_`i'=max(`i')         if `i'max!=., by(household_id)    // HH dummy  (at least 1 in hh)
     egen ead_`i'=max(`i')         if `i'max!=., by(ea_id)           // Ea dummy  (at least 1 in EA)
@@ -195,7 +199,7 @@ foreach i in avocado mango papaya sweetpotato fieldp impcr1 impcr2 impcr3 ///
              impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 impcr10 impcr11 ///
              impcr12 impcr13 impcr14 impcr15 impcr18 impcr19 impcr23 impcr24 /// 
              impcr25 impcr26 impcr27 impcr42 impcr49 impcr60 impcr62 impcr71 ///
-             impcr72  impveg impftr improot impccr durum malt seed_source {
+             impcr72  impveg impftr improot impccr durum malt seedv1 seedv2 {
 
     g sh_plothh_`i'=(`i'_sumhh/hh_plot2)*100 if `i'_sumhh!=.   & hhd_`i'==1 // Share of plots per HH
     g sh_plotea_`i'=(`i'_sumea/ea_plot2)*100 if `i'_sumea!=.   & hhd_`i'==1 // Share of plots per EA
@@ -279,10 +283,10 @@ foreach x in 1 3 4 7 0  {
 preserve 
 	keep saq01 sp_ofsp sp_awassa83 cpea_desi cpea_kabuli avocado mango papaya sweetpotato fieldp improv /// 
 		cdam1 cdam2 cdam3 cdam4 cdam5 cdamoth hsell  parcel_id field_id crop_id ///
-		holder_id household_id ea_id impcr2 impcr1 durum malt seed_source pw_w5
+		holder_id household_id ea_id impcr2 impcr1 durum malt seedv1 seedv2 pw_w5
 		
 	collapse (max) saq01 sp_ofsp sp_awassa83 cpea_desi cpea_kabuli improv avocado mango papaya sweetpotato ///
-				fieldp  cdam1 cdam2 cdam3 cdam4 cdam5 cdamoth hsell impcr2 impcr1 durum malt seed_source ///
+				fieldp  cdam1 cdam2 cdam3 cdam4 cdam5 cdamoth hsell impcr2 impcr1 durum malt seedv1 seedv2 ///
 			(firstnm) pw_w5, by(parcel_id field_id holder_id household_id ea_id)
 
 	lab var improv      "Improved crop used"
@@ -304,6 +308,8 @@ preserve
 	lab var fieldp		"Field peas"
 	lab var durum		"Durum wheat variety"
 	lab var malt		"Malt barley variety"
+	lab var seedv1      "Tree seed centers - Youth, NGO, & Research centers"
+	lab var seedv2      "Tree seed centers - Gov't, Private, and Market added"
 
 	save "${data}\ess5_pp_cropvar_plot_new", replace
 restore
@@ -322,8 +328,9 @@ collapse (max) cr1 cr2 cr6 hhd_ofsp ead_ofsp hhd_awassa83 ead_awassa83 hhd_desi 
 			   sh_hhea_papaya sh_plothh_sweetpotato sh_plotea_sweetpotato ///
 			   sh_hhea_sweetpotato sh_plothh_fieldp sh_plotea_fieldp sh_hhea_fieldp ///
 			   sh_hhea_durum sh_plothh_durum sh_plotea_durum sh_hhea_malt sh_plothh_malt ///
-			   sh_plotea_malt hhd_seed_source ead_seed_source sh_hhea_seed_source ///
-			   sh_plothh_seed_source sh_plotea_seed_source *impcr* *impveg *impftr *improot *impccr ///
+			   sh_plotea_malt hhd_seedv1 ead_seedv1 sh_hhea_seedv1 ///
+			   sh_plothh_seedv1 sh_plotea_seedv1 hhd_seedv2 ead_seedv2 sh_hhea_seedv2 ///
+			   sh_plothh_seedv2 sh_plotea_seedv2 *impcr* *impveg *impftr *improot *impccr ///
 		 (firstnm) saq01 saq14 ea_id, by(household_id)
 
 foreach i in impcr1 impcr2 impcr3 impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 ///
@@ -395,8 +402,12 @@ foreach i in hhd_malt ead_malt sh_hhea_malt sh_plothh_malt sh_plotea_malt {
 	lab var `i' "Malt barley variety"
 }
 
-foreach i in hhd_seed_source ead_seed_source sh_hhea_seed_source sh_plothh_seed_source sh_plotea_seed_source {
-	lab var `i' "Tree seed centers"
+foreach i in hhd_seedv1 ead_seedv1 sh_hhea_seedv1 sh_plothh_seedv1 sh_plotea_seedv1 {
+	lab var `i' "Tree seed centers - Youth, NGO, & Research centers"
+}
+
+foreach i in hhd_seedv2 ead_seedv2 sh_hhea_seedv2 sh_plothh_seedv2 sh_plotea_seedv2 {
+	lab var `i' "Tree seed centers - Gov't, Private, and Market added"
 }
 
 foreach i of varlist *impcr1{
