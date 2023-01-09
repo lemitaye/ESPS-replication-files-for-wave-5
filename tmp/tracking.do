@@ -90,12 +90,6 @@ drop _merge
 tempfile ea_merged_w5
 save `ea_merged_w5'
 
-*use "LSMS_W5\3_report_data\ess5_pp_cov_new", clear
-
-*merge 1:1 household_id using `ea_merged_w5'
-*keep if 
-
-
 use "replication_files\3_report_data\ess4_pp_cov_new", clear
 merge 1:1 household_id using `ea_merged_w5'
 
