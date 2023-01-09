@@ -10,8 +10,9 @@ hhd_livIA hhd_cross_largerum hhd_cross_smallrum hhd_cross_poultry hhd_grass
 #delimit ;
 global hhlevel     
 hhd_ofsp hhd_awassa83 hhd_kabuli hhd_rdisp hhd_motorpump hhd_swc hhd_consag1 hhd_consag2 
-hhd_affor hhd_mango hhd_papaya hhd_avocado hotline hhd_seed_source hhd_impcr13 hhd_impcr19 hhd_impcr11 
-hhd_impcr24 hhd_impcr14 hhd_impcr3 hhd_impcr5 hhd_impcr60 hhd_impcr62 hhd_malt hhd_durum
+hhd_affor hhd_mango hhd_papaya hhd_avocado hotline hhd_malt hhd_durum hhd_seedv1 hhd_seedv2 
+hhd_impcr13 hhd_impcr19 hhd_impcr11 hhd_impcr24 hhd_impcr14 hhd_impcr3 hhd_impcr5 hhd_impcr60 
+hhd_impcr62 
 ;
 #delimit cr
 
@@ -37,7 +38,7 @@ foreach x in 3 4 7 0 {  // these are the three main regions (Tigray excluded) an
 			error _rc
 		}
 		else {            // "mean" is an e-class command (see "ereturn list")
-			matrix  `var'meanr`x'=e(b)'    // mean 
+			matrix  `var'meanr`x'=e(b)'*100    // mean (% out of 100)
 			matrix define `var'V`x'= e(V)' // variance 
 			matrix define `var'VV`x'=(vecdiag(`var'V`x'))' 
 			// "vecdiag(M)" - the row vector containing the diagonal of matrix M
@@ -86,7 +87,7 @@ foreach var in $hhlevel {
 	}
 
 	else {	
-		matrix  `var'meanrN=e(b)'
+		matrix  `var'meanrN=e(b)'*100
 		matrix define `var'VN= e(V)'
 		matrix define `var'VVN=(vecdiag(`var'VN))'
 		matrix list `var'VVN
@@ -258,7 +259,7 @@ ead_livIA  ead_cross_largerum ead_cross_smallrum ead_cross_poultry ead_grass
 #delimit ;
 global ealevel
 ead_ofsp ead_awassa83 ead_kabuli ead_rdisp ead_motorpump ead_swc  ead_consag1 ead_consag2 
-ead_affor ead_mango ead_papaya ead_avocado ead_malt ead_durum ead_hotline ead_seed_source 
+ead_affor ead_mango ead_papaya ead_avocado ead_malt ead_durum ead_hotline ead_seedv1 ead_seedv2 
 commirr comm_video comm_video_all comm_2wt_own comm_2wt_use comm_psnp ead_impcr13 ead_impcr19 
 ead_impcr11 ead_impcr24 ead_impcr14 ead_impcr3 ead_impcr5 ead_impcr60 ead_impcr62;
 #delimit cr
@@ -280,7 +281,7 @@ foreach x in 3 4 7 0 {
             error _rc
         }
         else {
-            matrix  `var'meanr`x'=e(b)'
+            matrix  `var'meanr`x'=e(b)'*100
             matrix define `var'V`x'= e(V)'
             matrix define `var'VV`x'=(vecdiag(`var'V`x'))'
             matrix list `var'VV`x'
@@ -329,7 +330,7 @@ foreach var in $ealevel {
         error _rc
     }
     else {
-        matrix  `var'meanrN=e(b)'
+        matrix  `var'meanrN=e(b)'*100
         matrix define `var'VN= e(V)'
         matrix define `var'VVN=(vecdiag(`var'VN))'
         matrix list `var'VVN

@@ -11,7 +11,7 @@ foreach i in  treadle motorpump rotlegume cresidue1 cresidue2 mintillage ///
 
     generate ead_`i'=.
     replace ead_`i'=0 if hhd_`i'==0
-    replace ead_`i'=1 if hhd_`i'==100  // multiplied by 100 in 05_PP_merge.do
+    replace ead_`i'=1 if hhd_`i'==1
 
     egen nbhhd_`i'=sum(hhd_`i'), by(ea_id)
     generate sh_ea_`i'=(nbhhd_`i'/hh_ea) if nbhhd_`i'!=.  
@@ -20,7 +20,7 @@ foreach i in  treadle motorpump rotlegume cresidue1 cresidue2 mintillage ///
 
 generate ead_hotline=.
 replace ead_hotline=0 if hotline==0
-replace ead_hotline=1 if hotline==100
+replace ead_hotline=1 if hotline==1
 
 egen nbhhd_hotline=sum(hotline), by(ea_id)
 generate sh_ea_hotline=(nbhhd_hotline/hh_ea) if nbhhd_hotline!=.
@@ -41,7 +41,8 @@ rename sh_hhea_sweetpotato sh_ea_sweetpotato
 rename sh_hhea_fieldp      sh_ea_fieldp
 rename sh_hhea_malt        sh_ea_malt
 rename sh_hhea_durum       sh_ea_durum
-rename sh_hhea_seed_source sh_ea_seed_source
+rename sh_hhea_seedv1      sh_ea_seedv1
+rename sh_hhea_seedv2      sh_ea_seedv2
 
 
 foreach i in impcr1 impcr2 impcr3 impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 /// 
@@ -69,11 +70,6 @@ g   sh_ea_`i'_o=(eanb_`i'_cross/eanb_`i'_o) if eanb_`i'_cross!=.
 }
 */
 
-local ead ead* 
-foreach var of varlist `ead' {
-    replace `var'=`var'*100
-}
-
 collapse (max) ead* sh_plotea* sh_ea_* wave region othregion (firstnm) pw_w5, by(ea_id)
 
 /*
@@ -82,8 +78,8 @@ livIA elepgrass gaya sasbaniya alfa indprod cross
 */
 foreach i in treadle motorpump rotlegume cresidue1 cresidue2 mintillage zerotill ///
         consag1 consag2 swc terr wcatch affor ploc rdisp ofsp awassa83 desi kabuli ///
-		avocado mango fieldp papaya malt durum seed_source ///
-        sweetpotato impcr1 impcr2 impcr3 impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 ///
+		avocado mango fieldp papaya sweetpotato malt durum seedv1 seedv2 hotline ///
+        impcr1 impcr2 impcr3 impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 ///
         impcr10 impcr11 impcr12 impcr13 impcr14 impcr15 impcr18 impcr19 impcr23 ///
         impcr24 impcr25 impcr26 impcr27 impcr42 impcr49 impcr60 impcr62 impcr71 ///
         impcr72  impveg impftr improot impccr {
@@ -158,8 +154,11 @@ foreach i in ead_malt sh_plotea_malt sh_ea_malt {
     lab var `i' "Malt barley variety"
 }
 
-foreach i in ead_seed_source sh_plotea_seed_source sh_ea_seed_source {
-	lab var `i' "Tree seed centers"
+foreach i in ead_seedv1 sh_plotea_seedv1 sh_ea_seedv1 {
+	lab var `i' "Tree seed centers - Youth, NGO, & Research centers"
+}
+foreach i in ead_seedv2 sh_plotea_seedv2 sh_ea_seedv2 {
+	lab var `i' "Tree seed centers - Gov't, Private, and Market added"
 }
 
 foreach i in ead_hotline sh_ea_hotline {
