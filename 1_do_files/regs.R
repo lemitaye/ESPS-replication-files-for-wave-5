@@ -140,6 +140,7 @@ stargazer(
   se = se_list,
   p = p_list,
   type = "html",
+  report = "vc*",
   omit.stat = "all",
   dep.var.caption  = "",
   covariate.labels = row_labels,
