@@ -1,5 +1,4 @@
 
-
 ********************************************************************************
 * MERGE DIFFERENT MODULES *
 ********************************************************************************
@@ -79,10 +78,6 @@ The following were excluded from the loop below:
 po_livIA po_elepgrass po_gaya po_sasbaniya po_alfa lr_livIA lr_elepgrass lr_gaya 
 lr_sasbaniya lr_alfa sr_livIA sr_elepgrass sr_gaya sr_sasbaniya sr_alfa
 */
-local hhd hhd_*  
-foreach var of varlist `hhd' {
-    replace `var'=`var'*100	 // multiply by 100 to express as %
-}
 
 foreach i in cr1 cr2 cr6 {
     replace `i'=0 if `i'==.
