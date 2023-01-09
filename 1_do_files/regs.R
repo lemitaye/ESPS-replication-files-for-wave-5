@@ -119,42 +119,41 @@ df <- data.frame(matrix(data = rnorm(36000), ncol = 24))
 fm <- lm(X1 ~ 0 + ., data = df)
 
 
-star.out <- stargazer(
+labels_covar <- panel_selected %>% 
+  select(all_of(covar)) %>% 
+  var_label() 
+
+labels_innov <- panel_selected %>% 
+  select(all_of(innov)) %>% 
+  var_label()
+
+names(labels_covar) <- NULL
+names(labels_innov) <- NULL
+
+col_labels <- unlist(labels_covar)
+row_labels <- unlist(labels_innov)
+
+
+stargazer(
   fm, fm, fm, fm, fm, fm, fm, fm, fm, fm, fm, fm,
   coef = coef_list,
   se = se_list,
   p = p_list,
-  # type = "html",
+  type = "html",
   omit.stat = "all",
   dep.var.caption  = "",
-  # covariate.labels = labels,
-  # # column.labels   = c("OLS", "2SLS", "OLS", "2SLS"),
+  covariate.labels = row_labels,
+  column.labels = col_labels,
   # column.separate = c(1, 3, 1, 3),
   dep.var.labels.include = FALSE,
   model.names = FALSE,
-  out.header = TRUE
+  out.header = TRUE,
+  out = "LSMS_W5/4_table/Table_14.html"
   # # star.cutoffs = c(0.05, 0.01, 0.001),
   # add.lines = last_lines,
   # title = "OLS and 2SLS Estimates of The Effect of The Number of Children",
   # label = "tab:main-res"
 )
-
-
-star.out <- star.out %>% 
-  # star_insert_row(
-  #   header_main,
-  #   insert.after = c(9, 9, 10)
-  # ) %>% star_notes_tex(
-  #   note.type = "threeparttable", #Use the latex 'caption' package for notes
-  #   note = long_note) %>% 
-  star_sidewaystable()
-
-star_tex_write(
-  star.out, 
-  headers = TRUE,
-  file = "LSMS_W5/4_table/tex/Table_14.tex"
-)
-
 
 
 
