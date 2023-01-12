@@ -20,12 +20,16 @@ merge m:1 household_id ls_type holder_id using "${rawdata}\PP\sect8_3_ls_w5"
 /*
     Result                      Number of obs
     -----------------------------------------
-    Not matched                             0
-    Matched                            10,650  (_merge==3)
+    Not matched                         3,376
+        from master                     3,376  (_merge==1)
+        from using                          0  (_merge==2)
+
+    Matched                            28,400  (_merge==3)
     -----------------------------------------
 */
 
 drop _merge
+
 *8.4 Milk and egg production, animal power, and dung
 merge 1:1 household_id ls_code holder_id using "${rawdata}\PP\sect8_4_ls_w5"
 
@@ -38,7 +42,6 @@ merge 1:1 household_id ls_code holder_id using "${rawdata}\PP\sect8_4_ls_w5"
 
     Matched                            28,400  (_merge==3)
     -----------------------------------------
-
 */
 
 
@@ -47,25 +50,23 @@ drop _merge
 
 
 * Dummy for hh owning at least 1 livestock type (large ruminant, small ruminant or poultry)
-g       hh_livx=0
+generate hh_livx=0
 replace hh_livx=1 if (ls_type==1 | ls_type==2 | ls_type==4) & ls_s8_1q01>0 & ls_s8_1q01!=.
 egen hh_liv=max(hh_livx), by(household_id)
 drop hh_livx
 
 
-
-
-g largerum_x=0
+generate largerum_x=0
 replace largerum_x=1 if ls_type==1  & ls_s8_1q01>0 & ls_s8_1q01!=.
 egen largerum_d=max(largerum_x), by(household_id)
 drop largerum_x
 
-g smallrum_x=0
+generate smallrum_x=0
 replace smallrum_x=1 if ls_type==2  & ls_s8_1q01>0 & ls_s8_1q01!=.
 egen smallrum_d=max(smallrum_x), by(household_id)
 drop smallrum_x
 
-g poultry_x=0
+generate poultry_x=0
 replace poultry_x=1 if ls_type==4  & ls_s8_1q01>0 & ls_s8_1q01!=.
 egen poultry_d=max(poultry_x), by(household_id)
 drop poultry_x
@@ -76,7 +77,7 @@ drop poultry_x
 * Total no. of ... per household: KEEP vs. OWN
 
 * Large ruminants
-g ls_s8_1q02bis=ls_s8_1q01-ls_s8_1q02
+generate ls_s8_1q02bis=ls_s8_1q01-ls_s8_1q02
 
 egen largerum_nbhh_k= sum(ls_s8_1q01) if ls_type==1, by(household_id) // livestock kept +owned
 
@@ -125,23 +126,24 @@ gen cfdonkeys  = 0.5
 
 * Max number of crossbred animals
 foreach i in largerum smallrum poultry {
-egen `i'_crossm=max(`i'_cross), by(household_id)
+    egen `i'_crossm=max(`i'_cross), by(household_id)
 }
 * Nb. of animals owned, kept, and crossbred
 foreach i in largerum smallrum poultry {
 
-replace `i'_nbhh_k=0   if `i'_nbhh_k==.  &  hh_liv!=.
-replace `i'_nbhh_o=0   if `i'_nbhh_o==.  &  hh_liv!=.
-replace `i'_crossm=0   if `i'_cross==.   &  `i'_d==1
-replace `i'_cross=`i'_crossm 
-drop `i'_crossm
+    replace `i'_nbhh_k=0   if `i'_nbhh_k==.  &  hh_liv!=.
+    replace `i'_nbhh_o=0   if `i'_nbhh_o==.  &  hh_liv!=.
+    replace `i'_crossm=0   if `i'_cross==.   &  `i'_d==1
+    replace `i'_cross=`i'_crossm 
+    drop `i'_crossm
+
 }
 
 
 * Dummy for owning at least 1 crossbred animal per hh
 generate hhd_cross=.
 replace hhd_cross=0 if hh_liv==1 
-replace hhd_cross=1 if             (largerum_cross>0 & largerum_cross!=.) | (smallrum_cross>0 & smallrum_cross!=.) | (poultry_cross>0 & poultry_cross!=.)
+replace hhd_cross=1 if (largerum_cross>0 & largerum_cross!=.) | (smallrum_cross>0 & smallrum_cross!=.) | (poultry_cross>0 & poultry_cross!=.)
 
 foreach i in largerum smallrum poultry {
     generate hhd_cross_`i'=. if hh_liv==0
@@ -188,38 +190,62 @@ replace po_livIA=1 if  ls_s8_3q02==5               &    ls_type==4 & ls_s8_1q01>
 
 * Feed and forages
 
+// Agro-industry
+generate agroind=.
+replace agroind=0 if ls_s8_3q17_1!=1 & hh_liv==1
+replace agroind=1 if ls_s8_3q17_1==1
+
+// Cowpea
+generate cowpea=.
+replace cowpea=0 if ls_s8_3q17_2!=1 & hh_liv==1
+replace cowpea=1 if ls_s8_3q17_2==1
+
+// Elephant grass
 generate elepgrass=.
-replace elepgrass=0 if (ls_s8_3q16==2 | ls_s8_3q17!=1) & hh_liv==1
-replace elepgrass=1 if ls_s8_3q17==1
+replace elepgrass=0 if ls_s8_3q17_3!=1 & hh_liv==1
+replace elepgrass=1 if ls_s8_3q17_3==1
+
+// Desho grass
+generate deshograss=.
+replace deshograss=0 if ls_s8_3q17_4!=1 & hh_liv==1
+replace deshograss=1 if ls_s8_3q17_4==1
+
+// Sesbaniya
+generate sesbaniya=.
+replace sesbaniya=0 if ls_s8_3q17_5!=1 & hh_liv==1
+replace sesbaniya=1 if ls_s8_3q17_5==1
+
+// Sinar
+generate sinar=.
+replace sinar=0 if ls_s8_3q17_6!=1 & hh_liv==1
+replace sinar=1 if ls_s8_3q17_6==1
+
+// Lablab
+generate lablab=.
+replace lablab=0 if ls_s8_3q17_7!=1 & hh_liv==1
+replace lablab=1 if ls_s8_3q17_7==1
+
+// Alfalfa
+generate alfalfa=.
+replace alfalfa=0 if ls_s8_3q17_8!=1 & hh_liv==1
+replace alfalfa=1 if ls_s8_3q17_8==1
+
+// Vetch
+generate vetch=.
+replace vetch=0 if ls_s8_3q17_9!=1 & hh_liv==1
+replace vetch=1 if ls_s8_3q17_9==1
+
+// Rhodes grass
+generate rhodesgrass=.
+replace rhodesgrass=0 if ls_s8_3q17_10!=1 & hh_liv==1
+replace rhodesgrass=1 if ls_s8_3q17_10==1
 
 
-generate gaya=.
-replace gaya=0 if (ls_s8_3q16==2 | ls_s8_3q17!=2) & hh_liv==1
-replace gaya=1 if ls_s8_3q17==2
+foreach i in agroind cowpea elepgrass deshograss sesbaniya sinar lablab alfalfa vetch rhodesgrass {
+    *Dummy for hh 
+    egen hhd_`i'=max(`i'), by(household_id)
 
-generate sasbaniya=.
-replace sasbaniya=0 if (ls_s8_3q16==2 | ls_s8_3q17!=3) & hh_liv==1
-replace sasbaniya=1 if ls_s8_3q17==3
-
-
-generate alfa=.
-replace alfa=0 if (ls_s8_3q16==2 | ls_s8_3q17!=6) & hh_liv==1
-replace alfa=1 if ls_s8_3q17==6
-
-
-generate indprod      =.
-replace indprod=0 if (ls_s8_3q16==2 | ls_s8_3q17!=6) & hh_liv==1
-replace indprod=1 if ls_s8_3q17==7
-
-generate grass=.
-replace grass=0   if (ls_s8_3q16==2 | ls_s8_3q17!=3) & hh_liv==1
-replace grass=1 if elepgrass==1 | gaya==1 | sasbaniya==1 | alfa==1
-
-foreach i in  elepgrass gaya sasbaniya alfa indprod grass {
-*Dummy for hh 
-egen hhd_`i'=max(`i'), by(household_id)
-
-*Dummy by livestock type
+    *Dummy by livestock type
     generate lr_`i'=`i' if ls_type==1 & ls_s8_1q01>0 & ls_s8_1q01!=.   //large ruminants
     generate sr_`i'=`i' if ls_type==2 & ls_s8_1q01>0 & ls_s8_1q01!=.   //small ruminants
     generate po_`i'=`i' if ls_type==4 & ls_s8_1q01>0 & ls_s8_1q01!=.   //poultry
@@ -228,12 +254,16 @@ egen hhd_`i'=max(`i'), by(household_id)
 
 
 *Plot level - Animal agriculture
-preserve 
 save "${data}\ess5_pp_livestock_plot_new", replace
-restore
+
 
 * Collapse at the hh-level
-collapse (max) hh_liv largerum_nbhh* largerum_cross smallrum_nbhh* smallrum_cross sh*  lr* sr* po* hhd*  goat_nbhh_o horse_nbhh_o donkey_nbhh_o cfcattle cfsheep cfgoats cfchicken cfhorses cfyaks cfdonkeys, by(household_id)
+#delimit ;
+collapse (max) hh_liv largerum_nbhh* largerum_cross smallrum_nbhh* smallrum_cross 
+sh*  lr* sr* po* hhd*  goat_nbhh_o horse_nbhh_o donkey_nbhh_o cfcattle cfsheep 
+cfgoats cfchicken cfhorses cfyaks cfdonkeys, by(household_id)
+;
+#delimit cr
 
 gen TLU_cattle = largerum_nbhh_o*cfcattle   
 gen TLU_horses = horse_nbhh_o*cfhorses  
@@ -247,14 +277,15 @@ egen TLU_total = rsum(TLU_*)
 
 lab var TLU_total "Total Livestock owned by the household (TLU)"
 
-drop goat_nbhh_o horse_nbhh_o donkey_nbhh_o cfcattle cfsheep cfgoats cfchicken cfhorses cfyaks cfdonkeys TLU_cattle TLU_horses TLU_donkeys TLU_chicken TLU_goats TLU_sheep
+drop goat_nbhh_o horse_nbhh_o donkey_nbhh_o cfcattle cfsheep cfgoats cfchicken ///
+cfhorses cfyaks cfdonkeys TLU_cattle TLU_horses TLU_donkeys TLU_chicken TLU_goats TLU_sheep
 
 lab var hhd_cross			  "At least 1 crossbred animal in hh"
 lab var hhd_cross_largerum    "Crossbred large ruminants"
 lab var largerum_cross        "Large ruminants"
 lab var largerum_nbhh_k       "No. of LARGE RUMINANTS per hh - kept"
 lab var largerum_nbhh_o       "No. of LARGE RUMINANTS per hh - owned"
-lab var hhd_cross_smallrum	 "Crossbred small ruminants"
+lab var hhd_cross_smallrum	  "Crossbred small ruminants"
 lab var smallrum_cross        "Small ruminants" 
 lab var smallrum_nbhh_k       "No. of SMALL RUMINANTS per hh - kept"
 lab var smallrum_nbhh_o       "No. of SMALL RUMINANTS per hh - owned"
@@ -268,33 +299,53 @@ lab var lr_livIA              "Large ruminants: AI"
 lab var sr_livIA              "Small ruminants: AI"
 lab var po_livIA              "Poultry: AI"
 
+lab var hhd_agroind          "Feed and Forage: Agro-industry"
+lab var hhd_cowpea           "Feed and Forage: Cowpea"
 lab var hhd_elepgrass        "Feed and Forage: Elephant Grass"
-lab var hhd_gaya             "Feed and Forage: Gaya"
-lab var hhd_sasbaniya        "Feed and Forage: Sasbaniya"
-lab var hhd_alfa             "Feed and Forage: Alfalfa"
-lab var hhd_indprod			 "Feed and Forage: Industry by-products"
-lab var hhd_grass            "Elephant grass, gaya, sasbaniya, alfalfa"
+lab var hhd_deshograss       "Feed and Forage: Desho Grass"
+lab var hhd_sesbaniya        "Feed and Forage: Sesbania"
+lab var hhd_sinar            "Feed and Forage: Sinar"
+lab var hhd_lablab           "Feed and Forage: Lablab" 
+lab var hhd_alfalfa          "Feed and Forage: Alfalfa"
+lab var hhd_vetch            "Feed and Forage: Vetch"
+lab var hhd_rhodesgrass      "Feed and Forage: Rhodes Grass"
 
-lab var lr_elepgrass         "Large ruminants: Elephant Grass"
-lab var lr_gaya              "Large ruminants: Gaya"
-lab var lr_sasbaniya         "Large ruminants: Sasbaniya"
-lab var lr_alfa              "Large ruminants: Alfalfa"
-lab var lr_indprod			 "Large ruminants: Industry by-products"
+lab var lr_agroind           "Large ruminants: Agro-industry"
+lab var lr_cowpea            "Large ruminants: Cowpea" 
+lab var lr_elepgrass         "Large ruminants: Elephant Grass" 
+lab var lr_deshograss        "Large ruminants: Desho Grass" 
+lab var lr_sesbaniya         "Large ruminants: Sesbania"  
+lab var lr_sinar             "Large ruminants: Sinar" 
+lab var lr_lablab            "Large ruminants: Lablab"  
+lab var lr_alfalfa           "Large ruminants: Alfalfa" 
+lab var lr_vetch             "Large ruminants: Vetch" 
+lab var lr_rhodesgrass       "Large ruminants: Rhodes Grass" 
 
+lab var sr_agroind           "Small ruminants: Agro-industry"
+lab var sr_cowpea            "Small ruminants: Cowpea"
 lab var sr_elepgrass         "Small ruminants: Elephant Grass"
-lab var sr_gaya              "Small ruminants: Gaya"
-lab var sr_sasbaniya         "Small ruminants: Sasbaniya"
-lab var sr_alfa              "Small ruminants: Alfalfa"
-lab var sr_indprod			 "Small ruminants: Industry by-products"
+lab var sr_deshograss        "Small ruminants: Desho Grass"
+lab var sr_sesbaniya         "Small ruminants: Sesbania"  
+lab var sr_sinar             "Small ruminants: Sinar"
+lab var sr_lablab            "Small ruminants: Lablab"
+lab var sr_alfalfa           "Small ruminants: Alfalfa"
+lab var sr_vetch             "Small ruminants: Vetch"
+lab var sr_rhodesgrass       "Small ruminants: Rhodes Grass"
 
+lab var po_agroind           "Poultry: Agro-industry"
+lab var po_cowpea            "Poultry: Cowpea"
 lab var po_elepgrass         "Poultry: Elephant Grass"
-lab var po_gaya              "Poultry: Gaya"
-lab var po_sasbaniya         "Poultry: Sasbaniya"
-lab var po_alfa              "Poultry: Alfalfa"
-lab var po_indprod			 "Poultry: Industry by-products"
+lab var po_deshograss        "Poultry: Desho Grass"
+lab var po_sesbaniya         "Poultry: Sesbania"  
+lab var po_sinar             "Poultry: Sinar"
+lab var po_lablab            "Poultry: Lablab"
+lab var po_alfalfa           "Poultry: Alfalfa"
+lab var po_vetch             "Poultry: Vetch"
+lab var po_rhodesgrass       "Poultry: Rhodes Grass"
 
-tempfile PP_W4S81
-save `PP_W4S81'
+
+save "${tmp}\PP_W4S81", replace
 
 * Cross bred animals: by eartag
 * Better information from self-reporting
+* Public vs. private farm AI
