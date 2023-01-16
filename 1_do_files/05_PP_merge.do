@@ -19,9 +19,9 @@ merge 1:1 household_id using "${tmp}\PP_W5S3"
 
 drop _merge
 
-* merge 1:1 household_id using `PP_W4S81'  // missing!
+merge 1:1 household_id using "${tmp}\PP_W4S81"  
 
-*drop _merge
+drop _merge
 
 merge 1:1 household_id using "${tmp}\pp_w5s4"
 /*
@@ -51,6 +51,8 @@ merge 1:1 household_id using `hh_sectcover'
     -----------------------------------------
 */
 keep if _m==3
+*/
+
 
 lab var sh_hh_largerum_k "Large ruminants - kept" 
 lab var sh_hh_largerum_o "Large ruminants - owned" 
@@ -62,7 +64,6 @@ lab var sh_hh_poultry_o  "Poultry - owned"
 lab var hhd_cross_largerum "Crossbred LARGE RUMINANTS"
 lab var hhd_cross_smallrum "Crossbred SMALL RUMINANTS"
 lab var hhd_cross_poultry  "Crossbred POULTRY"
-*/
 
 generate wave = 5
 clonevar region = saq01
