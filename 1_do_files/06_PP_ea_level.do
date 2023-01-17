@@ -7,7 +7,9 @@ use "${data}\wave5_hh_new", clear
 
 // livIA elepgrass gaya sasbaniya alfa indprod cross grass [livestock vars.]
 foreach i in  treadle motorpump rotlegume cresidue1 cresidue2 mintillage ///
-        zerotill consag1 consag2 swc terr wcatch affor ploc rdisp { 
+        zerotill consag1 consag2 swc terr wcatch affor ploc rdisp livIA ///
+		livIA_publ livIA_priv agroind cowpea elepgrass deshograss sesbaniya sinar ///
+		lablab alfalfa vetch rhodesgrass cross { 
 
     generate ead_`i'=.
     replace ead_`i'=0 if hhd_`i'==0
@@ -54,21 +56,20 @@ foreach i in impcr1 impcr2 impcr3 impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 ///
 
 }
 
-/*
 *Livestock
 foreach i in largerum smallrum poultry {
-g       ead_cross_`i'=.
-replace ead_cross_`i'=0 if hhd_cross_`i'==0
-replace ead_cross_`i'=1 if hhd_cross_`i'==100
+	generate ead_cross_`i'=.
+	replace ead_cross_`i'=0 if hhd_cross_`i'==0
+	replace ead_cross_`i'=1 if hhd_cross_`i'==1
 
-egen eanb_`i'_cross=sum(`i'_cross), by(ea_id)
-egen eanb_`i'_k=sum(`i'_nbhh_k), by(ea_id)
-egen eanb_`i'_o=sum(`i'_nbhh_o), by(ea_id)
+	egen eanb_`i'_cross=sum(`i'_cross), by(ea_id)
+	egen eanb_`i'_k=sum(`i'_nbhh_k), by(ea_id)
+	egen eanb_`i'_o=sum(`i'_nbhh_o), by(ea_id)
 
-g   sh_ea_`i'_k=(eanb_`i'_cross/eanb_`i'_k) if eanb_`i'_cross!=.
-g   sh_ea_`i'_o=(eanb_`i'_cross/eanb_`i'_o) if eanb_`i'_cross!=.
+	generate sh_ea_`i'_k=(eanb_`i'_cross/eanb_`i'_k) if eanb_`i'_cross!=.
+	generate sh_ea_`i'_o=(eanb_`i'_cross/eanb_`i'_o) if eanb_`i'_cross!=.
 }
-*/
+
 
 collapse (max) ead* sh_plotea* sh_ea_* wave region othregion (firstnm) pw_w5, by(ea_id)
 
@@ -82,7 +83,8 @@ foreach i in treadle motorpump rotlegume cresidue1 cresidue2 mintillage zerotill
         impcr1 impcr2 impcr3 impcr4 impcr5 impcr6 impcr7 impcr8 impcr9 ///
         impcr10 impcr11 impcr12 impcr13 impcr14 impcr15 impcr18 impcr19 impcr23 ///
         impcr24 impcr25 impcr26 impcr27 impcr42 impcr49 impcr60 impcr62 impcr71 ///
-        impcr72  impveg impftr improot impccr {
+        impcr72  impveg impftr improot impccr livIA livIA_publ livIA_priv agroind cowpea /// 
+		elepgrass deshograss sesbaniya sinar lablab alfalfa vetch rhodesgrass cross {
 
     replace ead_`i' =0 if ead_`i' ==.
     replace sh_ea_`i'=. if ead_`i'==0 
@@ -93,7 +95,6 @@ foreach i in ofsp awassa83 desi kabuli {
     replace sh_plotea_`i'=. if ead_`i'==0
 }
 
-/*
 foreach i in largerum smallrum poultry {
 
     replace ead_cross_`i'=0 if ead_cross_`i'==.
@@ -101,7 +102,7 @@ foreach i in largerum smallrum poultry {
     replace sh_ea_`i'_k=. if ead_cross_`i'==0 
 
 }
-*/
+
 
 foreach i of varlist *impveg* {
     lab var `i' "Improved (SR) vegetables and herbs" 
@@ -270,16 +271,21 @@ lab var ead_terr        "Terracing"
 lab var ead_wcatch      "Water catchments"
 lab var ead_affor       "Afforestation"
 lab var ead_ploc        "Plough along the contour"
-/*
-lab var ead_livIA       "Livestock AI"
-lab var ead_elepgrass   "Feed and Forage: Elephant Grass"
-lab var ead_gaya        "Feed and Forage: Gaya"
-lab var ead_sasbaniya   "Feed and Forage: Sasbaniya"
-lab var ead_alfa        "Feed and Forage: Alfalfa"
-lab var ead_indprod     "Feed and Forage: Industry by-product"
-lab var ead_feed		"Feed and forages"
-lab var ead_grass        "Elephant grass, gaya, sasbaniya, alfalfa"
-*/
+
+lab var ead_livIA            "Livestock AI - both public & private"
+lab var ead_livIA_publ       "Livestock AI - public"
+lab var ead_livIA_priv       "Livestock AI - private"
+lab var ead_agroind          "Feed and Forage: Agro-industry"
+lab var ead_cowpea           "Feed and Forage: Cowpea"
+lab var ead_elepgrass        "Feed and Forage: Elephant Grass"
+lab var ead_deshograss       "Feed and Forage: Desho Grass"
+lab var ead_sesbaniya        "Feed and Forage: Sesbania"
+lab var ead_sinar            "Feed and Forage: Sinar"
+lab var ead_lablab           "Feed and Forage: Lablab" 
+lab var ead_alfalfa          "Feed and Forage: Alfalfa"
+lab var ead_vetch            "Feed and Forage: Vetch"
+lab var ead_rhodesgrass      "Feed and Forage: Rhodes Grass"
+
 lab var sh_ea_treadle    "Treadle pump" 
 lab var sh_ea_motorpump  "Motor pump"
 lab var sh_ea_rdisp      "River dispersion" 
@@ -296,13 +302,19 @@ lab var sh_ea_affor      "Afforestation"
 lab var sh_ea_ploc       "Plough along the contour"
 
 
-/*
-lab var sh_ea_livIA      "Livestock AI"
-lab var sh_ea_elepgrass  "Feed and Forage: Elephant Grass"
-lab var sh_ea_gaya       "Feed and Forage: Gaya"
-lab var sh_ea_sasbaniya  "Feed and Forage: Sasbaniya"
-lab var sh_ea_alfa       "Feed and Forage: Alfalfa"
-lab var sh_ea_indprod    "Feed and Forage: Industry by-products"
+lab var sh_ea_livIA            "Livestock AI - both public & private"
+lab var sh_ea_livIA_publ       "Livestock AI - public"
+lab var sh_ea_livIA_priv       "Livestock AI - private"
+lab var sh_ea_agroind          "Feed and Forage: Agro-industry"
+lab var sh_ea_cowpea           "Feed and Forage: Cowpea"
+lab var sh_ea_elepgrass        "Feed and Forage: Elephant Grass"
+lab var sh_ea_deshograss       "Feed and Forage: Desho Grass"
+lab var sh_ea_sesbaniya        "Feed and Forage: Sesbania"
+lab var sh_ea_sinar            "Feed and Forage: Sinar"
+lab var sh_ea_lablab           "Feed and Forage: Lablab" 
+lab var sh_ea_alfalfa          "Feed and Forage: Alfalfa"
+lab var sh_ea_vetch            "Feed and Forage: Vetch"
+lab var sh_ea_rhodesgrass      "Feed and Forage: Rhodes Grass"
 
 lab var ead_cross          "Crossbreeding of large ruminants, small ruminants and poultry"
 lab var ead_cross_largerum "Large ruminants crossbred"
@@ -317,7 +329,7 @@ lab var sh_ea_poultry_k   "Poultry crossbred"
 lab var sh_ea_largerum_o  "Large ruminants crossbred"
 lab var sh_ea_smallrum_o  "Small ruminants crossbred"
 lab var sh_ea_poultry_o   "Poultry crossbred"
-*/
+
 
 
 merge 1:1 ea_id using "${data}\ess5_community_new"

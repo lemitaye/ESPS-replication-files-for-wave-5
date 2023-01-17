@@ -62,13 +62,12 @@ replace region=0 if saq01==2 | saq01==5 | saq01==6 | saq01==12 | saq01==13 | saq
 generate othregion = 0
 replace othregion = saq01 if saq01==2 | saq01==5 | saq01==6 | saq01==12 | saq01==13 | saq01==15 
 
-/*
-The following were excluded from the loop below:
-po_livIA po_elepgrass po_gaya po_sasbaniya po_alfa lr_livIA lr_elepgrass lr_gaya 
-lr_sasbaniya lr_alfa sr_livIA sr_elepgrass sr_gaya sr_sasbaniya sr_alfa
-*/
 
-foreach i in cr1 cr2 cr6 {
+foreach i in cr1 cr2 cr6 po_livIA po_agroind po_elepgrass po_deshograss po_sesbaniya ///
+        po_sinar po_lablab po_alfalfa po_vetch po_rhodesgrass lr_livIA lr_agroind lr_cowpea ///
+        lr_elepgrass lr_deshograss lr_sesbaniya lr_sinar lr_lablab lr_alfalfa lr_vetch lr_rhodesgrass ///
+        sr_livIA sr_agroind sr_cowpea sr_elepgrass sr_deshograss sr_sesbaniya sr_sinar sr_lablab sr_alfalfa ///
+        sr_vetch sr_rhodesgrass {
     replace `i'=0 if `i'==.
 }
 
