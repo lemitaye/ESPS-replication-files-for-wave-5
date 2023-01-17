@@ -7,12 +7,12 @@
 use "${rawdata}\PP\sect8_1_ls_w5", clear
 
 
-generate ls_type=1 if ls_code>=1 & ls_code<=6
-replace ls_type=2 if ls_code==7 | ls_code==8
-replace ls_type=3 if ls_code==9
-replace ls_type=4 if ls_code>=10 & ls_code<=12
-replace ls_type=5 if ls_code>=13 & ls_code<=15
-replace ls_type=6 if ls_code==16
+generate ls_type=1 if ls_code>=1 & ls_code<=6   // large ruminants (Bulls, Oxen, Cows, Steers, Heifers, and Calves)
+replace ls_type=2 if ls_code==7 | ls_code==8    // small ruminants (Goats and Sheep)
+replace ls_type=3 if ls_code==9                 // Camels
+replace ls_type=4 if ls_code>=10 & ls_code<=12  // Poultry (Chicken and Chicks)
+replace ls_type=5 if ls_code>=13 & ls_code<=15  // Horses, Mules, Donkeys
+replace ls_type=6 if ls_code==16                // Bees
 
 * 8.3 Livestock breeding, health, shelter, water, and feed
 merge m:1 household_id ls_type holder_id using "${rawdata}\PP\sect8_3_ls_w5"
@@ -71,8 +71,9 @@ replace poultry_x=1 if ls_type==4  & ls_s8_1q01>0 & ls_s8_1q01!=.
 egen poultry_d=max(poultry_x), by(household_id)
 drop poultry_x
 
-
-
+generate eartag=0
+replace eartag=1 if s8_3q02b==1
+egen eartag_d=max(eartag), by(household_id)
 
 * Total no. of ... per household: KEEP vs. OWN
 
@@ -83,14 +84,16 @@ egen largerum_nbhh_k= sum(ls_s8_1q01) if ls_type==1, by(household_id) // livesto
 
 egen largerum_nbhh_o= sum(ls_s8_1q02bis) if ls_type==1 & ls_s8_1q01>0, by(household_id) // livestock owned
 
-
 egen largerum_cross=sum(ls_s8_1q03) if ls_type==1 & ls_s8_1q01>0, by(household_id) // crossbred animals
+
+egen largerum_eartag=sum(eartag) if ls_type==1 & ls_s8_1q01>0, by(household_id)
+// Ear tag question only non-missing for large ruminants (see `tab ls_code s8_3q02b')
+// and only available for those with AI (see `tab ls_s8_3q02 s8_3q02b')
 
 * Small ruminants
 egen smallrum_nbhh_k= sum(ls_s8_1q01) if ls_type==2, by(household_id) // livestock kept
 
 egen smallrum_nbhh_o= sum(ls_s8_1q02bis) if ls_type==2 & ls_s8_1q01>0, by(household_id) // livestock owned
-
 
 egen smallrum_cross=sum(ls_s8_1q03) if ls_type==2 & ls_s8_1q01>0, by(household_id) // crossbred animals
 
@@ -110,7 +113,8 @@ egen goat_nbhh_o= sum(ls_s8_1q02bis) if ls_code==7 & ls_s8_1q01>0, by(household_
 
 *Horses
 egen horse_nbhh_o= sum(ls_s8_1q02bis) if ls_code==13 & ls_s8_1q01>0, by(household_id) // livestock owned
-*donkeys
+
+*Donkeys
 egen donkey_nbhh_o= sum(ls_s8_1q02bis) if (ls_code==15 | ls_code==14) &  ls_s8_1q01>0, by(household_id) // livestock owned
 
 gen cfcattle   = 0.6
@@ -128,6 +132,8 @@ gen cfdonkeys  = 0.5
 foreach i in largerum smallrum poultry {
     egen `i'_crossm=max(`i'_cross), by(household_id)
 }
+egen largerum_eartagm = max(largerum_eartag), by(household_id)
+
 * Nb. of animals owned, kept, and crossbred
 foreach i in largerum smallrum poultry {
 
@@ -139,6 +145,7 @@ foreach i in largerum smallrum poultry {
 
 }
 
+replace largerum_eartagm=0 if largerum_eartagm==. & eartag_d==1
 
 * Dummy for owning at least 1 crossbred animal per hh
 generate hhd_cross=.
@@ -150,6 +157,10 @@ foreach i in largerum smallrum poultry {
     replace hhd_cross_`i'=0 if hh_liv==1 
     replace hhd_cross_`i'=1 if hh_liv==1 & `i'_cross>0 & `i'_cross!=.
 }
+
+generate hhd_eartag_largerum=. if hh_liv==0
+replace hhd_eartag_largerum=0 if hh_liv==1
+replace hhd_eartag_largerum=1 if hh_liv==1 & eartag_d==1
 
 * Shares of livestock per HH 
 foreach i in largerum smallrum poultry {
@@ -165,26 +176,37 @@ foreach i in largerum smallrum poultry {
 
 * Dummy for artificial insemination by hh
 generate livIA=.
-replace livIA=0 if (ls_s8_3q02!=5 | ls_s8_3q01==2) & hh_liv==1
-replace livIA=1 if ls_s8_3q02==5
-lab var livIA "Livestock AI"
+replace livIA=0 if (ls_s8_3q02!=5 | ls_s8_3q02!=6 | ls_s8_3q01==2) & hh_liv==1
+replace livIA=1 if ls_s8_3q02==5 | ls_s8_3q02==6
+lab var livIA "Livestock AI - both public & private"
+
+generate livIA_publ=.
+replace livIA_publ=0 if (ls_s8_3q02!=5 | ls_s8_3q01==2) & hh_liv==1
+replace livIA_publ=1 if ls_s8_3q02==5 
+lab var livIA_publ "Livestock AI - public"
+
+generate livIA_priv=.
+replace livIA_priv=0 if (ls_s8_3q02!=6 | ls_s8_3q01==2) & hh_liv==1
+replace livIA_priv=1 if ls_s8_3q02==6
+lab var livIA_priv "Livestock AI - private"
 
 
 egen hhd_livIA=max(livIA), by(household_id)
-
+egen hhd_livIA_publ=max(livIA_publ), by(household_id)
+egen hhd_livIA_priv=max(livIA_priv), by(household_id)
 
 
 * Dummy artificial insemination by livestock type
 generate lr_livIA=.
-replace lr_livIA=0 if (ls_s8_3q02!=5 | ls_s8_3q01==2) &     ls_type==1 & ls_s8_1q01>0 & ls_s8_1q01!=. //large ruminants
+replace lr_livIA=0 if (ls_s8_3q02!=5 | ls_s8_3q02!=6 | ls_s8_3q01==2) &     ls_type==1 & ls_s8_1q01>0 & ls_s8_1q01!=. //large ruminants
 replace lr_livIA=1 if  ls_s8_3q02==5               &     ls_type==1 & ls_s8_1q01>0 & ls_s8_1q01!=. //large ruminants
 
 generate sr_livIA=.
-replace sr_livIA=0 if (ls_s8_3q02!=5 | ls_s8_3q01==2) &     ls_type==2 & ls_s8_1q01>0 & ls_s8_1q01!=. //smallruminants
+replace sr_livIA=0 if (ls_s8_3q02!=5 | ls_s8_3q02!=6 | ls_s8_3q01==2) &     ls_type==2 & ls_s8_1q01>0 & ls_s8_1q01!=. //smallruminants
 replace sr_livIA=1 if  ls_s8_3q02==5               &     ls_type==2 & ls_s8_1q01>0 & ls_s8_1q01!=. //smallruminants
 
 generate po_livIA=.
-replace po_livIA=0 if (ls_s8_3q02!=5 | ls_s8_3q01==2) &    ls_type==4 & ls_s8_1q01>0 & ls_s8_1q01!=. //poultry
+replace po_livIA=0 if (ls_s8_3q02!=5 | ls_s8_3q02!=6 | ls_s8_3q01==2) &    ls_type==4 & ls_s8_1q01>0 & ls_s8_1q01!=. //poultry
 replace po_livIA=1 if  ls_s8_3q02==5               &    ls_type==4 & ls_s8_1q01>0 & ls_s8_1q01!=. //poultry
 
 
@@ -259,7 +281,7 @@ save "${data}\ess5_pp_livestock_plot_new", replace
 
 * Collapse at the hh-level
 #delimit ;
-collapse (max) hh_liv largerum_nbhh* largerum_cross smallrum_nbhh* smallrum_cross 
+collapse (max) hh_liv largerum_nbhh* largerum_cross largerum_eartag smallrum_nbhh* smallrum_cross 
 sh*  lr* sr* po* hhd*  goat_nbhh_o horse_nbhh_o donkey_nbhh_o cfcattle cfsheep 
 cfgoats cfchicken cfhorses cfyaks cfdonkeys, by(household_id)
 ;
@@ -294,7 +316,10 @@ lab var poultry_cross         "Poultry"
 lab var poultry_nbhh_k        "No. of POULTRY per hh - kept"
 lab var poultry_nbhh_o        "No. of POULTRY per hh - owned"
 
-lab var hhd_livIA             "AI on any livestock type"
+lab var hhd_livIA             "AI on any livestock type - both public & private"
+lab var hhd_livIA_publ        "AI on any livestock type - public"
+lab var hhd_livIA_priv        "AI on any livestock type - private"
+
 lab var lr_livIA              "Large ruminants: AI"
 lab var sr_livIA              "Small ruminants: AI"
 lab var po_livIA              "Poultry: AI"
