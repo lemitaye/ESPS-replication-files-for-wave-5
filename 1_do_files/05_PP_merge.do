@@ -53,18 +53,6 @@ merge 1:1 household_id using `hh_sectcover'
 keep if _m==3
 */
 
-
-lab var sh_hh_largerum_k "Large ruminants - kept" 
-lab var sh_hh_largerum_o "Large ruminants - owned" 
-lab var sh_hh_smallrum_k "Small ruminants - kept"
-lab var sh_hh_smallrum_o "Small ruminants - owned"
-lab var sh_hh_poultry_k  "Poultry - kept"
-lab var sh_hh_poultry_o  "Poultry - owned"
-
-lab var hhd_cross_largerum "Crossbred LARGE RUMINANTS"
-lab var hhd_cross_smallrum "Crossbred SMALL RUMINANTS"
-lab var hhd_cross_poultry  "Crossbred POULTRY"
-
 generate wave = 5
 clonevar region = saq01
 replace region=0 if saq01==2 | saq01==5 | saq01==6 | saq01==12 | saq01==13 | saq01==15 

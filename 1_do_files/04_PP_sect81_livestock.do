@@ -71,10 +71,6 @@ replace poultry_x=1 if ls_type==4  & ls_s8_1q01>0 & ls_s8_1q01!=.
 egen poultry_d=max(poultry_x), by(household_id)
 drop poultry_x
 
-generate eartag=0
-replace eartag=1 if s8_3q02b==1
-egen eartag_d=max(eartag), by(household_id)
-
 * Total no. of ... per household: KEEP vs. OWN
 
 * Large ruminants
@@ -86,9 +82,9 @@ egen largerum_nbhh_o= sum(ls_s8_1q02bis) if ls_type==1 & ls_s8_1q01>0, by(househ
 
 egen largerum_cross=sum(ls_s8_1q03) if ls_type==1 & ls_s8_1q01>0, by(household_id) // crossbred animals
 
-egen largerum_eartag=sum(eartag) if ls_type==1 & ls_s8_1q01>0, by(household_id)
-// Ear tag question only non-missing for large ruminants (see `tab ls_code s8_3q02b')
-// and only available for those with AI (see `tab ls_s8_3q02 s8_3q02b')
+* egen largerum_eartag=sum(eartag) if ls_type==1 & ls_s8_1q01>0, by(household_id)
+// Ear tag question only delivered to seven households and only available for
+// large ruminants
 
 * Small ruminants
 egen smallrum_nbhh_k= sum(ls_s8_1q01) if ls_type==2, by(household_id) // livestock kept
@@ -132,7 +128,6 @@ gen cfdonkeys  = 0.5
 foreach i in largerum smallrum poultry {
     egen `i'_crossm=max(`i'_cross), by(household_id)
 }
-egen largerum_eartagm = max(largerum_eartag), by(household_id)
 
 * Nb. of animals owned, kept, and crossbred
 foreach i in largerum smallrum poultry {
@@ -145,8 +140,6 @@ foreach i in largerum smallrum poultry {
 
 }
 
-replace largerum_eartagm=0 if largerum_eartagm==. & eartag_d==1
-
 * Dummy for owning at least 1 crossbred animal per hh
 generate hhd_cross=.
 replace hhd_cross=0 if hh_liv==1 
@@ -157,10 +150,6 @@ foreach i in largerum smallrum poultry {
     replace hhd_cross_`i'=0 if hh_liv==1 
     replace hhd_cross_`i'=1 if hh_liv==1 & `i'_cross>0 & `i'_cross!=.
 }
-
-generate hhd_eartag_largerum=. if hh_liv==0
-replace hhd_eartag_largerum=0 if hh_liv==1
-replace hhd_eartag_largerum=1 if hh_liv==1 & eartag_d==1
 
 * Shares of livestock per HH 
 foreach i in largerum smallrum poultry {
@@ -281,7 +270,7 @@ save "${data}\ess5_pp_livestock_plot_new", replace
 
 * Collapse at the hh-level
 #delimit ;
-collapse (max) hh_liv largerum_nbhh* largerum_cross largerum_eartag smallrum_nbhh* smallrum_cross 
+collapse (max) hh_liv largerum_nbhh* largerum_cross smallrum_nbhh* smallrum_cross 
 sh*  lr* sr* po* hhd*  goat_nbhh_o horse_nbhh_o donkey_nbhh_o cfcattle cfsheep 
 cfgoats cfchicken cfhorses cfyaks cfdonkeys, by(household_id)
 ;
@@ -323,6 +312,17 @@ lab var hhd_livIA_priv        "AI on any livestock type - private"
 lab var lr_livIA              "Large ruminants: AI"
 lab var sr_livIA              "Small ruminants: AI"
 lab var po_livIA              "Poultry: AI"
+
+lab var sh_hh_largerum_k "Large ruminants - kept" 
+lab var sh_hh_largerum_o "Large ruminants - owned" 
+lab var sh_hh_smallrum_k "Small ruminants - kept"
+lab var sh_hh_smallrum_o "Small ruminants - owned"
+lab var sh_hh_poultry_k  "Poultry - kept"
+lab var sh_hh_poultry_o  "Poultry - owned"
+
+lab var hhd_cross_largerum "Crossbred LARGE RUMINANTS"
+lab var hhd_cross_smallrum "Crossbred SMALL RUMINANTS"
+lab var hhd_cross_poultry  "Crossbred POULTRY"
 
 lab var hhd_agroind          "Feed and Forage: Agro-industry"
 lab var hhd_cowpea           "Feed and Forage: Cowpea"
