@@ -15,25 +15,23 @@ wave4_ea_new <- read_dta("replication_files/3_report_data/wave4_ea_new.dta")
 wave5_ea_new <- read_dta("LSMS_W5/3_report_data/wave5_ea_new.dta")
 
 
-select_hh_level <- function(tbl, pw) {
+recode_region <- function(tbl) {
   
   tbl %>% 
-    mutate_if(is.labelled, as.character, levels = "labels") %>% 
-    select(
-      household_id, region, {{pw}}, wave, ead_ofsp, ead_awassa83, ead_rdisp, 
-      ead_motorpump, ead_swc, ead_consag1, ead_consag2, ead_affor, ead_mango, 
-      ead_papaya, ead_avocado, ead_impcr13, ead_impcr19, ead_impcr11, 
-      ead_impcr24, ead_impcr14, ead_impcr3, ead_impcr5, ead_impcr60, ead_impcr62
-    ) %>% 
-    mutate(region = recode(region, 
+    mutate(
+      region = recode(region, 
                            `0` = "Other regions",
                            `1` = "Tigray",
                            `3` = "Amhara",
                            `4` = "Oromia",
-                           `7` = "SNNP"))
+                           `7` = "SNNP")
+      )
   
 }
 
+# this list need to retain only vars that are common across the 
+# two waves (for comparison)
+# can do a separate analysis for new innovations (see figs_hh)
 vars <- c(
   "ead_ofsp", "ead_awassa83", "ead_kabuli", "ead_rdisp", "ead_motorpump", 
         "ead_swc", "ead_consag1", "ead_consag2", "ead_affor", "ead_mango", 
@@ -45,7 +43,8 @@ vars <- c(
   )
 
 ea_level_w5 <- wave5_ea_new %>% 
-  select(ea_id, wave, region, pw = pw_w5, all_of(vars))
+  select(ea_id, wave, region, pw = pw_w5, all_of(vars)) %>% 
+  recode_region()
 
 ea_level_w4 <- wave4_ea_new %>% 
   select(ea_id, wave, region, pw_w4, any_of( all_of(vars) ) ) %>% 
@@ -54,7 +53,8 @@ ea_level_w4 <- wave4_ea_new %>%
       select(ea_id, pw = pw_w5),
     by = c("ea_id")
   ) %>% 
-  mutate(pw = case_when(!is.na(pw) ~ pw, TRUE ~ pw_w4))
+  mutate(pw = case_when(!is.na(pw) ~ pw, TRUE ~ pw_w4)) %>% 
+  recode_region()
 
 
 mean_tbl <- function(tbl, by_region = TRUE) {
@@ -62,7 +62,7 @@ mean_tbl <- function(tbl, by_region = TRUE) {
   if (by_region) {
     
     tbl %>% 
-      pivot_longer(ead_ofsp:hhd_impcr62, 
+      pivot_longer(all_of(vars), 
                    names_to = "variable",
                    values_to = "value") %>% 
       group_by(wave, region, variable) %>% 
@@ -75,7 +75,7 @@ mean_tbl <- function(tbl, by_region = TRUE) {
   } else {
     
     tbl %>% 
-      pivot_longer(hhd_ofsp:hhd_impcr62, 
+      pivot_longer(all_of(vars), 
                    names_to = "variable",
                    values_to = "value") %>% 
       group_by(wave, variable) %>% 
@@ -90,12 +90,17 @@ mean_tbl <- function(tbl, by_region = TRUE) {
 }
 
 
+mean_tbl(ea_level_w5, by_region = FALSE) %>% 
+  mutate(wave = "wave 4")
 
 
-wave5_ea_new %>% 
-  select(
+ea_level_w5 %>% 
+  pivot_longer(all_of(vars), 
+               names_to = "variable",
+               values_to = "value")
 
-)
+
+
 
 x <- c("ead_ofsp", "ead_awassa83")
 wave5_ea_new %>% 
