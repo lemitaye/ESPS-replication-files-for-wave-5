@@ -32,22 +32,27 @@ recode_region <- function(tbl) {
 # this list need to retain only vars that are common across the 
 # two waves (for comparison)
 # can do a separate analysis for new innovations (see figs_hh)
-vars <- c(
-  "ead_ofsp", "ead_awassa83", "ead_kabuli", "ead_rdisp", "ead_motorpump", 
-        "ead_swc", "ead_consag1", "ead_consag2", "ead_affor", "ead_mango", 
-          "ead_papaya", "ead_avocado", "ead_malt", "ead_durum", "ead_hotline", 
-          "ead_seedv1", "ead_seedv2", "commirr", "comm_video", "comm_video_all", 
-          "comm_2wt_own", "comm_2wt_use", "comm_psnp", "ead_impcr13", "ead_impcr19", 
-          "ead_impcr11", "ead_impcr24", "ead_impcr14", "ead_impcr3", "ead_impcr5", 
-          "ead_impcr60", "ead_impcr62"
+vars_both <- c(
+  "ead_ofsp", "ead_awassa83", "ead_rdisp", "ead_motorpump", 
+  "ead_swc", "ead_consag1", "ead_consag2", "ead_affor", "ead_mango", 
+  "ead_papaya", "ead_avocado", "commirr", "ead_impcr13", "ead_impcr19", 
+  "ead_impcr11", "ead_impcr24", "ead_impcr14", "ead_impcr3", "ead_impcr5", 
+  "ead_impcr60", "ead_impcr62"
   )
 
+vars_w5 <- c(
+  "ead_kabuli", "ead_malt", "ead_durum", "ead_hotline", "ead_seedv1", 
+  "ead_seedv2", "comm_video", "comm_video_all", "comm_2wt_own", "comm_2wt_use", 
+  "comm_psnp"
+)
+
 ea_level_w5 <- wave5_ea_new %>% 
-  select(ea_id, wave, region, pw = pw_w5, all_of(vars)) %>% 
+  select(ea_id, wave, region, pw = pw_w5, all_of(vars_both)) %>% 
   recode_region()
 
 ea_level_w4 <- wave4_ea_new %>% 
-  select(ea_id, wave, region, pw_w4, any_of( all_of(vars) ) ) %>% 
+  select(ea_id, wave, region, pw_w4, all_of( vars_both ) ) %>% 
+  mutate(across(all_of(vars_both), ~recode(., `100` = 1))) %>% 
   left_join(
     wave5_ea_new %>% 
       select(ea_id, pw = pw_w5),
@@ -57,12 +62,12 @@ ea_level_w4 <- wave4_ea_new %>%
   recode_region()
 
 
-mean_tbl <- function(tbl, by_region = TRUE) {
+mean_tbl <- function(tbl, var_vec, by_region = TRUE) {
   
   if (by_region) {
     
     tbl %>% 
-      pivot_longer(all_of(vars), 
+      pivot_longer(all_of(var_vec), 
                    names_to = "variable",
                    values_to = "value") %>% 
       group_by(wave, region, variable) %>% 
@@ -75,7 +80,7 @@ mean_tbl <- function(tbl, by_region = TRUE) {
   } else {
     
     tbl %>% 
-      pivot_longer(all_of(vars), 
+      pivot_longer(all_of(var_vec), 
                    names_to = "variable",
                    values_to = "value") %>% 
       group_by(wave, variable) %>% 
@@ -89,23 +94,60 @@ mean_tbl <- function(tbl, by_region = TRUE) {
   
 }
 
+labels <- var_label(ea_level_w5) %>% 
+  .[-c(1:4)] %>% 
+  as_tibble() %>% 
+  pivot_longer(
+    cols = everything(), 
+    names_to = "variable", 
+    values_to = "label"
+  ) 
 
-mean_tbl(ea_level_w5, by_region = FALSE) %>% 
-  mutate(wave = "wave 4")
+national_ea_level <- bind_rows(
+  mean_tbl(ea_level_w4, vars_both, by_region = FALSE) %>% 
+    mutate(wave = "Wave 4"),
+  mean_tbl(ea_level_w5, vars_both, by_region = FALSE) %>% 
+    mutate(wave = "Wave 5")
+) %>% 
+  mutate(wave = fct_relevel(wave, "Wave 5", "Wave 4")) %>% 
+  left_join(labels, by = "variable") %>% 
+  select(wave, variable, label, mean, nobs)
+
+regions_ea_level <- bind_rows(
+  mean_tbl(ea_level_w4, vars_both) %>% 
+    mutate(wave = "Wave 4"),
+  mean_tbl(ea_level_w5, vars_both) %>% 
+    mutate(wave = "Wave 5")
+) %>% 
+  mutate(wave = fct_relevel(wave, "Wave 5", "Wave 4")) %>% 
+  left_join(labels, by = "variable") %>% 
+  select(wave, region, variable, label, mean, nobs)
 
 
-ea_level_w5 %>% 
-  pivot_longer(all_of(vars), 
-               names_to = "variable",
-               values_to = "value")
+national_ea_level %>% 
+  ggplot(aes(mean, label, fill = wave)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = paste0( round(mean*100, 2), " %", "(", nobs, ")" )),
+            position = position_dodge(width = 1),
+            size = 1.5) +
+  scale_x_continuous(labels = percent_format()) +
+  labs(x = "Percent of EAs", 
+       y = "", 
+       fill = "Wave",
+       title = "Percent of Rural EAs Adopting Innovations - Waves 4 and 5")
 
-
-
-
-x <- c("ead_ofsp", "ead_awassa83")
-wave5_ea_new %>% 
-  select(ea_id, all_of(x))
-
+regions_ea_level %>% 
+  filter(region == "Amhara") %>% 
+  ggplot(aes(mean, label, fill = wave)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = paste0( round(mean*100, 2), " %", "(", nobs, ")" )),
+            position = position_dodge(width = 1),
+            size = 1.5) +
+  scale_x_continuous(labels = percent_format()) +
+  labs(x = "Percent of EAs", 
+       y = "", 
+       fill = "Wave",
+       title = "Percent of Rural EAs Adopting Innovations - Waves 4 and 5")
 
 
 
