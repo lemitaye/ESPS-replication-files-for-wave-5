@@ -11,6 +11,7 @@ library(scales)
 
 setwd("C:/Users/tayel/Dropbox/Documents/SPIA/Ethiopia")
 
+wave3_hh <- read_dta("replication_files/3_report_data/wave3_hh.dta")
 wave4_hh_new <- read_dta("replication_files/3_report_data/wave4_hh_new.dta")
 wave5_hh_new <- read_dta("LSMS_W5/3_report_data/wave5_hh_new.dta")
 
@@ -340,7 +341,31 @@ ggsave(
 
 
 
+kabuli_w3 <- wave3_hh %>% 
+  select(region, hhd_kabuli_r, pw_w3) %>% 
+  mutate(region = recode(region, 
+                         `0` = "Other regions",
+                         `1` = "Tigray",
+                         `3` = "Amhara",
+                         `4` = "Oromia",
+                         `7` = "SNNP")) 
 
+mean_kabuli_w3 <- bind_rows(
+  kabuli_w3 %>% 
+    group_by(region) %>% 
+    summarise(
+      mean_kabuli_w3 = weighted.mean(hhd_kabuli_r, w = pw_w3, na.rm = TRUE),
+      nobs = sum(!is.na(hhd_kabuli_r)),
+      .groups = "drop"
+    ),
+  
+  wave3_hh %>% 
+    summarise(
+      mean_kabuli_w3 = weighted.mean(hhd_kabuli_r, w = pw_w3, na.rm = TRUE),
+      nobs = sum(!is.na(hhd_kabuli_r))
+    ) %>% 
+    mutate(region = "National")
+)
 
 
 
