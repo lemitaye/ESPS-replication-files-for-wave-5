@@ -150,10 +150,39 @@ regions_ea_level %>%
        title = "Percent of Rural EAs Adopting Innovations - Waves 4 and 5")
 
 
+# Table
+track_ea_dropped <- read_dta("LSMS_W5/tmp/track_ea_dropped.dta") %>% 
+  mutate(
+    region_w4 = recode(region_w4,
+                    `1` = "Tigray",
+                    `2` = "Afar",
+                    `3` = "Amhara",
+                    `4` = "Oromia",
+                    `5` = "Somali",
+                    `6` = "Benishangul Gumuz",
+                    `7` = "SNNP",
+                    `12` = "Gambela",
+                    `13` = "Harar",
+                    `15` = "Dire Dawa" )
+  ) 
 
-
-
-
+bind_rows(
+  track_ea_dropped %>% 
+    count(region_w4, ea_missing), 
+  
+  track_ea_dropped %>% 
+    count(ea_missing) %>% 
+    mutate(region_w4 = "National")
+) %>% 
+  complete(region_w4, ea_missing, fill = list(n = 0)) %>% 
+  mutate(ea_missing = recode(ea_missing, `1` = "ea_missing", `0` = "ea_not_missing")) %>% 
+  pivot_wider(names_from = "ea_missing", values_from = "n") %>% 
+  mutate(total = ea_missing + ea_not_missing,
+         region_w4 = fct_relevel(
+           factor(region_w4), "Tigray", "Afar", "Amhara", "Oromia", "Somali", 
+           "Benishangul Gumuz", "SNNP", "Gambela", "Harar", "Dire Dawa", "National"
+         )) %>% 
+  arrange(region_w4)
 
 
 
