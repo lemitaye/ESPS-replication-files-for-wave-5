@@ -275,7 +275,7 @@ ggsave(
 w5_hh_new <- wave5_hh_new %>% 
   select(
     household_id, region, pw_w5, hhd_kabuli, hhd_malt, hhd_durum, 
-         hhd_seed_source, hotline
+         hhd_seedv1, hhd_seedv2, hotline
     ) %>% 
   mutate(region = recode(
     region, `0` = "Other regions", `1` = "Tigray", `3` = "Amhara", 
@@ -305,7 +305,7 @@ w5_means_new <- left_join(
   ),
   
   y = var_label(select(wave5_hh_new, hhd_kabuli, hhd_malt, hhd_durum, 
-                   hhd_seed_source, hotline)) %>% 
+                       hhd_seedv1, hhd_seedv2, hotline)) %>% 
     as_tibble() %>% 
     pivot_longer(
       cols = everything(), 
@@ -368,12 +368,28 @@ mean_kabuli_w3 <- bind_rows(
 )
 
 
+kabuli_bind <- bind_rows(
+  w5_means_new %>% 
+    filter(variable == "hhd_kabuli") %>% 
+    select(-variable) %>% 
+    mutate(mean = mean*100, wave = "Wave 5"), 
+  
+  mean_kabuli_w3 %>% 
+    filter(region!= "Tigray") %>% 
+    rename(mean = mean_kabuli_w3) %>% 
+    mutate(label = "Chickpea Kabuli variety", wave = "Wave 3") 
+) %>% 
+  mutate(region = fct_relevel(region, "Amhara", "Oromia", "SNNP", "Other regions", "National")) 
 
 
-
-
-
-
+kabuli_bind %>% 
+  ggplot(aes(region, mean/100, fill = wave)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = paste0( round(mean, 2), "%", "\n(", nobs, ")" ) ),
+            position = position_dodge(width = 1),
+            hjust = -.15, size = 2.5) %>% 
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+  scale_y_continuous(labels = percent_format()) 
 
 
 
