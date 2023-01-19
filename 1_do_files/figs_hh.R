@@ -210,15 +210,15 @@ amhara_hh <- regions_hh_level %>%
 
 oromia_hh <- regions_hh_level %>% 
   filter(region == "Oromia") %>% 
-  plot_compar("Oromia", xlim = 1.05)
+  plot_compar("Oromia")
 
 snnp_hh <- regions_hh_level %>% 
   filter(region == "SNNP") %>% 
-  plot_compar("SNNP", xlim = 1.05)
+  plot_compar("SNNP")
 
 other_hh <- regions_hh_level %>% 
   filter(region == "Other regions") %>% 
-  plot_compar("Other regions", xlim = 1.05)
+  plot_compar("Other regions")
 
 
 
@@ -394,8 +394,8 @@ ggsave(
   filename = "LSMS_W5/tmp/figures/kabuli_plot.pdf",
   plot = kabuli_plot,
   device = cairo_pdf,
-  width = 200,
-  height = 185,
+  width = 180,
+  height = 135,
   units = "mm"
 )  
 

@@ -1,5 +1,5 @@
 ---
-title: "ESPS Exploratory Analysis - Tracking"
+title: "ESPS Exploratory Analysis - Tracking and Comparison"
 author: "Lemi Daba"
 date: "`r Sys.Date()`"
 output:
@@ -14,9 +14,9 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```{r}
 # set up:
 library(haven)
-library(tidyverse)
-library(thatssorandom)
-library(labelled)
+library(dplyr)
+library(tidyr)
+library(forcats)
 library(janitor)
 library(kableExtra)
 
@@ -56,7 +56,7 @@ summ_region <- function(tbl) {
                       `13` = "Harar",
                       `15` = "Dire Dawa" ),
       
-      merge = recode(merge, 
+      merge = recode(as.numeric(merge), 
                      `1` = "new_added", 
                      `2` = "dropped",
                      `3` = "matched" )
@@ -130,6 +130,20 @@ kbl(
 
 ## Comparison
 
+### All houehods surveyed
+
+![](figures/nat_hh.pdf)
+
+![](figures/amhara_hh.pdf)
+
+![](figures/oromia_hh.pdf)
+
+![](figures/snnp_hh.pdf)
+
+![](figures/other_hh.pdf)
+
+### Only for panel househods
+
 ![](figures/nat_panel.pdf)
 
 ![](figures/amhara_panel.pdf)
@@ -140,38 +154,10 @@ kbl(
 
 ![](figures/other_panel.pdf)
 
+### New innovations incorporated in ESPS5
+
 ![](figures/new_innov.pdf)
 
+### Comparing adoption of Chickpea Kabuli variety b/n waves 3 and 5
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+![](figures/kabuli_plot.pdf)
