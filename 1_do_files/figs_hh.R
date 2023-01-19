@@ -113,11 +113,11 @@ labels <- var_label(hh_level_w5) %>%
 
 national_hh_level <- bind_rows(
   mean_tbl(hh_level_w4, by_region = FALSE) %>% 
-    mutate(wave = "wave 4"),
+    mutate(wave = "Wave 4"),
   mean_tbl(hh_level_w5, by_region = FALSE) %>% 
-    mutate(wave = "wave 5")
+    mutate(wave = "Wave 5")
 ) %>% 
-  mutate(wave = fct_relevel(wave, "wave 5", "wave 4")) %>% 
+  mutate(wave = fct_relevel(wave, "Wave 5", "Wave 4")) %>% 
   left_join(labels, by = "variable") %>% 
   select(wave, variable, label, mean, nobs)  
 
@@ -125,36 +125,13 @@ regions_hh_level <- bind_rows(
   mean_tbl(hh_level_w4),
   mean_tbl(hh_level_w5)
   ) %>% 
-  mutate(wave = paste("wave", wave) %>% 
-           fct_relevel("wave 5", "wave 4")) %>% 
+  mutate(wave = paste("Wave", wave) %>% 
+           fct_relevel("Wave 5", "Wave 4")) %>% 
   left_join(labels, by = "variable") %>% 
   select(wave, region, variable, label, mean, nobs)
 
 
-national_hh_level %>% 
-  ggplot(aes(mean, label, fill = wave)) +
-  geom_col(position = "dodge") +
-  geom_text(aes(label = round(mean, 2)),
-            position = position_dodge(width = 1),
-            size = 1.5) +
-  labs(x = "Percent of households", 
-       y = "", 
-       fill = "Wave",
-       title = "Percent of Rural Households Adopting Innovations - Waves 4 and 5")
-
-regions_hh_level %>% 
-  filter(region != "Tigray") %>% 
-  ggplot(aes(mean, label, fill = wave)) +
-  geom_col(position = "dodge") +
-  facet_wrap(~ region, scales = "free_y")
-
-
-national_hh_level %>% 
-  filter(wave == "wave 5")
-
-# Next: EA level (replicate first in stata)
-
-
+# ONLY FOR PANEL HOUSEHOLDS:
 hh_level_panel <- inner_join(
   x = select_hh_level(wave4_hh_new, pw_w4) %>% 
     select(-wave, -pw_w4, -region),
@@ -196,19 +173,24 @@ national_hh_panel <- hh_level_panel %>%
   ))
 
 
-plot_compar <- function(tbl, title, xlim = 80) {
+plot_compar <- function(tbl, title, xlim = .8) {
   
   tbl %>% 
     mutate(
+      improv = case_when(
+        str_detect(label, "Improved") ~ 1,
+        TRUE ~ 0
+      ),
       wave = fct_relevel(wave, "Wave 5", "Wave 4"),
       label = fct_reorder(label, -improv)
     ) %>%
     ggplot(aes(mean, label, fill = wave)) +
     geom_col(position = "dodge") +
-    geom_text(aes(label = paste0( round(mean, 2), "%", " (", nobs, ")" ) ),
+    geom_text(aes(label = paste0( round(mean*100, 2), "%", " (", nobs, ")" ) ),
               position = position_dodge(width = 1),
               hjust = -.15, size = 2.5) +
     scale_y_discrete(labels = function(x) str_wrap(x, width = 35)) +
+    scale_x_continuous(labels = percent_format()) +
     expand_limits(x = xlim) +
     theme(legend.position = "top") +
     labs(x = "Percent of households", 
@@ -220,6 +202,9 @@ plot_compar <- function(tbl, title, xlim = 80) {
          Number of households responding in parenthesis")
   
 }
+
+national_hh_level %>% 
+  plot_compar("National")
 
 
 nat_panel <- national_hh_panel %>% 
