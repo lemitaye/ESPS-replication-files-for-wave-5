@@ -15,36 +15,57 @@ wave3_hh <- read_dta("replication_files/3_report_data/wave3_hh.dta")
 wave4_hh_new <- read_dta("replication_files/3_report_data/wave4_hh_new.dta")
 wave5_hh_new <- read_dta("LSMS_W5/3_report_data/wave5_hh_new.dta")
 
+vars_all <- c(
+  "hhd_ofsp", "hhd_awassa83", "hhd_kabuli", "hhd_rdisp", "hhd_motorpump", 
+  "hhd_swc", "hhd_consag1", "hhd_consag2", "hhd_affor", "hhd_mango", 
+  "hhd_papaya", "hhd_avocado", "hotline", "hhd_malt", "hhd_durum", 
+  "hhd_seedv1", "hhd_seedv2", "hhd_livIA", "hhd_livIA_publ", 
+  "hhd_livIA_priv", "hhd_cross_largerum", "hhd_cross_smallrum", 
+  "hhd_cross_poultry", "hhd_agroind", "hhd_cowpea", "hhd_elepgrass", 
+  "hhd_deshograss", "hhd_sesbaniya", "hhd_sinar", "hhd_lablab", 
+  "hhd_alfalfa", "hhd_vetch", "hhd_rhodesgrass", "hhd_impcr13", 
+  "hhd_impcr19", "hhd_impcr11", "hhd_impcr24", "hhd_impcr14", 
+  "hhd_impcr3", "hhd_impcr5", "hhd_impcr60", "hhd_impcr62"
+  )
 
-select_hh_level <- function(tbl, pw) {
+vars_both <- wave4_hh_new %>% 
+  select(any_of(vars_w5)) %>% 
+  colnames()
+
+vars_w5 <- setdiff(vars_all, vars_both)
+
+
+
+recode_region <- function(tbl) {
   
   tbl %>% 
-    mutate_if(is.labelled, as.character, levels = "labels") %>% 
-    select(
-      household_id, region, {{pw}}, wave, hhd_ofsp, hhd_awassa83, hhd_rdisp, 
-      hhd_motorpump, hhd_swc, hhd_consag1, hhd_consag2, hhd_affor, hhd_mango, 
-      hhd_papaya, hhd_avocado, hhd_impcr13, hhd_impcr19, hhd_impcr11, 
-      hhd_impcr24, hhd_impcr14, hhd_impcr3, hhd_impcr5, hhd_impcr60, hhd_impcr62
-    ) %>% 
-    mutate(region = recode(region, 
-                           `0` = "Other regions",
-                           `1` = "Tigray",
-                           `3` = "Amhara",
-                           `4` = "Oromia",
-                           `7` = "SNNP"))
+    mutate(
+      region = recode(region, 
+                      `0` = "Other regions",
+                      `1` = "Tigray",
+                      `3` = "Amhara",
+                      `4` = "Oromia",
+                      `7` = "SNNP")
+    )
   
 }
 
-hh_level_w5 <- select_hh_level(wave5_hh_new, pw_w5) %>% 
-  rename(pw = "pw_w5")
+hh_level_w5 <- wave5_hh_new %>% 
+  select(household_id, wave, region, pw = pw_w5, all_of(vars_both)) %>% 
+  recode_region()
 
-hh_level_w4 <- select_hh_level(wave4_hh_new, pw_w4) %>% 
+hh_level_w4 <- wave4_hh_new %>% 
+  select(household_id, wave, region, pw_w4, all_of(vars_both)) %>% 
   left_join(
     hh_level_w5 %>% 
       select(household_id, pw),
     by = c("household_id")
   ) %>% 
-  mutate(pw = case_when(!is.na(pw) ~ pw, TRUE ~ pw_w4))
+  mutate(
+    pw = case_when(!is.na(pw) ~ pw, TRUE ~ pw_w4),
+    across(all_of(vars_both), ~recode(., `100` = 1))  # since w4 vars are mult. by 100
+    ) %>% 
+  recode_region()
 
 
 
@@ -53,7 +74,7 @@ mean_tbl <- function(tbl, by_region = TRUE) {
   if (by_region) {
     
     tbl %>% 
-      pivot_longer(hhd_ofsp:hhd_impcr62, 
+      pivot_longer(all_of(vars_both), 
                    names_to = "variable",
                    values_to = "value") %>% 
       group_by(wave, region, variable) %>% 
@@ -66,7 +87,7 @@ mean_tbl <- function(tbl, by_region = TRUE) {
   } else {
     
     tbl %>% 
-      pivot_longer(hhd_ofsp:hhd_impcr62, 
+      pivot_longer(all_of(vars_both), 
                    names_to = "variable",
                    values_to = "value") %>% 
       group_by(wave, variable) %>% 
@@ -112,6 +133,8 @@ regions_hh_level <- bind_rows(
 # save as csv
 write_csv(national_hh_level, "LSMS_W5/3_report_data/national_hh_level.csv")
 write_csv(regions_hh_level, "LSMS_W5/3_report_data/regions_hh_level.csv")
+
+
 
 
 national_hh_level %>% 
