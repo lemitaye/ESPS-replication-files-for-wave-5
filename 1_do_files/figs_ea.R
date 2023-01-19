@@ -53,12 +53,6 @@ ea_level_w5 <- wave5_ea_new %>%
 ea_level_w4 <- wave4_ea_new %>% 
   select(ea_id, wave, region, pw_w4, all_of( vars_both ) ) %>% 
   mutate(across(all_of(vars_both), ~recode(., `100` = 1))) %>% 
-  left_join(
-    wave5_ea_new %>% 
-      select(ea_id, pw = pw_w5),
-    by = c("ea_id")
-  ) %>% 
-  mutate(pw = case_when(!is.na(pw) ~ pw, TRUE ~ pw_w4)) %>% 
   recode_region()
 
 
@@ -72,7 +66,7 @@ mean_tbl <- function(tbl, var_vec, by_region = TRUE) {
                    values_to = "value") %>% 
       group_by(wave, region, variable) %>% 
       summarise(
-        mean = weighted.mean(value, w = pw, na.rm = TRUE),
+        mean = mean(value, na.rm = TRUE),
         nobs = sum(!is.na(value)),
         .groups = "drop"
       )
@@ -85,7 +79,7 @@ mean_tbl <- function(tbl, var_vec, by_region = TRUE) {
                    values_to = "value") %>% 
       group_by(wave, variable) %>% 
       summarise(
-        mean = weighted.mean(value, w = pw, na.rm = TRUE),
+        mean = mean(value, na.rm = TRUE),
         nobs = sum(!is.na(value)),
         .groups = "drop"
       )
@@ -148,6 +142,9 @@ regions_ea_level %>%
        y = "", 
        fill = "Wave",
        title = "Percent of Rural EAs Adopting Innovations - Waves 4 and 5")
+
+
+
 
 
 # Table
