@@ -29,7 +29,7 @@ vars_all <- c(
   )
 
 vars_both <- wave4_hh_new %>% 
-  select(any_of(vars_w5)) %>% 
+  select(any_of(vars_all)) %>% 
   colnames()
 
 vars_w5 <- setdiff(vars_all, vars_both)
@@ -133,14 +133,12 @@ regions_hh_level <- bind_rows(
 
 # ONLY FOR PANEL HOUSEHOLDS:
 hh_level_panel <- inner_join(
-  x = select_hh_level(wave4_hh_new, pw_w4) %>% 
-    select(-wave, -pw_w4, -region),
-  y = select_hh_level(wave5_hh_new, pw_w5) %>% 
-    select(-wave), 
+  x = hh_level_w4 %>% select(-wave, -pw_w4, -pw, -region),
+  y = hh_level_w5 %>% select(-wave), 
   by = "household_id",
   suffix = c(".w4", ".w5")
 ) %>% 
-  select(household_id, region, pw = pw_w5, everything()) %>% 
+  select(household_id, region, pw, everything()) %>% 
   pivot_longer(hhd_ofsp.w4:hhd_impcr62.w5, 
                names_to = "variable",
                values_to = "value") %>% 
@@ -197,93 +195,89 @@ plot_compar <- function(tbl, title, xlim = .8) {
          y = "", 
          fill = "",
          title = paste0("Percent of Rural Households Adopting Innovations - ", title),
-         subtitle = "Only panel households included",
          caption = "Percent are weighted sample means using the latest (wave 5) weights.
          Number of households responding in parenthesis")
   
 }
 
-national_hh_level %>% 
-  plot_compar("National")
+
+nat_hh <- national_hh_level %>% 
+  plot_compar("National", xlim = .85)
+
+amhara_hh <- regions_hh_level %>% 
+  filter(region == "Amhara") %>% 
+  plot_compar("Amhara", xlim = 1.05)
+
+oromia_hh <- regions_hh_level %>% 
+  filter(region == "Oromia") %>% 
+  plot_compar("Oromia", xlim = 1.05)
+
+snnp_hh <- regions_hh_level %>% 
+  filter(region == "SNNP") %>% 
+  plot_compar("SNNP", xlim = 1.05)
+
+other_hh <- regions_hh_level %>% 
+  filter(region == "Other regions") %>% 
+  plot_compar("Other regions", xlim = 1.05)
+
 
 
 nat_panel <- national_hh_panel %>% 
-  plot_compar("National")
+  plot_compar("National") +
+  labs(subtitle = "Only panel households included")
   
 amhara_panel <- regions_hh_panel %>% 
   filter(region == "Amhara") %>% 
-  plot_compar("Amhara", xlim = 100)
+  plot_compar("Amhara", xlim = 1) +
+  labs(subtitle = "Only panel households included")
 
 oromia_panel <- regions_hh_panel %>% 
   filter(region == "Oromia") %>% 
-  plot_compar("Oromia")
+  plot_compar("Oromia") +
+  labs(subtitle = "Only panel households included")
 
 snnp_panel <- regions_hh_panel %>% 
   filter(region == "SNNP") %>% 
-  plot_compar("SNNP", xlim = 75)
+  plot_compar("SNNP", xlim = .75) +
+  labs(subtitle = "Only panel households included")
 
 other_panel <- regions_hh_panel %>% 
   filter(region == "Other regions") %>% 
-  plot_compar("Other Regions")
+  plot_compar("Other Regions") +
+  labs(subtitle = "Only panel households included")
+
+plots <- list(nat_hh, amhara_hh, oromia_hh, snnp_hh, other_hh,
+              nat_panel, amhara_panel, oromia_panel, snnp_panel, other_panel)
+
+names(plots) <- c("nat_hh", "amhara_hh", "oromia_hh", "snnp_hh", "other_hh", "nat_panel", 
+                  "amhara_panel", "oromia_panel", "snnp_panel", "other_panel")
+
+for (i in seq_along(plots)) {
+  
+  file <- paste0("LSMS_W5/tmp/figures/", names(plots)[[i]], ".pdf")
+  
+  print(paste("saving to", file))
+  
+  ggsave(
+    filename = file,
+    plot = plots[[i]],
+    device = cairo_pdf,
+    width = 200,
+    height = 285,
+    units = "mm"
+  )
+}
 
 
-ggsave(
-  filename = "LSMS_W5/tmp/figures/nat_panel.pdf",
-  plot = nat_panel,
-  device = cairo_pdf,
-  width = 200,
-  height = 285,
-  units = "mm"
-)
-
-ggsave(
-  filename = "LSMS_W5/tmp/figures/amhara_panel.pdf",
-  plot = amhara_panel,
-  device = cairo_pdf,
-  width = 200,
-  height = 285,
-  units = "mm"
-)
-
-ggsave(
-  filename = "LSMS_W5/tmp/figures/oromia_panel.pdf",
-  plot = oromia_panel,
-  device = cairo_pdf,
-  width = 200,
-  height = 285,
-  units = "mm"
-)
-
-ggsave(
-  filename = "LSMS_W5/tmp/figures/snnp_panel.pdf",
-  plot = snnp_panel,
-  device = cairo_pdf,
-  width = 200,
-  height = 285,
-  units = "mm"
-)
-
-ggsave(
-  filename = "LSMS_W5/tmp/figures/other_panel.pdf",
-  plot = other_panel,
-  device = cairo_pdf,
-  width = 200,
-  height = 285,
-  units = "mm"
-)
 
 
 # New innovations incorporated in ESPS5
 w5_hh_new <- wave5_hh_new %>% 
   select(
-    household_id, region, pw_w5, hhd_kabuli, hhd_malt, hhd_durum, 
-         hhd_seedv1, hhd_seedv2, hotline
+    household_id, region, pw_w5, all_of(vars_w5)
     ) %>% 
-  mutate(region = recode(
-    region, `0` = "Other regions", `1` = "Tigray", `3` = "Amhara", 
-    `4` = "Oromia", `7` = "SNNP")
-  ) %>% 
-  pivot_longer(hhd_kabuli:hotline, 
+  recode_region() %>% 
+  pivot_longer(all_of(vars_w5), 
                names_to = "variable",
                values_to = "value") 
 
@@ -306,8 +300,7 @@ w5_means_new <- left_join(
       mutate(region = "National")
   ),
   
-  y = var_label(select(wave5_hh_new, hhd_kabuli, hhd_malt, hhd_durum, 
-                       hhd_seedv1, hhd_seedv2, hotline)) %>% 
+  y = var_label(select(wave5_hh_new, all_of(vars_w5))) %>% 
     as_tibble() %>% 
     pivot_longer(
       cols = everything(), 
@@ -345,12 +338,7 @@ ggsave(
 
 kabuli_w3 <- wave3_hh %>% 
   select(region, hhd_kabuli_r, pw_w3) %>% 
-  mutate(region = recode(region, 
-                         `0` = "Other regions",
-                         `1` = "Tigray",
-                         `3` = "Amhara",
-                         `4` = "Oromia",
-                         `7` = "SNNP")) 
+  recode_region()
 
 mean_kabuli_w3 <- bind_rows(
   kabuli_w3 %>% 
@@ -389,9 +377,15 @@ kabuli_bind %>%
   geom_col(position = "dodge") +
   geom_text(aes(label = paste0( round(mean, 2), "%", "\n(", nobs, ")" ) ),
             position = position_dodge(width = 1),
-            hjust = -.15, size = 2.5) %>% 
+            vjust = -.35, size = 2.5) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
-  scale_y_continuous(labels = percent_format()) 
+  scale_y_continuous(labels = percent_format()) +
+  expand_limits(y = .08) +
+  labs(x = "", y = "Percent",
+       title = "Comparision of Adoption of Chickpea Kabuli Variety b/n Waves 3 and 5",
+       fill = "Wave",
+       caption = "Percent are weighted sample means.
+       Number of responding households in parenthesis")
 
 
 
