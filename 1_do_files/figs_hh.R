@@ -312,12 +312,14 @@ w5_means_new <- left_join(
 
 
 new_innov <- w5_means_new %>% 
+  filter(variable != "hhd_kabuli",
+         !str_detect(label, "Feed and Forage")) %>% 
   mutate(region = fct_relevel(region, "Amhara", "Oromia", "SNNP", "Other regions", "National")) %>% 
-  ggplot(aes(region, mean/100, fill = region)) +
+  ggplot(aes(region, mean, fill = region)) +
   geom_col() +
-  geom_text(aes(label = paste0(round(mean, 2), " %")),
-            vjust = 1, size = 2.5) +
-  facet_wrap(~ label, scales = "free", nrow = 3) +
+  geom_text(aes(label = paste0(round(mean*100, 2), " %")),
+            vjust = -.5, size = 2.5) +
+  facet_wrap(~ label, scales = "free", nrow = 4) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
   scale_y_continuous(labels = percent_format()) +
   theme(legend.position = "none") +
@@ -330,12 +332,12 @@ ggsave(
   plot = new_innov,
   device = cairo_pdf,
   width = 200,
-  height = 185,
+  height = 285,
   units = "mm"
 )  
 
 
-
+# Comparison for Kabuli only (against wave 3)
 kabuli_w3 <- wave3_hh %>% 
   select(region, hhd_kabuli_r, pw_w3) %>% 
   recode_region()
@@ -372,7 +374,7 @@ kabuli_bind <- bind_rows(
   mutate(region = fct_relevel(region, "Amhara", "Oromia", "SNNP", "Other regions", "National")) 
 
 
-kabuli_bind %>% 
+kabuli_plot <- kabuli_bind %>% 
   ggplot(aes(region, mean/100, fill = wave)) +
   geom_col(position = "dodge") +
   geom_text(aes(label = paste0( round(mean, 2), "%", "\n(", nobs, ")" ) ),
@@ -388,7 +390,14 @@ kabuli_bind %>%
        Number of responding households in parenthesis")
 
 
-
+ggsave(
+  filename = "LSMS_W5/tmp/figures/kabuli_plot.pdf",
+  plot = kabuli_plot,
+  device = cairo_pdf,
+  width = 200,
+  height = 185,
+  units = "mm"
+)  
 
 
 
