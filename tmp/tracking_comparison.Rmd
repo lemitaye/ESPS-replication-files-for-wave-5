@@ -84,10 +84,11 @@ form_tab <- function(tbl) {
         factor(region), "Tigray", "Afar", "Amhara", "Oromia", "Somali", "Benishangul Gumuz", "SNNP", "Gambela", "Harar", "Dire Dawa" 
       ),
       nobs_ess4 = matched + dropped,
-      nobs_ess5 = matched + new_added
+      nobs_ess5 = matched + new_added,
+      attr_rate = paste0(round((dropped / nobs_ess4) * 100, 2), "%")
       ) %>% 
     arrange(region) %>% 
-    select(region, matched, dropped, new_added, nobs_ess4, nobs_ess5)  
+    select(region, matched, dropped, new_added, nobs_ess4, nobs_ess5, attr_rate)  
     
 }
 
@@ -102,10 +103,10 @@ kbl(
   track_hh_tbl,
   caption = "Number of rural households in ESPS4 and ESPS5 by region",
   booktabs = TRUE,
-  align = c("l", "c", "c", "c", "c", "c"),
-  col.names = c("Region", "Matched", "Dropped in ESPS5 (only in ESPS4)", "Newly added in ESPS5", "No. of hhs in ESPS4 (col. 1 + col. 2)", "No. of hhs in ESPS5 (col. 1 + col. 3)")
+  align = c("l", "c", "c", "c", "c", "c", "c"),
+  col.names = c("Region", "Matched", "Dropped in ESPS5 (only in ESPS4)", "Newly added in ESPS5", "No. of hhs in ESPS4 (col. 1 + col. 2)", "No. of hhs in ESPS5 (col. 1 + col. 3)", "Attrition Rate (col. 2 / col. 4)")
 ) %>% 
-  column_spec(2:6, width = "5em", latex_valign = "b") %>% 
+  column_spec(2:7, width = "5em", latex_valign = "b") %>% 
   row_spec(11, bold = T)  %>%
   kable_styling(latex_options = c("striped", "hold_position"))
   
@@ -118,17 +119,77 @@ kbl(
   track_ea_tbl,
   caption = "Number of rural EAs in ESPS4 and ESPS5 by region",
   booktabs = TRUE,
-  align = c("l", "c", "c", "c", "c", "c"),
-  col.names = c("Region", "Matched", "Dropped in ESPS5 (only in ESPS4)", "Newly added in ESPS5", "No. of EAs in ESPS4 (col. 1 + col. 2)", "No. of EAs in ESPS5 (col. 1 + col. 3)")
+  align = c("l", "c", "c", "c", "c", "c", "c"),
+  col.names = c("Region", "Matched", "Dropped in ESPS5 (only in ESPS4)", "Newly added in ESPS5", "No. of EAs in ESPS4 (col. 1 + col. 2)", "No. of EAs in ESPS5 (col. 1 + col. 3)", "Attrition Rate (col. 2 / col. 4)")
   
 ) %>% 
-  column_spec(2:6, width = "5em", latex_valign = "b") %>% 
+  column_spec(2:7, width = "5em", latex_valign = "b") %>% 
   row_spec(11, bold = T)  %>%
   kable_styling(latex_options = c("striped", "hold_position"))
 
 ```
 
-## Comparison
+```{r}
+
+# Table of ESPS4 hhs with missing EAs in ESPS5
+track_ea_dropped <- read_dta("track_ea_dropped.dta") %>% 
+  mutate(
+    region_w4 = recode(region_w4,
+                    `1` = "Tigray",
+                    `2` = "Afar",
+                    `3` = "Amhara",
+                    `4` = "Oromia",
+                    `5` = "Somali",
+                    `6` = "Benishangul Gumuz",
+                    `7` = "SNNP",
+                    `12` = "Gambela",
+                    `13` = "Harar",
+                    `15` = "Dire Dawa" )
+  ) 
+
+ea_dropped_tbl <- bind_rows(
+  track_ea_dropped %>% 
+    count(region_w4, ea_missing), 
+  
+  track_ea_dropped %>% 
+    count(ea_missing) %>% 
+    mutate(region_w4 = "National")
+) %>% 
+  complete(region_w4, ea_missing, fill = list(n = 0)) %>% 
+  mutate(ea_missing = recode(ea_missing, `1` = "ea_missing", `0` = "ea_not_missing")) %>% 
+  pivot_wider(names_from = "ea_missing", values_from = "n") %>% 
+  mutate(total = ea_missing + ea_not_missing,
+         region_w4 = fct_relevel(
+           factor(region_w4), "Tigray", "Afar", "Amhara", "Oromia", "Somali", 
+           "Benishangul Gumuz", "SNNP", "Gambela", "Harar", "Dire Dawa", "National"
+         )) %>% 
+  arrange(region_w4)
+
+```
+
+```{r}
+
+kbl(
+  ea_dropped_tbl,
+  caption = "Number of households in ESPS4 with missing and non-missing EAs in ESPS5",
+  booktabs = TRUE,
+  align = c("l", "c", "c", "c"),
+  col.names = c("Region", "EA not missing in ESPS5", "EA missing in ESPS5", "Total")
+  
+) %>% 
+  column_spec(2:4, width = "5em", latex_valign = "b") %>% 
+  row_spec(11, bold = T)  %>%
+  kable_styling(latex_options = c("striped", "hold_position"))
+
+```
+
+
+
+## Comparison: Household level
+
+### Comparing adoption of Chickpea Kabuli variety b/n waves 3 and 5
+
+![](figures/kabuli_plot.pdf)
 
 ### All houehods surveyed
 
@@ -158,6 +219,16 @@ kbl(
 
 ![](figures/new_innov.pdf)
 
-### Comparing adoption of Chickpea Kabuli variety b/n waves 3 and 5
 
-![](figures/kabuli_plot.pdf)
+## Comparison: EA level
+
+![](figures/nat_ea.pdf)
+
+![](figures/amhara_ea.pdf)
+
+![](figures/oromia_ea.pdf)
+
+![](figures/snnp_ea.pdf)
+
+![](figures/other_ea.pdf)
+

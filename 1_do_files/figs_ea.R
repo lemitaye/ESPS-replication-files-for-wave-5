@@ -29,22 +29,27 @@ recode_region <- function(tbl) {
   
 }
 
-# this list need to retain only vars that are common across the 
-# two waves (for comparison)
-# can do a separate analysis for new innovations (see figs_hh)
-vars_both <- c(
-  "ead_ofsp", "ead_awassa83", "ead_rdisp", "ead_motorpump", 
+# variable lists
+vars_all <- c(
+  "ead_ofsp", "ead_awassa83", "ead_kabuli", "ead_rdisp", "ead_motorpump", 
   "ead_swc", "ead_consag1", "ead_consag2", "ead_affor", "ead_mango", 
-  "ead_papaya", "ead_avocado", "commirr", "ead_impcr13", "ead_impcr19", 
-  "ead_impcr11", "ead_impcr24", "ead_impcr14", "ead_impcr3", "ead_impcr5", 
-  "ead_impcr60", "ead_impcr62"
-  )
-
-vars_w5 <- c(
-  "ead_kabuli", "ead_malt", "ead_durum", "ead_hotline", "ead_seedv1", 
-  "ead_seedv2", "comm_video", "comm_video_all", "comm_2wt_own", "comm_2wt_use", 
-  "comm_psnp"
+  "ead_papaya", "ead_avocado", "ead_malt", "ead_durum", "ead_hotline", 
+  "ead_seedv1", "ead_seedv2", "ead_livIA", "ead_livIA_publ", "ead_livIA_priv", 
+  "ead_cross_largerum", "ead_cross_smallrum", "ead_cross_poultry", 
+  "ead_agroind", "ead_cowpea", "ead_elepgrass", "ead_deshograss", 
+  "ead_sesbaniya", "ead_sinar", "ead_lablab", "ead_alfalfa", "ead_vetch", 
+  "ead_rhodesgrass", "commirr", "comm_video", "comm_video_all", 
+  "comm_2wt_own", "comm_2wt_use", "comm_psnp", "ead_impcr13", 
+  "ead_impcr19", "ead_impcr11", "ead_impcr24", "ead_impcr14", 
+  "ead_impcr3", "ead_impcr5", "ead_impcr60", "ead_impcr62"
 )
+
+vars_both <- wave4_ea_new %>% 
+  select(any_of(vars_all)) %>% 
+  colnames()
+
+vars_w5 <- setdiff(vars_all, vars_both) # vars only in wave 5
+
 
 ea_level_w5 <- wave5_ea_new %>% 
   select(ea_id, wave, region, pw = pw_w5, all_of(vars_both)) %>% 
@@ -144,42 +149,73 @@ regions_ea_level %>%
        title = "Percent of Rural EAs Adopting Innovations - Waves 4 and 5")
 
 
-
-
-
-# Table
-track_ea_dropped <- read_dta("LSMS_W5/tmp/track_ea_dropped.dta") %>% 
-  mutate(
-    region_w4 = recode(region_w4,
-                    `1` = "Tigray",
-                    `2` = "Afar",
-                    `3` = "Amhara",
-                    `4` = "Oromia",
-                    `5` = "Somali",
-                    `6` = "Benishangul Gumuz",
-                    `7` = "SNNP",
-                    `12` = "Gambela",
-                    `13` = "Harar",
-                    `15` = "Dire Dawa" )
-  ) 
-
-bind_rows(
-  track_ea_dropped %>% 
-    count(region_w4, ea_missing), 
+plot_compar_ea <- function(tbl, title, xlim = .8) {
   
-  track_ea_dropped %>% 
-    count(ea_missing) %>% 
-    mutate(region_w4 = "National")
-) %>% 
-  complete(region_w4, ea_missing, fill = list(n = 0)) %>% 
-  mutate(ea_missing = recode(ea_missing, `1` = "ea_missing", `0` = "ea_not_missing")) %>% 
-  pivot_wider(names_from = "ea_missing", values_from = "n") %>% 
-  mutate(total = ea_missing + ea_not_missing,
-         region_w4 = fct_relevel(
-           factor(region_w4), "Tigray", "Afar", "Amhara", "Oromia", "Somali", 
-           "Benishangul Gumuz", "SNNP", "Gambela", "Harar", "Dire Dawa", "National"
-         )) %>% 
-  arrange(region_w4)
+  tbl %>% 
+    mutate(
+      improv = case_when(
+        str_detect(label, "Improved") ~ 1,
+        TRUE ~ 0
+      ),
+      wave = fct_relevel(wave, "Wave 5", "Wave 4"),
+      label = fct_reorder(label, -improv)
+    ) %>%
+    ggplot(aes(mean, label, fill = wave)) +
+    geom_col(position = "dodge") +
+    geom_text(aes(label = paste0( round(mean*100, 2), "%", " (", nobs, ")" ) ),
+              position = position_dodge(width = 1),
+              hjust = -.15, size = 2.5) +
+    scale_y_discrete(labels = function(x) str_wrap(x, width = 35)) +
+    scale_x_continuous(labels = percent_format()) +
+    expand_limits(x = xlim) +
+    theme(legend.position = "top") +
+    labs(x = "Percent of EAs", 
+         y = "", 
+         fill = "",
+         title = paste0("Percent of Rural EAs Adopting Innovations - ", title),
+         caption = "Number of EAs with at least 1 hhs responding in parenthesis")
+  
+}
+
+
+nat_ea <- national_ea_level %>% 
+  plot_compar_ea("National", xlim = .9)
+
+amhara_ea <- regions_ea_level %>% 
+  filter(region == "Amhara") %>% 
+  plot_compar_ea("Amhara", xlim = 1.15)
+
+oromia_ea <- regions_ea_level %>% 
+  filter(region == "Oromia") %>% 
+  plot_compar_ea("Oromia", xlim = 1)
+
+snnp_ea <- regions_ea_level %>% 
+  filter(region == "SNNP") %>% 
+  plot_compar_ea("SNNP", xlim = 1)
+
+other_ea <- regions_ea_level %>% 
+  filter(region == "Other regions") %>% 
+  plot_compar_ea("Other regions")
+
+plots_ea <- list(nat_ea, amhara_ea, oromia_ea, snnp_ea, other_ea)
+
+names(plots_ea) <- c("nat_ea", "amhara_ea", "oromia_ea", "snnp_ea", "other_ea")
+
+for (i in seq_along(plots_ea)) {
+  
+  file <- paste0("LSMS_W5/tmp/figures/", names(plots_ea)[[i]], ".pdf")
+  
+  print(paste("saving to", file))
+  
+  ggsave(
+    filename = file,
+    plot = plots_ea[[i]],
+    device = cairo_pdf,
+    width = 200,
+    height = 285,
+    units = "mm"
+  )
+}
 
 
 
