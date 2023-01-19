@@ -130,12 +130,6 @@ regions_hh_level <- bind_rows(
   left_join(labels, by = "variable") %>% 
   select(wave, region, variable, label, mean, nobs)
 
-# save as csv
-write_csv(national_hh_level, "LSMS_W5/3_report_data/national_hh_level.csv")
-write_csv(regions_hh_level, "LSMS_W5/3_report_data/regions_hh_level.csv")
-
-
-
 
 national_hh_level %>% 
   ggplot(aes(mean, label, fill = wave)) +
