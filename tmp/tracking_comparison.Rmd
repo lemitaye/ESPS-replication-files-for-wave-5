@@ -232,3 +232,10 @@ kbl(
 
 ![](figures/other_ea.pdf)
 
+### New innovations incorporated in ESPS5 - EA level
+
+![](figures/new_innov_ea_1.pdf)
+
+![](figures/new_innov_ea_2.pdf)
+
+

@@ -218,5 +218,95 @@ for (i in seq_along(plots_ea)) {
 }
 
 
+# for new innovations incorporated in ESPS5
+w5_ea_new <- wave5_ea_new %>% 
+  select(
+    ea_id, region, all_of(vars_w5)
+  ) %>% 
+  recode_region() %>% 
+  pivot_longer(all_of(vars_w5), 
+               names_to = "variable",
+               values_to = "value") 
 
+w5_means_ea <- left_join(
+  x = bind_rows(
+    w5_ea_new %>% 
+      group_by(region, variable) %>% 
+      summarise(
+        mean = mean(value, na.rm = TRUE),
+        nobs = sum(!is.na(value)),
+        .groups = "drop"
+      ),
+    w5_ea_new %>% 
+      group_by(variable) %>% 
+      summarise(
+        mean = mean(value, na.rm = TRUE),
+        nobs = sum(!is.na(value)),
+        .groups = "drop"
+      ) %>% 
+      mutate(region = "National")
+  ),
+  
+  y = var_label(select(wave5_ea_new, all_of(vars_w5))) %>% 
+    as_tibble() %>% 
+    pivot_longer(
+      cols = everything(), 
+      names_to = "variable", 
+      values_to = "label"
+    ),
+  by = "variable"
+)
+
+
+new_innov_ea_1 <- w5_means_ea %>% 
+  filter(variable != "ead_kabuli",
+         !str_detect(label, "Feed and Forage")) %>% 
+  filter(variable %in% c("comm_psnp", "comm_video", "comm_video_all", "comm_2wt_own", "comm_2wt_use", "ead_hotline")) %>% 
+  mutate(region = fct_relevel(region, "Amhara", "Oromia", "SNNP", "Other regions", "National")) %>% 
+  ggplot(aes(region, mean, fill = region)) +
+  geom_col() +
+  geom_text(aes(label = paste0(round(mean*100, 2), "%")),
+            vjust = -.5, size = 2.5) +
+  facet_wrap(~ label, scales = "free", nrow = 3) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+  scale_y_continuous(labels = percent_format()) +
+  theme(legend.position = "none") +
+  labs(y = "Percent of EAs with at least one household adopting", 
+       x = "",
+       title = "Adoption of innovations incorporated only in ESPS5")
+
+new_innov_ea_2 <- w5_means_ea %>% 
+  filter(variable != "ead_kabuli",
+         !str_detect(label, "Feed and Forage")) %>% 
+  mutate(region = fct_relevel(region, "Amhara", "Oromia", "SNNP", "Other regions", "National")) %>% 
+  filter(variable %in% c("ead_livIA_priv", "ead_livIA_publ", "ead_malt", "ead_durum", "ead_seedv1", "ead_seedv2")) %>% 
+  ggplot(aes(region, mean, fill = region)) +
+  geom_col() +
+  geom_text(aes(label = paste0(round(mean*100, 2), "%")),
+            vjust = -.5, size = 2.5) +
+  facet_wrap(~ label, scales = "free", nrow = 3) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+  scale_y_continuous(labels = percent_format()) +
+  theme(legend.position = "none") +
+  labs(y = "Percent of EAs with at least one household adopting", 
+       x = "",
+       title = "Adoption of innovations incorporated only in ESPS5")
+
+ggsave(
+  filename = "LSMS_W5/tmp/figures/new_innov_ea_1.pdf",
+  plot = new_innov_ea_1,
+  device = cairo_pdf,
+  width = 200,
+  height = 285,
+  units = "mm"
+)  
+
+ggsave(
+  filename = "LSMS_W5/tmp/figures/new_innov_ea_2.pdf",
+  plot = new_innov_ea_2,
+  device = cairo_pdf,
+  width = 200,
+  height = 285,
+  units = "mm"
+)  
 
