@@ -413,7 +413,7 @@ foreach x in 2 5 6 12 13 15 {
 
 	foreach var in $ealevel {
 
-		cap: mean `var' [pw=pw_w5] if othregion==`x' & wave==5
+		cap: mean `var' if othregion==`x' & wave==5
 		if _rc==2000 {
 			matrix  `var'meanr`x'=0
 			matrix define `var'V`x'= 0
@@ -469,7 +469,7 @@ foreach x in 2 5 6 12 13 15 {
 * All Other regions
 foreach var in $ealevel {
 
-	cap:mean `var' [pw=pw_w5] if wave==5 & region==0
+	cap:mean `var' if wave==5 & region==0
 	if _rc==2000 {
 		matrix  `var'meanrN=0
 		matrix define `var'VN= 0
