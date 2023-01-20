@@ -17,35 +17,32 @@ ess5_cov <- read_dta("LSMS_W5/3_report_data/ess5_pp_cov_new.dta")
 sect_cover_pp_w4 <- read_dta("LSMS_W5/2_raw_data/data/sect_cover_pp_w4.dta")
 
 
+# Declare innovations and covariates:
+innov <- c(
+  "hhd_rdisp", "hhd_motorpump", "hhd_rotlegume", "hhd_cresidue1", "hhd_cresidue2", 
+  "hhd_mintillage", "hhd_zerotill", "hhd_consag1", "hhd_consag2", "hhd_swc", "hhd_terr", 
+  "hhd_wcatch", "hhd_affor", "hhd_ploc", "hhd_ofsp", "hhd_awassa83", "hhd_avocado", 
+  "hhd_papaya", "hhd_mango", "hhd_fieldp", "hhd_sweetpotato", "hhd_impcr2", "hhd_impcr1",
+  "hhd_kabuli", "hhd_malt", "hhd_durum", "hhd_livIA", 
+  "hhd_cross", "hhd_cross_largerum", "hhd_cross_smallrum", "hhd_cross_poultry"
+)
+
+covar <- c(
+  "hhd_flab", "flivman", "parcesizeHA", "asset_index", "pssetindex", 
+  "income_offfarm", "total_cons_ann", "total_cons_ann_win", "nom_totcons_aeq", "consq1", 
+  "consq2", "adulteq" 
+)
+
+
 panel_selected <- inner_join(
   x = ess5_cov,
   y = sect_cover_pp_w4 %>% distinct(household_id),
   by = "household_id"
 ) %>% 
-  select(
-    household_id, hhd_flab, flivman, parcesizeHA, asset_index, pssetindex, 
-    income_offfarm, total_cons_ann, totconswin = total_cons_ann_win, nmtotcons = nom_totcons_aeq, 
-    consq1, consq2, adulteq, hhd_rdisp, hhd_motorpump, hhd_rotlegume, hhd_cresidue1, hhd_cresidue2, 
-    hhd_mintil = hhd_mintillage, hhd_zerotill, hhd_consag1, hhd_consag2, hhd_swc, hhd_terr, hhd_wcatch, 
-    hhd_affor, hhd_ploc, hhd_ofsp, hhd_awassa83, hhd_avocado, hhd_papaya, 
-    hhd_mango, hhd_fieldp, hhd_sp = hhd_sweetpotato, hhd_impcr2, hhd_impcr1
-    )
+  select(household_id, all_of(covar), all_of(innov))
 
 
-innov <- c(
-  "hhd_rdisp", "hhd_motorpump", "hhd_rotlegume", "hhd_cresidue1", "hhd_cresidue2", 
-  "hhd_mintil", "hhd_zerotill", "hhd_consag1", "hhd_consag2", "hhd_swc", "hhd_terr", 
-  "hhd_wcatch", "hhd_affor", "hhd_ploc", "hhd_ofsp", "hhd_awassa83", "hhd_avocado", 
-  "hhd_papaya", "hhd_mango", "hhd_fieldp", "hhd_sp", "hhd_impcr2", "hhd_impcr1"
-)
-
-covar <- c(
-  "hhd_flab", "flivman", "parcesizeHA", "asset_index", "pssetindex", 
-  "income_offfarm", "total_cons_ann", "totconswin", "nmtotcons", "consq1", 
-  "consq2", "adulteq" 
-)
-
-
+# start running regressions
 models <- list()
 
 for (i in seq_along(covar)) {
@@ -72,28 +69,18 @@ for (i in seq_along(models)) {
 }
 
 
-
-# Create empty lists
-make_list <- function() {
-  x <- list(
-    ols_2 = double(4), iv_twins_2 = double(4), 
-    iv_boy_girl_2 = double(4), iv_all_2 = double(4),
-    ols_3 = double(4), iv_twins_3 = double(4), 
-    iv_boy_girl_3 = double(4), iv_all_3 = double(4)
-  ) 
-  
-  return(x)
-}
-
+# create empty lists to store regression results
 coef_list <- list()
 se_list <- list()
 p_list <- list()
 
+ninnov <- length(innov)  # no. of rows
+
 for (i in seq_along(covar)) {
   
-  coef_list <- list.append(coef_list, double(23))
-  se_list <- list.append(se_list, double(23))
-  p_list <- list.append(p_list, double(23))
+  coef_list <- list.append(coef_list, double(ninnov))
+  se_list <- list.append(se_list, double(ninnov))
+  p_list <- list.append(p_list, double(ninnov))
   
 }
 
@@ -114,7 +101,7 @@ for (i in seq_along(models)) {
   
 }
 
-df <- data.frame(matrix(data = rnorm(36000), ncol = 24))
+df <- data.frame(matrix(data = rnorm(1500*ninnov), ncol = ninnov))
 
 fm <- lm(X1 ~ 0 + ., data = df)
 
