@@ -92,6 +92,40 @@ preserve
 restore
 
 merge 1:1 household_id using `hotline'
+/*
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                             2,079  (_merge==3)
+    -----------------------------------------
+
+*/
+drop _m
+
+
+preserve
+    use "${data}\ess5_dna_new", clear
+    collapse (max) dtmz maize_cg, by(household_id)
+
+    lab var dtmz      "Drought Tolerant Maize"
+    lab var maize_cg "Maize DNA-fingerprinting"
+
+    tempfile ess5_dna_hh
+    save `ess5_dna_hh'
+restore
+
+merge 1:1 household_id using `ess5_dna_hh'
+/*
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                         1,643
+        from master                     1,643  (_merge==1)
+        from using                          0  (_merge==2)
+
+    Matched                               436  (_merge==3)
+    -----------------------------------------
+
+*/
 drop _m
 
 
