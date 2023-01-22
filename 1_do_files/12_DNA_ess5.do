@@ -96,8 +96,8 @@ generate maize_cg=0
 replace maize_cg=1 if cg_source22=="Yes"
 
 drop region
-clonevar region=saq01
-replace region=0 if region==2 | region==6 | region==15 | region==12 | region==13 | region==5
+rename saq01 region 
+* replace region=0 if region==2 | region==6 | region==15 | region==12 | region==13 | region==5
 
 generate wave=5
 
@@ -116,8 +116,8 @@ save "${data}\ess5_dna_new", replace
 * Misclassification variable construction
 
 * CG - germplasm recode
-generate cg=0 if cg_source=="No"
-replace cg=1 if cg_source=="Yes"
+* generate cg=0 if cg_source=="No"
+* replace cg=1 if cg_source=="Yes"
 
 
  
