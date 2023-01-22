@@ -103,18 +103,7 @@ merge 1:1 household_id using `hotline'
 drop _m
 
 
-preserve
-    use "${data}\ess5_dna_new", clear
-    collapse (max) dtmz maize_cg, by(household_id)
-
-    lab var dtmz      "Drought Tolerant Maize"
-    lab var maize_cg "Maize DNA-fingerprinting"
-
-    tempfile ess5_dna_hh
-    save `ess5_dna_hh'
-restore
-
-merge 1:1 household_id using `ess5_dna_hh'
+merge 1:1 household_id using `ess5_dna_hh_new'
 /*
     Result                      Number of obs
     -----------------------------------------

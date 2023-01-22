@@ -96,8 +96,8 @@ generate maize_cg=0
 replace maize_cg=1 if cg_source22=="Yes"
 
 drop region
-rename saq01 region 
-* replace region=0 if region==2 | region==6 | region==15 | region==12 | region==13 | region==5
+clonevar region=saq01  
+replace region=0 if region==2 | region==6 | region==15 | region==12 | region==13 | region==5
 
 generate wave=5
 
@@ -110,6 +110,17 @@ lab var qpm       "Quality Protein Maize"
 lab var maize_cg "Maize DNA-fingerprinting"
 
 save "${data}\ess5_dna_new", replace
+
+
+* Collapse at HH-level 
+
+collapse (max) qpm dtmz maize_cg (firstnm) pw_w5 region saq01 ea_id, by(household_id)
+
+lab var dtmz      "Drought Tolerant Maize"
+lab var maize_cg  "Maize DNA-fingerprinting"
+
+save "${data}\ess5_dna_hh_new", replace
+
 
 
 
