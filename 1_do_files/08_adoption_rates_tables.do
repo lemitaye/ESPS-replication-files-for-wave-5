@@ -13,8 +13,8 @@ hhd_ofsp hhd_awassa83 hhd_kabuli hhd_rdisp hhd_motorpump hhd_swc hhd_consag1 hhd
 hhd_affor hhd_mango hhd_papaya hhd_avocado hotline hhd_malt hhd_durum hhd_seedv1 hhd_seedv2 
 hhd_livIA hhd_livIA_publ hhd_livIA_priv hhd_cross_largerum hhd_cross_smallrum hhd_cross_poultry 
 hhd_agroind hhd_cowpea hhd_elepgrass hhd_deshograss  hhd_sesbaniya hhd_sinar hhd_lablab hhd_alfalfa 
-hhd_vetch hhd_rhodesgrass hhd_impcr13 hhd_impcr19 hhd_impcr11 hhd_impcr24 hhd_impcr14 hhd_impcr3 
-hhd_impcr5 hhd_impcr60 hhd_impcr62 
+hhd_vetch hhd_rhodesgrass dtmz maize_cg hhd_impcr13 hhd_impcr19 hhd_impcr11 hhd_impcr24 hhd_impcr14  
+hhd_impcr3 hhd_impcr5 hhd_impcr60 hhd_impcr62 
 ;
 #delimit cr
 
@@ -658,9 +658,9 @@ foreach var in $hhlevel {
 // Create final matrix:
 mat C = B3, B4, B7, B13, B15, BN
 
-xml_tab C ,  save("$table\Sec6_ESS5.xml") append sheet("Table 5_hh", nogridlines)  ///
+xml_tab C ,  save("$table\Sec6_ESS5.xml") append sheet("Table 5_hh", nogridlines)  rnames(`rname' "Total No. of obs. per region") ///
 cnames(`cnames')  ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia" "Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Harar" "Harar" "Harar" "Harar" "Harar" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" "National" "National" "National" "National" "National") showeq ///
-rblanks(COL_NAMES "Hh level data" S2220)	 /// 
+rblanks(COL_NAMES "Field level data" S2220)	 /// 
 title(Table 5: ESS5 - HH-level - by region)  font("Times New Roman" 10) ///
 cw(0 110, 1 55, 2 30, 3 30, 4 40, 5 55, 6 30, 7 30, 8 40, 9 55, 10 30, 11 30, 12 40, 13 55,  14 30,  15 30, 16 40, 17 55, 18 30, 19 30, 20 40, 21 55, 22 30, 23 30, 24 40, 25 55, 26 30, 27 30, 28 40, 29 55, 30 30, 31 30, 32 40, 33 55, 34 30, 35 30, 36 40, 37 55, 38 30, 39 30, 40 40  ) /// 
 format((SCLR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0))  /// 
