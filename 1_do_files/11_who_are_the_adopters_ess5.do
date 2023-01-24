@@ -243,32 +243,6 @@ cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12
 
 * Only coefficients (and stars)
 
-*HH level 
-#delimit;
-global hhdemo      
-hhd_flab flivman parcesizeHA asset_index pssetindex income_offfarm total_cons_ann 
-totconswin nmtotcons consq1 consq2 adulteq 
-;
-#delimit cr
-
-*ex
-#delimit;
-global adopt     
-hhd_rdisp hhd_motorpump hhd_rotlegume hhd_cresidue1 hhd_cresidue2 hhd_mintil 
-hhd_zerotill hhd_consag1 hhd_consag2 hhd_swc hhd_terr hhd_wcatch hhd_affor 
-hhd_ploc hhd_ofsp hhd_awassa83 hhd_avocado hhd_papaya hhd_mango  hhd_fieldp hhd_sp 
-hhd_impcr2 hhd_impcr1
-;
-#delimit cr
-
-/*
-The following were excluded from the above global call:
-hhd_cross  hhd_crlr  hhd_crpo  hhd_indprod hhd_grass hhd_psnp maize_cg 
-sorghum_cg barley_cg dtmz 
-*/
-
-*qpm dtmz
-
 matrix drop _all
  
 foreach i in   $adopt {
@@ -306,31 +280,10 @@ foreach i in   $adopt {
 
     matrix colnames A1`i' = "Difference"
 
+    matrix C=nullmat(C), A1`i'
+    matrix C_STARS=nullmat(C_STARS), A1`i'_STARS 
+
 }
-
-/*
-The following were excluded from the matrix definition below:
-mat C: AAhhd_cross,  AAhhd_crlr, AAhhd_crpo, AAhhd_indprod, AAhhd_grass, 
-AAhhd_psnp, AAmaize_cg, AAsorghum_cg, AAbarley_cg, AAdtmz;
-
-mat C_STARS: Ahhd_cross_STARS,   Ahhd_crlr_STARS,    Ahhd_crpo_STARS,    
-Ahhd_indprod_STARS,  Ahhd_grass_STARS,  Ahhd_psnp_STARS,  Amaize_cg_STARS, 
-Asorghum_cg_STARS, Abarley_cg_STARS, Adtmz_STARS
-*/
-
-#delimit; 
-mat C = A1hhd_rdisp,  A1hhd_motorpump, A1hhd_rotlegume, A1hhd_cresidue1, A1hhd_cresidue2, 
-A1hhd_mintil, A1hhd_zerotill, A1hhd_consag1, A1hhd_consag2, A1hhd_swc, A1hhd_terr, 
-A1hhd_wcatch, A1hhd_affor, A1hhd_ploc, A1hhd_ofsp, A1hhd_awassa83, A1hhd_avocado, 
-A1hhd_papaya, A1hhd_mango,  A1hhd_fieldp, A1hhd_sp, A1hhd_impcr2, A1hhd_impcr1;
-
-mat C_STARS = A1hhd_rdisp_STARS,   A1hhd_motorpump_STARS,  A1hhd_rotlegume_STARS,  
-A1hhd_cresidue1_STARS,  A1hhd_cresidue2_STARS,  A1hhd_mintil_STARS,  A1hhd_zerotill_STARS,  
-A1hhd_consag1_STARS, A1hhd_consag2_STARS,  A1hhd_swc_STARS,  A1hhd_terr_STARS,  A1hhd_wcatch_STARS,  
-A1hhd_affor_STARS,  A1hhd_ploc_STARS,  A1hhd_ofsp_STARS,  A1hhd_awassa83_STARS,  
-A1hhd_avocado_STARS,  A1hhd_papaya_STARS,  A1hhd_mango_STARS,   A1hhd_fieldp_STARS,  
-A1hhd_sp_STARS, A1hhd_impcr2_STARS, A1hhd_impcr1_STARS;
-#delimit cr
 
 * Transpose:
 matrix D=C'
@@ -350,7 +303,7 @@ foreach var in $adopt {
 }
 
 #delimit ;
-xml_tab D,  save("$table\Table14_ess5.xml") replace sheet("Table 14 - coefs", nogridlines)  
+xml_tab D,  save("$table\Table14_ess5.xml") append sheet("Table 14 - coefs", nogridlines)  
 rnames(`rname') cnames(`cname') lines(COL_NAMES 2 LAST_ROW 2)  
 title(Table 1: ESS5 - Correlates of adoption (only for panel households))  font("Times New Roman" 10) 
 cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12 55) 
