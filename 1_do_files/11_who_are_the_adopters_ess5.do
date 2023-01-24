@@ -301,28 +301,12 @@ foreach i in   $adopt {
 
     foreach var in $hhdemo {
 
-        qui: mean    `var' [pw=pw_w5]           if wave==5 & `i'==1
-        matrix  `var'mt`i'=e(b)'
-        scalar  `var'mt`i'= `var'mt`i'[1,1]
-
-        qui: mean `var' [pw=pw_w5]              if  wave==5 & `i'==0
-        matrix  `var'mc`i'=e(b)'
-        scalar  `var'mc`i'= `var'mc`i'[1,1]
-
-
-        scalar `var'df`i'=(`var'mt`i'-`var'mc`i')   // Simple difference
-
-        *scalar `var'df`i'=((`var'mt`i'-`var'mc`i') / sqrt((`var'vart`i'+ `var'varc`i')/2))
-
         qui: reg `var' `i' if  wave==5 [pw=pw_w5]
-        *local t = _b[`i']/_se[`i']
-        *scalar `var'pval`i' = 2*ttail(e(df_r), abs(`t'))
+        scalar coef`var'`i'=e(b)[1,1]   // coefficient
+        matrix mat`var'`i'=coef`var'`i'
+
         test `i'=0
         scalar `var'pval`i'=r(p)
-
-        matrix mat`var'`i'  = (`var'df`i') 
-        matrix list mat`var'`i'
-
 
             if (`var'pval`i'<=0.1 & `var'pval`i'>0.05)  {
             matrix mstr`var'`i' = (3)      // significant at 10% level
@@ -340,16 +324,13 @@ foreach i in   $adopt {
             matrix mstr`var'`i' = (0)       // Non-significant
             }
                        
-
-        matrix list mat`var'`i'
-
         matrix A1`i' = nullmat(A1`i')\ mat`var'`i'
 
         matrix A1`i'_STARS =  nullmat(A1`i'_STARS)\mstr`var'`i'
 
     }
 
-    matrix colnames A1`i' =
+    matrix colnames A1`i' = "Difference"
 
 }
 
@@ -377,28 +358,30 @@ A1hhd_avocado_STARS,  A1hhd_papaya_STARS,  A1hhd_mango_STARS,   A1hhd_fieldp_STA
 A1hhd_sp_STARS, A1hhd_impcr2_STARS, A1hhd_impcr1_STARS;
 #delimit cr
 
+* Transpose:
+matrix D=C'
+matrix D_STARS=C_STARS'
 
-local rname ""
+
+local cname ""
 foreach var in $hhdemo {
     local lbl : variable label `var'
-    local rname `" `rname' "`lbl'" " " "'		
-}	
+    local cname `" `cname' "`lbl'" "'		
+}
+
+local rname ""
+foreach var in $adopt {
+	local lbl : variable label `var'
+	local rname `" `rname' "`lbl'" "'		
+}
 
 #delimit ;
-xml_tab C,  save("$table\Table14_ess5.xml") append sheet("Table 14 - coefs", nogridlines)  
-rnames(`rname' "Total No. of obs.") cnames(`cname') showeq ///
-rblanks(COL_NAMES "HH level data" S2220)	 /// Adds blank columns which are used to separate Treatment and Control graphically.
-title(Table 1: ESS5 - Correlates of adoption (only for panel households))  font("Times New Roman" 10) ///
-cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12 55, 
-13 55,  14 55,  15 55, 16 55, 17 55, 18 55, 19 55, 20 55, 21 55, 22 55, 23 55, 24 55, 
-25 55, 26 55, 27 55, 28 55, 29 55, 30 55, 31 55, 32 55, 33 55, 34 55, 35 55, 36 55, 
-37 55, 38 55, 39 55, 40 55  ) /// *Adjust the column width of the table, column 0 are the variable names* 1, 5 and 9 are the blank columns. 
-	format((SCLR0) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) 
-    (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) 
-    (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) 
-    (NBCR3) (NBCR3) (NBCR3) (NBCR3))  /// * format the columns. Each parentheses represents one column*
-	stars(* 0.1 ** 0.05 *** 0.01)  /// Define your star values/signs here (which are stored in B_STARS)
-	lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 2)  /// Draws lines in specific format (Numeric Value)
-	notes(Point estimates are weighted sample means. Standard errors are reported below. , 
-    Stars represent level of statistical significance of t-test/chi-squared test of difference in means. ); //Add your notes here
+xml_tab D,  save("$table\Table14_coefs.xml") replace sheet("Table 14 - coefs", nogridlines)  
+rnames(`rname') cnames(`cname') lines(COL_NAMES 2 LAST_ROW 2)  
+title(Table 1: ESS5 - Correlates of adoption (only for panel households))  font("Times New Roman" 10) 
+cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12 55) 
+	format((SCLR0) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) 
+    (NBCR2) (NBCR2) (NBCR2) (NBCR2))  
+	stars(* 0.1 ** 0.05 *** 0.01)  
+	notes(Each cell is a coefficient estimate from a separate regression of the column variable on the row variable.); 
 # delimit cr
