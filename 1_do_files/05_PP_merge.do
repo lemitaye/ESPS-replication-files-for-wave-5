@@ -103,7 +103,7 @@ merge 1:1 household_id using `hotline'
 drop _m
 
 
-merge 1:1 household_id using `ess5_dna_hh_new'
+merge 1:1 household_id using "${data}\ess5_dna_hh_new"
 /*
     Result                      Number of obs
     -----------------------------------------
