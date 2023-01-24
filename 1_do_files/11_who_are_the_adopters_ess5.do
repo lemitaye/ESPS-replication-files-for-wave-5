@@ -1,39 +1,33 @@
 
 * Adopters and non adopters decriptive stats.
 * T-stats of means by region
-*ESS4*
+*ESS5*
 
-use "${data}\ess5_pp_cov_new", clear // HH-level 
-/*
-replace hhd_psnp=100 if hhd_psnp==1
+use "${data}\ess5_pp_hh_new", clear // INNOVATIONS DATASET 
 
-foreach i in maize_cg barley_cg sorghum_cg qpm dtmz {
-	replace `i'=100 if `i'==1
-
-}
-*/
-rename nom_totcons_aeq nmtotcons
-rename hhd_mintillage hhd_mintil
-rename hhd_sweetpotato hhd_sp
-rename  total_cons_ann_win totconswin
-replace hhd_impcr2=. if maize_cg==.
-
-* retaining only panel hhs:
 preserve
-    use "${rawdata}\sect_cover_pp_w4", clear
+    use "${data}\ess4_pp_cov_new", clear
 
-    collapse (firstnm) ea_id saq14 pw_w4 saq01, by(household_id)
-    rename saq01 region_w4
-    rename saq14 location_w4
-    rename ea_id ea_id_w4
+    rename nom_totcons_aeq nmtotcons
+    rename hhd_mintillage hhd_mintil
+    rename hhd_sweetpotato hhd_sp
+    rename  total_cons_ann_win totconswin
+    replace hhd_impcr2=. if maize_cg==.
 
-    tempfile cover_pp_w4
-    save `cover_pp_w4'
+    keep household_id hhd_flab flivman parcesizeHA asset_index pssetindex income_offfarm total_cons_ann ///
+    totconswin nmtotcons consq1 consq2 adulteq 
+
+    tempfile ess4_pp_cov_new
+    save `ess4_pp_cov_new'
 restore
 
-merge 1:1 household_id using `cover_pp_w4'
-keep if _merge==3  // retain only panel households (count=1823)
-drop region_w4 location_w4 ea_id_w4
+merge 1:1 household_id using `ess4_pp_cov_new'
+keep if _m==3   // keep only panel households (n=1823)
+drop _merge
+
+rename hhd_cross_largerum crlargerum
+rename hhd_cross_smallrum crsmallrum
+rename hhd_cross_poultry crpoultry
 
 
 *HH level 
@@ -49,15 +43,15 @@ totconswin nmtotcons consq1 consq2 adulteq
 global adopt     
 hhd_rdisp hhd_motorpump hhd_rotlegume hhd_cresidue1 hhd_cresidue2 hhd_mintil 
 hhd_zerotill hhd_consag1 hhd_consag2 hhd_swc hhd_terr hhd_wcatch hhd_affor 
-hhd_ploc hhd_ofsp hhd_awassa83 hhd_avocado hhd_papaya hhd_mango  hhd_fieldp hhd_sp 
-hhd_impcr2 hhd_impcr1
+hhd_ploc hhd_ofsp hhd_awassa83 hhd_avocado hhd_papaya hhd_mango hhd_fieldp  
+maize_cg dtmz hhd_cross crlargerum crsmallrum crpoultry
 ;
 #delimit cr
 
 /*
 The following were excluded from the above global call:
-hhd_cross  hhd_crlr  hhd_crpo  hhd_indprod hhd_grass hhd_psnp maize_cg 
-sorghum_cg barley_cg dtmz 
+hhd_cross  hhd_crlr  hhd_crpo  hhd_indprod hhd_grass hhd_psnp  
+sorghum_cg barley_cg  
 */
 
 *qpm dtmz
@@ -68,7 +62,7 @@ foreach i in   $adopt {
 
     foreach var in $hhdemo {
 
-        qui: mean    `var' [pw=pw_w5]           if wave==5 & `i'==100
+        qui: mean    `var' [pw=pw_w5]           if wave==5 & `i'==1
         matrix  `var'mt`i'=e(b)'
         scalar  `var'mt`i'= `var'mt`i'[1,1]
 
@@ -192,31 +186,11 @@ foreach i in   $adopt {
 
     matrix colnames AA`i' = "Adopters" "Non-Adopters" "Difference" "p-value" "p-valuefe" 
 
+    matrix C=nullmat(C), AA`i'
+    matrix C_STARS=nullmat(C_STARS), A`i'_STARS
+
 }
 
-/*
-The following were excluded from the matrix definition below:
-mat C: AAhhd_cross,  AAhhd_crlr, AAhhd_crpo, AAhhd_indprod, AAhhd_grass, 
-AAhhd_psnp, AAmaize_cg, AAsorghum_cg, AAbarley_cg, AAdtmz;
-
-mat C_STARS: Ahhd_cross_STARS,   Ahhd_crlr_STARS,    Ahhd_crpo_STARS,    
-Ahhd_indprod_STARS,  Ahhd_grass_STARS,  Ahhd_psnp_STARS,  Amaize_cg_STARS, 
-Asorghum_cg_STARS, Abarley_cg_STARS, Adtmz_STARS
-*/
-
-#delimit; 
-mat C = AAhhd_rdisp,  AAhhd_motorpump, AAhhd_rotlegume, AAhhd_cresidue1, AAhhd_cresidue2, 
-AAhhd_mintil, AAhhd_zerotill, AAhhd_consag1, AAhhd_consag2, AAhhd_swc, AAhhd_terr, 
-AAhhd_wcatch, AAhhd_affor, AAhhd_ploc, AAhhd_ofsp, AAhhd_awassa83, AAhhd_avocado, 
-AAhhd_papaya, AAhhd_mango,  AAhhd_fieldp, AAhhd_sp, AAhhd_impcr2, AAhhd_impcr1;
-
-mat C_STARS = Ahhd_rdisp_STARS,   Ahhd_motorpump_STARS,  Ahhd_rotlegume_STARS,  
-Ahhd_cresidue1_STARS,  Ahhd_cresidue2_STARS,  Ahhd_mintil_STARS,  Ahhd_zerotill_STARS,  
-Ahhd_consag1_STARS, Ahhd_consag2_STARS,  Ahhd_swc_STARS,  Ahhd_terr_STARS,  Ahhd_wcatch_STARS,  
-Ahhd_affor_STARS,  Ahhd_ploc_STARS,  Ahhd_ofsp_STARS,  Ahhd_awassa83_STARS,  
-Ahhd_avocado_STARS,  Ahhd_papaya_STARS,  Ahhd_mango_STARS,   Ahhd_fieldp_STARS,  
-Ahhd_sp_STARS, Ahhd_impcr2_STARS, Ahhd_impcr1_STARS;
-#delimit cr
 
 local rname ""
 foreach var in $hhdemo {
@@ -376,7 +350,7 @@ foreach var in $adopt {
 }
 
 #delimit ;
-xml_tab D,  save("$table\Table14_coefs.xml") replace sheet("Table 14 - coefs", nogridlines)  
+xml_tab D,  save("$table\Table14_ess5.xml") replace sheet("Table 14 - coefs", nogridlines)  
 rnames(`rname') cnames(`cname') lines(COL_NAMES 2 LAST_ROW 2)  
 title(Table 1: ESS5 - Correlates of adoption (only for panel households))  font("Times New Roman" 10) 
 cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12 55) 
