@@ -662,8 +662,8 @@ xml_tab C ,  save("$table\Sec6_ESS5.xml") append sheet("Table_5_hh", nogridlines
 cnames(`cnames')  ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia" "Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Harar" "Harar" "Harar" "Harar" "Harar" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" "National" "National" "National" "National" "National") showeq ///
 rblanks(COL_NAMES "Field level data" S2220)	 /// 
 title(Table 5: ESS5 - DNA fingerprinting - by region)  font("Times New Roman" 10) ///
-cw(0 110, 1 55, 2 30, 3 30, 4 40, 5 55, 6 30, 7 30, 8 40, 9 55, 10 30, 11 30, 12 40, 13 55,  14 30,  15 30, 16 40, 17 55, 18 30, 19 30, 20 40, 21 55, 22 30, 23 30, 24 40, 25 55, 26 30, 27 30, 28 40, 29 55, 30 30, 31 30, 32 40, 33 55, 34 30, 35 30, 36 40, 37 55, 38 30, 39 30, 40 40  ) /// 
-format((SCLR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0))  /// 
+cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 1 55, 2 55, 3 30, 4 30, 5 40, 1 55, 2 55, 3 30, 4 30, 5 40, 1 55, 2 55, 3 30, 4 30, 5 40, 1 55, 2 55, 3 30, 4 30, 5 40, 1 55, 2 55, 3 30, 4 30, 5 40  ) /// 
+format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) )  /// 
 star(.1 .05 .01)  /// 
 lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 2)  ///
 notes("Point estimates are wegihted sample means. These are multiplied by 100 for dummy variables to express them as percengages.") 

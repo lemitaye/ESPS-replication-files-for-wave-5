@@ -43,7 +43,7 @@ totconswin nmtotcons consq1 consq2 adulteq
 global adopt     
 hhd_rdisp hhd_motorpump hhd_rotlegume hhd_cresidue1 hhd_cresidue2 hhd_mintil 
 hhd_zerotill hhd_consag1 hhd_consag2 hhd_swc hhd_terr hhd_wcatch hhd_affor 
-hhd_ploc hhd_ofsp hhd_awassa83 hhd_avocado hhd_papaya hhd_mango hhd_fieldp  
+hhd_ploc hhd_ofsp hhd_awassa83 hhd_kabuli hhd_avocado hhd_papaya hhd_mango hhd_fieldp  
 maize_cg dtmz hhd_cross crlargerum crsmallrum crpoultry
 ;
 #delimit cr
@@ -192,38 +192,23 @@ foreach i in   $adopt {
 }
 
 
+
 local rname ""
 foreach var in $hhdemo {
     local lbl : variable label `var'
     local rname `"  `rname'   "`lbl'" " " "'		
-}		
+}
+
+local ceqname ""
+foreach var in $adopt {
+    local lbl : variable label `var'
+    local ceqname `" `ceqname' "`lbl'" "`lbl'" "`lbl'" "`lbl'" "`lbl'" "'		
+}	
 
 #delimit ;
 xml_tab C,  save("$table\Table14_ess5.xml") replace sheet("Table 1_hh_ESS5", nogridlines)  
 rnames(`rname' "Total No. of obs.") cnames(`cnames')
-ceq( "River dispersion" "River dispersion" "River dispersion" "River dispersion"  "River dispersion" 
-"Motor pump used for irrigation"  "Motor pump used for irrigation" "Motor pump used for irrigation" "Motor pump used for irrigation" "Motor pump used for irrigation"
-"Crop rotation with a legume" "Crop rotation with a legume" "Crop rotation with a legume" "Crop rotation with a legume"  "Crop rotation with a legume"
-"Crop residue cover- farmers elicitation" "Crop residue cover- farmers elicitation" "Crop residue cover- farmers elicitation" "Crop residue cover- farmers elicitation" "Crop residue cover- farmers elicitation"
-"Crop residue cover - visual aid" "Crop residue cover - visual aid" "Crop residue cover - visual aid" "Crop residue cover - visual aid"  "Crop residue cover - visual aid"
-"Minimum tillage" "Minimum tillage" "Minimum tillage" "Minimum tillage"  "Minimum tillage"
-"Zero tillage" "Zero tillage" "Zero tillage" "Zero tillage"  "Zero tillage"
-"Conservation Agriculture - using Minimum tillage" "Conservation Agriculture - using Minimum tillage" "Conservation Agriculture - using Minimum tillage" "Conservation Agriculture - using Minimum tillage" "Conservation Agriculture - using Minimum tillage"
-"Conservation Agriculture - using Zero tillage" "Conservation Agriculture - using Zero tillage" "Conservation Agriculture - using Zero tillage" "Conservation Agriculture - using Zero tillage" "Conservation Agriculture - using Zero tillage"
-"Soil Water Conservation practices" "Soil Water Conservation practices" "Soil Water Conservation practices" "Soil Water Conservation practices" "Soil Water Conservation practices"
-"Terracing" "Terracing" "Terracing" "Terracing" "Terracing"
-"Water catchments" "Water catchments" "Water catchments" "Water catchments"  "Water catchments"
-"Afforestation" "Afforestation" "Afforestation" "Afforestation" "Afforestation"
-"Plough along the contour" "Plough along the contour" "Plough along the contour" "Plough along the contour" "Plough along the contour"
-"Sweet potato OFSP variety" "Sweet potato OFSP variety" "Sweet potato OFSP variety" "Sweet potato OFSP variety" "Sweet potato OFSP variety"
-"Sweet potato Awassa83 variety" "Sweet potato Awassa83 variety" "Sweet potato Awassa83 variety" "Sweet potato Awassa83 variety" "Sweet potato Awassa83 variety"
-"Avocado tree" "Avocado tree" "Avocado tree" "Avocado tree"  "Avocado tree"
-"Papaya tree" "Papaya tree" "Papaya tree" "Papaya tree" "Papaya tree"
-"Mango tree" "Mango tree" "Mango tree" "Mango tree"  "Mango tree" 
-"Field peas" "Field peas" "Field peas" "Field peas" "Field peas"
-"Sweetpotato" "Sweetpotato" "Sweetpotato" "Sweetpotato" "Sweetpotato"
-"Improved maize - SR" "Improved maize - SR" "Improved maize - SR" "Improved maize - SR" "Improved maize - SR"
-"Improved barley - SR" "Improved barley - SR" "Improved barley - SR" "Improved barley - SR" "Improved barley - SR") showeq ///
+ceq( `ceqname' ) showeq ///
 rblanks(COL_NAMES "HH level data" S2220)	 /// Adds blank columns which are used to separate Treatment and Control graphically.
 title(Table 1: ESS5 - Correlates of adoption (only for panel households))  font("Times New Roman" 10) ///
 cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12 55, 
