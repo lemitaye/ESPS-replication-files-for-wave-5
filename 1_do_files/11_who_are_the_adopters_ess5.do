@@ -1,7 +1,7 @@
 
 * Adopters and non adopters decriptive stats.
 * T-stats of means by region
-*ESS5*
+*ESPS5*
 
 use "${data}\ess5_pp_hh_new", clear // INNOVATIONS DATASET 
 
@@ -206,11 +206,11 @@ foreach var in $adopt {
 }	
 
 #delimit ;
-xml_tab C,  save("$table\Table14_ess5.xml") replace sheet("Table 1_hh_ESS5", nogridlines)  
+xml_tab C,  save("$table\Table14_ess5.xml") replace sheet("Table 1_hh_ESPS5", nogridlines)  
 rnames(`rname' "Total No. of obs.") cnames(`cnames')
 ceq( `ceqname' ) showeq ///
 rblanks(COL_NAMES "HH level data" S2220)	 /// Adds blank columns which are used to separate Treatment and Control graphically.
-title(Table 1: ESS5 - Correlates of adoption (only for panel households))  font("Times New Roman" 10) ///
+title(Table 1: ESPS5 - Correlates of adoption (only for panel households))  font("Times New Roman" 10) ///
 cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12 55, 
 13 55,  14 55,  15 55, 16 55, 17 55, 18 55, 19 55, 20 55, 21 55, 22 55, 23 55, 24 55, 
 25 55, 26 55, 27 55, 28 55, 29 55, 30 55, 31 55, 32 55, 33 55, 34 55, 35 55, 36 55, 
@@ -290,7 +290,7 @@ foreach var in $adopt {
 #delimit ;
 xml_tab D,  save("$table\Table14_ess5.xml") append sheet("Table 14 - coefs", nogridlines)  
 rnames(`rname') cnames(`cname') lines(COL_NAMES 2 LAST_ROW 2)  
-title(Table 1: ESS5 - Correlates of adoption (only for panel households))  font("Times New Roman" 10) 
+title(Table 1: ESPS5 - Correlates of adoption (only for panel households))  font("Times New Roman" 10) 
 cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12 55) 
 	format((SCLR0) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) 
     (NBCR2) (NBCR2) (NBCR2) (NBCR2))  
