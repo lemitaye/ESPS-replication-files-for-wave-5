@@ -1,4 +1,4 @@
-
+c("dtmz", "maize_cg")
 library(haven)
 library(tidyverse)
 library(thatssorandom)
@@ -23,9 +23,9 @@ vars_all <- c(
   "hhd_livIA_priv", "hhd_cross_largerum", "hhd_cross_smallrum", 
   "hhd_cross_poultry", "hhd_agroind", "hhd_cowpea", "hhd_elepgrass", 
   "hhd_deshograss", "hhd_sesbaniya", "hhd_sinar", "hhd_lablab", 
-  "hhd_alfalfa", "hhd_vetch", "hhd_rhodesgrass", "hhd_impcr13", 
-  "hhd_impcr19", "hhd_impcr11", "hhd_impcr24", "hhd_impcr14", 
-  "hhd_impcr3", "hhd_impcr5", "hhd_impcr60", "hhd_impcr62"
+  "hhd_alfalfa", "hhd_vetch", "hhd_rhodesgrass", "hhd_impcr13", "hhd_impcr19", 
+  "hhd_impcr11", "hhd_impcr24", "hhd_impcr14", "hhd_impcr3", "hhd_impcr5", 
+  "hhd_impcr60", "hhd_impcr62"
   )
 
 vars_both <- wave4_hh_new %>% 
@@ -269,9 +269,10 @@ for (i in seq_along(plots)) {
 }
 
 
+###############################################################################*
+# New innovations incorporated in ESPS5 ####
+###############################################################################*
 
-
-# New innovations incorporated in ESPS5
 w5_hh_new <- wave5_hh_new %>% 
   select(
     household_id, region, pw_w5, all_of(vars_w5)
@@ -337,7 +338,10 @@ ggsave(
 )  
 
 
-# Comparison for Kabuli only (against wave 3)
+###############################################################################*
+# Comparison for Chickpea Kabuli only (against wave 3) ####
+###############################################################################*
+
 kabuli_w3 <- wave3_hh %>% 
   select(region, hhd_kabuli_r, pw_w3) %>% 
   recode_region()
@@ -401,12 +405,13 @@ ggsave(
 
 
 
+# Comparing crop-germplasm improvements
 
+ess4_dna_hh_new <- read_dta("replication_files/3_report_data/ess4_dna_hh_new.dta") %>% 
+  filter(!is.na(maize_cg), !is.na(dtmz)) %>%  # retain only maize
+  select(-barley_cg, -sorghum_cg)
 
-
-
-
-
+ess5_dna_hh_new <- read_dta("LSMS_W5/3_report_data/ess5_dna_hh_new.dta")
 
 
 
