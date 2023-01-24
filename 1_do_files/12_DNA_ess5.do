@@ -122,6 +122,16 @@ lab var maize_cg  "Maize DNA-fingerprinting"
 save "${data}\ess5_dna_hh_new", replace
 
 
+* Collapse at EA-level 
+
+collapse (max) qpm dtmz maize_cg (firstnm) pw_w5 region saq01, by(ea_id)
+
+lab var dtmz      "Drought Tolerant Maize"
+lab var maize_cg  "Maize DNA-fingerprinting"
+
+save "${data}\ess5_dna_ea_new", replace
+
+
 
 
 * Misclassification variable construction

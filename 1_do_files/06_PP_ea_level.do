@@ -347,5 +347,21 @@ merge 1:1 ea_id using "${data}\ess5_community_new"
 drop if _m==2
 drop _merge
 
+merge 1:1 ea_id using "${data}\ess5_dna_ea_new"
+/*
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                           127
+        from master                       127  (_merge==1)
+        from using                          0  (_merge==2)
+
+    Matched                                78  (_merge==3)
+    -----------------------------------------
+*/
+
+drop if _m==2
+drop _merge
+
+
 save "${data}\wave5_ea_new", replace
 save "${data}\ess5_pp_ea_new", replace
