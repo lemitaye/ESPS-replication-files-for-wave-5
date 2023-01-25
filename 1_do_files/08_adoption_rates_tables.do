@@ -1,20 +1,14 @@
 
 use "${data}\wave5_hh_new", clear
 
-/*
-The following varaibles corresponding to livestock are removed from global call
-above:
-hhd_livIA hhd_cross_largerum hhd_cross_smallrum hhd_cross_poultry hhd_grass 
-*/
-
 #delimit ;
 global hhlevel     
 hhd_ofsp hhd_awassa83 hhd_kabuli hhd_rdisp hhd_motorpump hhd_swc hhd_consag1 hhd_consag2 
 hhd_affor hhd_mango hhd_papaya hhd_avocado hotline hhd_malt hhd_durum hhd_seedv1 hhd_seedv2 
 hhd_livIA hhd_livIA_publ hhd_livIA_priv hhd_cross_largerum hhd_cross_smallrum hhd_cross_poultry 
 hhd_agroind hhd_cowpea hhd_elepgrass hhd_deshograss  hhd_sesbaniya hhd_sinar hhd_lablab hhd_alfalfa 
-hhd_vetch hhd_rhodesgrass dtmz maize_cg hhd_impcr13 hhd_impcr19 hhd_impcr11 hhd_impcr24 hhd_impcr14  
-hhd_impcr3 hhd_impcr5 hhd_impcr60 hhd_impcr62 
+hhd_vetch hhd_rhodesgrass hhd_grass dtmz maize_cg hhd_impcr13 hhd_impcr19 hhd_impcr11 hhd_impcr24  
+hhd_impcr14 hhd_impcr3 hhd_impcr5 hhd_impcr60 hhd_impcr62 
 ;
 #delimit cr
 
@@ -253,18 +247,14 @@ format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0)
 ********************************************************************************
 use "${data}\wave5_ea_new", clear
 
-*CROP VARIETY
-/*
-Variables removed from the global below:
-ead_livIA  ead_cross_largerum ead_cross_smallrum ead_cross_poultry ead_grass
-*/ 
+
 #delimit ;
 global ealevel
 ead_ofsp ead_awassa83 ead_kabuli ead_rdisp ead_motorpump ead_swc  ead_consag1 ead_consag2 
 ead_affor ead_mango ead_papaya ead_avocado ead_malt ead_durum ead_hotline ead_seedv1 ead_seedv2 
 ead_livIA ead_livIA_publ ead_livIA_priv ead_cross_largerum ead_cross_smallrum ead_cross_poultry
 ead_agroind ead_cowpea ead_elepgrass ead_deshograss ead_sesbaniya ead_sinar ead_lablab ead_alfalfa 
-ead_vetch ead_rhodesgrass dtmz maize_cg
+ead_vetch ead_rhodesgrass ead_grass dtmz maize_cg
 commirr comm_video comm_video_all comm_2wt_own comm_2wt_use comm_psnp ead_impcr13 ead_impcr19 
 ead_impcr11 ead_impcr24 ead_impcr14 ead_impcr3 ead_impcr5 ead_impcr60 ead_impcr62;
 #delimit cr
