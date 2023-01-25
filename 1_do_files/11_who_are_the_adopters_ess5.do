@@ -43,7 +43,8 @@ totconswin nmtotcons consq1 consq2 adulteq
 global adopt     
 hhd_rdisp hhd_motorpump hhd_rotlegume hhd_cresidue1 hhd_cresidue2 hhd_mintil 
 hhd_zerotill hhd_consag1 hhd_consag2 hhd_swc hhd_terr hhd_wcatch hhd_affor 
-hhd_ploc hhd_ofsp hhd_awassa83 hhd_kabuli hhd_avocado hhd_papaya hhd_mango hhd_fieldp  
+hhd_ploc hhd_ofsp hhd_awassa83 hhd_kabuli hhd_seedv1 hhd_seedv2 hhd_malt hhd_durum 
+hhd_avocado hhd_papaya hhd_mango hhd_fieldp  
 maize_cg dtmz hhd_agroind hhd_grass hhd_cross crlargerum crsmallrum crpoultry
 ;
 #delimit cr
