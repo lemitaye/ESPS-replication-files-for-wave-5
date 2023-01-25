@@ -251,8 +251,13 @@ generate rhodesgrass=.
 replace rhodesgrass=0 if ls_s8_3q17_10!=1 & hh_liv==1
 replace rhodesgrass=1 if ls_s8_3q17_10==1
 
+// Grass: Elephant, Desho, Sesbaniya, Sinar, Lablab, Alfalfa, Vetch, Rhodes
+generate grass=.
+replace grass=0 if elepgrass==0 & deshograss==0 & sesbaniya==0 & sinar==0 & lablab==0 & alfalfa==0 & vetch==0 & rhodesgrass==0
+replace grass=1 if elepgrass==1 | deshograss==1 | sesbaniya==1 | sinar==1 | lablab==1 | alfalfa==1 | vetch==1 | rhodesgrass==1
 
-foreach i in agroind cowpea elepgrass deshograss sesbaniya sinar lablab alfalfa vetch rhodesgrass {
+
+foreach i in agroind cowpea elepgrass deshograss sesbaniya sinar lablab alfalfa vetch rhodesgrass grass {
     *Dummy for hh 
     egen hhd_`i'=max(`i'), by(household_id)
 
@@ -334,6 +339,7 @@ lab var hhd_lablab           "Feed and Forage: Lablab"
 lab var hhd_alfalfa          "Feed and Forage: Alfalfa"
 lab var hhd_vetch            "Feed and Forage: Vetch"
 lab var hhd_rhodesgrass      "Feed and Forage: Rhodes Grass"
+lab var hhd_grass            "Grass: Elephant, Desho, Sesbaniya, Sinar, Lablab, Alfalfa, Vetch, & Rhodes"
 
 lab var lr_agroind           "Large ruminants: Agro-industry"
 lab var lr_cowpea            "Large ruminants: Cowpea" 

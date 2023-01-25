@@ -9,7 +9,7 @@ use "${data}\wave5_hh_new", clear
 foreach i in  treadle motorpump rotlegume cresidue1 cresidue2 mintillage ///
         zerotill consag1 consag2 swc terr wcatch affor ploc rdisp livIA ///
 		livIA_publ livIA_priv agroind cowpea elepgrass deshograss sesbaniya sinar ///
-		lablab alfalfa vetch rhodesgrass cross { 
+		lablab alfalfa vetch rhodesgrass cross grass { 
 
     generate ead_`i'=.
     replace ead_`i'=0 if hhd_`i'==0
@@ -27,10 +27,9 @@ replace ead_hotline=1 if hotline==1
 egen nbhhd_hotline=sum(hotline), by(ea_id)
 generate sh_ea_hotline=(nbhhd_hotline/hh_ea) if nbhhd_hotline!=.
 
-/*
 generate ead_feed=0
-replace ead_feed=1 if nbhhd_elepgrass>0 | nbhhd_gaya>0 | nbhhd_sasbaniya>0 | nbhhd_alfa>0 | nbhhd_indprod>0
-*/
+replace ead_feed=1 if nbhhd_agroind>0 | nbhhd_cowpea>0 | nbhhd_grass>0
+
  
 rename sh_hhea_ofsp        sh_ea_ofsp
 rename sh_hhea_awassa83    sh_ea_awassa83
@@ -285,6 +284,7 @@ lab var ead_lablab           "Feed and Forage: Lablab"
 lab var ead_alfalfa          "Feed and Forage: Alfalfa"
 lab var ead_vetch            "Feed and Forage: Vetch"
 lab var ead_rhodesgrass      "Feed and Forage: Rhodes Grass"
+lab var ead_grass            "Grass: Elephant, Desho, Sesbaniya, Sinar, Lablab, Alfalfa, Vetch, & Rhodes"
 
 lab var sh_ea_treadle    "Treadle pump" 
 lab var sh_ea_motorpump  "Motor pump"
@@ -301,7 +301,6 @@ lab var sh_ea_wcatch     "Water catchments"
 lab var sh_ea_affor      "Afforestation"
 lab var sh_ea_ploc       "Plough along the contour"
 
-
 lab var sh_ea_livIA            "Livestock AI - both public & private"
 lab var sh_ea_livIA_publ       "Livestock AI - public"
 lab var sh_ea_livIA_priv       "Livestock AI - private"
@@ -315,6 +314,7 @@ lab var sh_ea_lablab           "Feed and Forage: Lablab"
 lab var sh_ea_alfalfa          "Feed and Forage: Alfalfa"
 lab var sh_ea_vetch            "Feed and Forage: Vetch"
 lab var sh_ea_rhodesgrass      "Feed and Forage: Rhodes Grass"
+lab var sh_ea_grass      	   "Grass: Elephant, Desho, Sesbaniya, Sinar, Lablab, Alfalfa, Vetch, & Rhodes" 
 
 lab var ead_cross          "Crossbreeding of large ruminants, small ruminants and poultry"
 lab var ead_cross_largerum "Large ruminants crossbred"
