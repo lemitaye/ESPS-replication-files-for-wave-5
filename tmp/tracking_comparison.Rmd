@@ -192,19 +192,46 @@ kbl(
 
 
 
-## Comparison: Household level
+# Comparing adoption of innovations across waves
 
-### Comparing adoption of Chickpea Kabuli variety b/n waves 3 and 5
+## Comparing adoption of Chickpea Kabuli variety b/n waves 3 and 5
 
 ![](figures/kabuli_plot.pdf)
 
-### Comparing adoption of maize varieties across waves, household level
+## Comparing adoption of maize varieties across waves, household level
 
 ![](figures/maize_dna_plot.pdf)
 
-### All houehods surveyed
+## All houehods surveyed
 
 ![](figures/nat_hh.pdf)
+
+## Only for panel househods
+
+![](figures/nat_panel.pdf)
+
+
+## New innovations incorporated in ESPS5
+
+![](figures/new_innov.pdf)
+
+
+## Comparison: EA level
+
+![](figures/nat_ea.pdf)
+
+### New innovations incorporated in ESPS5 - EA level
+
+![](figures/new_innov_ea_1.pdf)
+
+![](figures/new_innov_ea_2.pdf)
+
+
+# Appendix: Comparison by region
+
+## Household level 
+
+### All houehods surveyed
 
 ![](figures/amhara_hh.pdf)
 
@@ -214,9 +241,7 @@ kbl(
 
 ![](figures/other_hh.pdf)
 
-### Only for panel househods
-
-![](figures/nat_panel.pdf)
+### Only for panel households
 
 ![](figures/amhara_panel.pdf)
 
@@ -226,14 +251,7 @@ kbl(
 
 ![](figures/other_panel.pdf)
 
-### New innovations incorporated in ESPS5
-
-![](figures/new_innov.pdf)
-
-
-## Comparison: EA level
-
-![](figures/nat_ea.pdf)
+## EA level
 
 ![](figures/amhara_ea.pdf)
 
@@ -242,11 +260,5 @@ kbl(
 ![](figures/snnp_ea.pdf)
 
 ![](figures/other_ea.pdf)
-
-### New innovations incorporated in ESPS5 - EA level
-
-![](figures/new_innov_ea_1.pdf)
-
-![](figures/new_innov_ea_2.pdf)
 
 
