@@ -163,7 +163,13 @@ ea_dropped_tbl <- bind_rows(
            factor(region_w4), "Tigray", "Afar", "Amhara", "Oromia", "Somali", 
            "Benishangul Gumuz", "SNNP", "Gambela", "Harar", "Dire Dawa", "National"
          )) %>% 
-  arrange(region_w4)
+  arrange(region_w4) %>% 
+  left_join(
+    track_hh_tbl %>% select(region, matched),
+    by = c("region_w4" = "region")
+  ) %>% 
+  mutate(total_ea_not_missing = matched + ea_not_missing) %>% 
+  select(region_w4, matched, ea_not_missing, total_ea_not_missing, ea_missing, total)
 
 ```
 
@@ -173,11 +179,12 @@ kbl(
   ea_dropped_tbl,
   caption = "Number of households in ESPS4 with missing and non-missing EAs in ESPS5",
   booktabs = TRUE,
-  align = c("l", "c", "c", "c"),
-  col.names = c("Region", "EA not missing in ESPS5", "EA missing in ESPS5", "Total")
-  
+  align = c("l", "c", "c", "c", "c", "c"),
+  col.names = c("Region", "Matched", "Not-matched", "Total (col. 1 + col . 2)", "EA missing in ESPS5", "Total dropped in ESPS5 (col. 2 + col. 4)")
 ) %>% 
+  add_header_above(c(" ", "EA not missing in ESPS5" = 3, " ", " ")) %>% 
   column_spec(2:4, width = "5em", latex_valign = "b") %>% 
+  column_spec(5:6, width = "7em", latex_valign = "b") %>% 
   row_spec(11, bold = T)  %>%
   kable_styling(latex_options = c("striped", "hold_position"))
 
@@ -190,6 +197,10 @@ kbl(
 ### Comparing adoption of Chickpea Kabuli variety b/n waves 3 and 5
 
 ![](figures/kabuli_plot.pdf)
+
+### Comparing adoption of maize varieties across waves, household level
+
+![](figures/maize_dna_plot.pdf)
 
 ### All houehods surveyed
 

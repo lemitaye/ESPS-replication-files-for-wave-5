@@ -475,9 +475,8 @@ local rname `"  `rname'   "`lbl'" "'
 mat C= B3, B4, B7, B0, BN
 
 
-#delimit;
-																			
-xml_tab C,  save("$table\Table13_ess4.xml") replace sheet("Plot level - plots with nonmissing EAs", nogridlines)  ///
+#delimit;																			
+xml_tab C,  save("$table\Table13_ess4.xml") append sheet("Plot level - non-missing EAs", nogridlines)  ///
 rnames(`rname' "Total No. of obs. per region") cnames(`cnames') ceq("Tigray" "Tigray" "Tigray" "Tigray" "Tigray" "Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia" "Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Other regions" "Other regions" "Other regions" "Other regions" "Other regions" "National" "National" "National" "National" "National" ) showeq ///
 title(Table 2: ESPS4 - Plot characteristics )  font("Times New Roman" 10) ///
 cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
