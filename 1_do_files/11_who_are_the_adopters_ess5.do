@@ -44,13 +44,13 @@ global adopt
 hhd_rdisp hhd_motorpump hhd_rotlegume hhd_cresidue1 hhd_cresidue2 hhd_mintil 
 hhd_zerotill hhd_consag1 hhd_consag2 hhd_swc hhd_terr hhd_wcatch hhd_affor 
 hhd_ploc hhd_ofsp hhd_awassa83 hhd_kabuli hhd_avocado hhd_papaya hhd_mango hhd_fieldp  
-maize_cg dtmz hhd_cross crlargerum crsmallrum crpoultry
+maize_cg dtmz hhd_agroind hhd_grass hhd_cross crlargerum crsmallrum crpoultry
 ;
 #delimit cr
 
 /*
 The following were excluded from the above global call:
-hhd_cross  hhd_crlr  hhd_crpo  hhd_indprod hhd_grass hhd_psnp  
+hhd_cross  hhd_crlr  hhd_crpo  hhd_indprod hhd_psnp  
 sorghum_cg barley_cg  
 */
 

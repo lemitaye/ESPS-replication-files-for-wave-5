@@ -17,16 +17,27 @@ wave3_hh <- read_dta("replication_files/3_report_data/wave3_hh.dta")
 wave4_hh_new <- read_dta("replication_files/3_report_data/wave4_hh_new.dta")
 wave5_hh_new <- read_dta("LSMS_W5/3_report_data/wave5_hh_new.dta")
 
+wave4_hh_new <- wave4_hh_new %>% 
+  mutate(hhd_grass = case_when(
+    hhd_elepgrass==100 | hhd_sasbaniya==100 | hhd_alfa==100 ~ 1,
+    hhd_elepgrass==0 & hhd_sasbaniya==0 & hhd_alfa==0 ~ 0 
+  )) 
+
+wave5_hh_new <- wave5_hh_new %>% 
+  mutate(hhd_grass = case_when(
+    hhd_elepgrass==1 | hhd_sesbaniya==1 | hhd_alfalfa==1 ~ 1,
+    hhd_elepgrass==0 & hhd_sesbaniya==0 & hhd_alfalfa==0 ~ 0 
+  )) 
+
+
 vars_all <- c(
   "hhd_ofsp", "hhd_awassa83", "hhd_kabuli", "hhd_rdisp", "hhd_motorpump", 
   "hhd_swc", "hhd_consag1", "hhd_consag2", "hhd_affor", "hhd_mango", 
   "hhd_papaya", "hhd_avocado", "hotline", "hhd_malt", "hhd_durum", 
   "hhd_seedv1", "hhd_seedv2", "hhd_livIA", "hhd_livIA_publ", 
   "hhd_livIA_priv", "hhd_cross_largerum", "hhd_cross_smallrum", 
-  "hhd_cross_poultry", "hhd_agroind", "hhd_cowpea", "hhd_elepgrass", 
-  "hhd_deshograss", "hhd_sesbaniya", "hhd_sinar", "hhd_lablab", 
-  "hhd_alfalfa", "hhd_vetch", "hhd_rhodesgrass", "hhd_impcr13", "hhd_impcr19", 
-  "hhd_impcr11", "hhd_impcr24", "hhd_impcr14", "hhd_impcr3", "hhd_impcr5", 
+  "hhd_cross_poultry", "hhd_grass", "hhd_impcr13", "hhd_impcr19", "hhd_impcr11", 
+  "hhd_impcr24", "hhd_impcr14", "hhd_impcr3", "hhd_impcr5", 
   "hhd_impcr60", "hhd_impcr62"
   )
 
@@ -64,10 +75,10 @@ hh_level_w4 <- wave4_hh_new %>%
   ) %>% 
   mutate(
     pw = case_when(!is.na(pw) ~ pw, TRUE ~ pw_w4),
-    across(all_of(vars_both), ~recode(., `100` = 1))  # since w4 vars are mult. by 100
+    across(
+      c(all_of(vars_both)), ~recode(., `100` = 1))  # since w4 vars are mult. by 100
     ) %>% 
   recode_region()
-
 
 
 mean_tbl <- function(tbl, by_region = TRUE) {
@@ -102,6 +113,7 @@ mean_tbl <- function(tbl, by_region = TRUE) {
   
 }
 
+var_label(hh_level_w5$hhd_grass) <- "Feed and forages: Elephant grass, Sesbaniya, & Alfalfa"
 
 labels <- var_label(hh_level_w5) %>% 
   .[-c(1:4)] %>% 
@@ -504,9 +516,6 @@ ggsave(
 ) 
 
 
-
-
-
 # panel dna households:
 inner_join(
   ess4_dna_hh_new,
@@ -514,11 +523,6 @@ inner_join(
   by = "household_id",
   suffix = c("_w4", "_w5")
 )
-
-
-
-
-
 
 
 
