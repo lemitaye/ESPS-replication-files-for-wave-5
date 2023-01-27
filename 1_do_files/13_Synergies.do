@@ -11,62 +11,63 @@
 *** EA -LEVEL
 * ESS4 *
 
-use "${data}\wave4_ea_new", clear
+use "${data}\wave5_ea_new", clear
+/*
 merge 1:1 ea_id using "${data}\ess4_ea_psnp"
 keep if _m==3 | _m==1
 drop _m
-
+*/
 rename ead_cross_largerum ead_crlr
 rename ead_cross_smallrum ead_crsm
 rename ead_cross_poultry  ead_crpo
 
-g nrm=0
-replace nrm=1 if ead_treadle==100 | ead_motorpump==100 | ead_rdisp==100 |  ead_swc==100 | ead_terr==100 | ead_wcatch==100 | ead_affor==100 | ead_ploc==100 
-g ca=0
-replace ca=1 if ead_consag1==100 | ead_consag2==100
+generate nrm=0
+replace nrm=1 if ead_treadle==1 | ead_motorpump==1 | ead_rdisp==1 |  ead_swc==1 | ead_terr==1 | ead_wcatch==1 | ead_affor==1 | ead_ploc==1 
+generate ca=0
+replace ca=1 if ead_consag1==1 | ead_consag2==1
 
-g ca1=0
-replace ca1=1 if ead_rotlegume==100  | ead_cresidue2==100 
+generate ca1=0
+replace ca1=1 if ead_rotlegume==1  | ead_cresidue2==1 
 
-g ca2=0
-replace ca2=1 if ead_rotlegume==100 | ead_mintillage==100 
+generate ca2=0
+replace ca2=1 if ead_rotlegume==1 | ead_mintillage==1 
 
-g ca3=0
-replace ca3=1 if ead_rotlegume==100 | ead_zerotill==100
+generate ca3=0
+replace ca3=1 if ead_rotlegume==1 | ead_zerotill==1
 
-g ca4=0
-replace ca4=1 if ead_cresidue2==100 | ead_mintillage==100
+generate ca4=0
+replace ca4=1 if ead_cresidue2==1 | ead_mintillage==1
 
-g ca5=0
-replace ca5=1 if ead_cresidue2==100 | ead_zerotill==100
+generate ca5=0
+replace ca5=1 if ead_cresidue2==1 | ead_zerotill==1
 
 
 
-g crop=0
-replace crop=1 if ead_ofsp==100 | ead_awassa83==100 |  ead_fieldp==100 | ead_sweetpotato==100 
+generate crop=0
+replace crop=1 if ead_ofsp==1 | ead_awassa83==1 |  ead_fieldp==1 | ead_sweetpotato==1 
 
-g tree=0
-replace tree=1 if ead_avocado==100 | ead_papaya==100 | ead_mango==100 
+generate tree=0
+replace tree=1 if ead_avocado==1 | ead_papaya==1 | ead_mango==1 
 
-g animal=0
-replace animal=1 if  ead_elepgrass==100 | ead_gaya==100 |  ead_alfa==100 | ead_indprod==100
+generate animal=0
+replace animal=1 if  ead_elepgrass==1 | ead_sesbaniya==1 |  ead_alfalfa==1 | ead_agroind==1
  
-g breed=0
-replace breed=1 if ead_cross==100 | ead_crlr==100 | ead_crsm==100 | ead_crpo==100 | ead_livIA==100
+generate breed=0
+replace breed=1 if ead_cross==1 | ead_crlr==1 | ead_crsm==1 | ead_crpo==1 | ead_livIA==1
 
-g breed2=0
-replace breed2=1 if ead_crlr==100 | ead_crsm==100  | ead_livIA==100
+generate breed2=0
+replace breed2=1 if ead_crlr==1 | ead_crsm==1  | ead_livIA==1
 
 *psnp
-g psnp=ead_psnp
+generate psnp=comm_psnp
 
 *Different combinations of CA practices
-g       rotlegume=0
-replace rotlegume=1 if ead_rotlegume==100
-g cresidue=0
-replace cresidue=1 if ead_cresidue2==100 
-g mintillage=ead_mintillage==100 
-g zerotill=ead_zerotill==100 
+generate       rotlegume=0
+replace rotlegume=1 if ead_rotlegume==1
+generate cresidue=0
+replace cresidue=1 if ead_cresidue2==1 
+generate mintillage=ead_mintillage==1 
+generate zerotill=ead_zerotill==1 
 
 
 
@@ -81,12 +82,16 @@ local vars2  ca crop tree animal breed breed2 psnp rotlegume cresidue mintillage
 
 
 foreach var of local vars {
-local lbl : variable label `var'
-foreach i of local vars2 {
-local lbl2 : variable label `i'
-g `var'_`i'=(`var'*`i') 
-label variable `var'_`i' `" `lbl' - `lbl2'"'
-}
+
+    local lbl : variable label `var'
+
+    foreach i of local vars2 {
+
+        local lbl2 : variable label `i'
+        generate `var'_`i'=(`var'*`i')      // interaction
+        label variable `var'_`i' `" `lbl' - `lbl2'"'
+
+    }
 }
 
 lab var nrm_ca1       "NRM & CA1"
