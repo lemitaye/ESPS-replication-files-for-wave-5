@@ -215,7 +215,7 @@ lab var cresidue_mintillage  "Crop residue cover & Minimum tillage"
 lab var cresidue_zerotill    "Crop residue cover & Zero tillage"  
 
 
-save "${data}\synergies_ea_ess4_new", replace
+save "${data}\synergies_ea_ess5_new", replace
 
 
   
@@ -319,3 +319,4 @@ cresidue  mintillage    cresidue_mintillage
 cresidue  zerotill      cresidue_zerotill 
 ;
 #delimit cr	
+
