@@ -1031,9 +1031,10 @@ cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40,
 
 
 ********************************************************************************
-* DNA (Maize germplasm) synergies - HH level
+* DNA (Maize germplasm) synergies 
 ********************************************************************************
 
+* HH level
 
 use "${data}\ess5_dna_hh_new", clear
 merge 1:1 household_id using "${data}\synergies_hh_ess5_new"
@@ -1094,11 +1095,11 @@ zerotillmaize    maize zerotill_maize
 
 matrix drop _all
 
-foreach x in 3 4 7 0 {
+foreach x in 3 4 7 13 15 {
 
 foreach var in $int {
 
-    cap:mean `var' [pw=pw_w5] if region==`x' & wave==5
+    cap:mean `var' [pw=pw_w5] if saq01==`x' & wave==5
 
     if _rc==2000 {
         matrix  `var'meanr`x'=0
@@ -1116,12 +1117,12 @@ foreach var in $int {
         scalar `var'se`x'=sqrt(`var'VV`x'[1,1])
     }
 
-    sum    `var'  if region==`x' & wave==5
+    sum    `var'  if saq01==`x' & wave==5
     scalar `var'minr`x'=r(min)
     scalar `var'maxr`x'=r(max)
     scalar `var'n`x'=r(N)
 
-    qui sum region if region==`x' & wave==5
+    qui sum region if saq01==`x' & wave==5
     local obsr`x'=r(N)
 
     matrix mat`var'`x'  = ( `var'meanr`x', `var'se`x', `var'minr`x', `var'maxr`x', `var'n`x')
@@ -1194,16 +1195,16 @@ foreach var in $int {
     local rname `"  `rname'   "`lbl'" "'		
 }	
 
-mat C= B3, B4, B7, B0, BN
+mat C= B3, B4, B7, B13, B15, BN
 
 
 #delimit;
 xml_tab C,  save("$table\ESS5_innovation_overlap_DNANEW.xml") replace sheet("Table_1_hh_ess5", nogridlines)  ///
 rnames(`rname' "Total No. of obs. per region") cnames(`cnames') 
 ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia" 
-"Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Other regions" "Other regions" 
-"Other regions" "Other regions" "Other regions" "National" "National" "National" 
-"National" "National" ) showeq ///
+"Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Harar" "Harar" "Harar" "Harar" "Harar" 
+"Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" 
+"National" "National" "National" "National" "National") showeq ///
 title(Table 2: ESS5 - HH LEVEL )  font("Times New Roman" 10) ///
 cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
 6 55, 7 55, 8 30, 9 30, 10 40,
@@ -1224,9 +1225,7 @@ cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40,
 #delimit cr	
 
 
-********************************************************************************
-* DNA (Maize germplasm) synergies - EA level
-********************************************************************************
+* EA level
 
 use "${data}\ess5_dna_ea_new", clear
 
