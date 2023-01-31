@@ -551,7 +551,7 @@ foreach x in 3 4 7 13 15 {  // Regions: Amhara, Oromia, SNNP, Harar, and Dire Da
 
 	foreach var in $hhlevel {
 
-		cap:mean `var' [pw=pw_w5] if region==`x' & wave==5
+		cap:mean `var' [pw=pw_w5] if saq01==`x' & wave==5
 		if _rc==2000 {  // error code = 2000. no observations [see "help error"]
 			matrix  `var'meanr`x'=0
 			matrix define `var'V`x'= 0
@@ -569,12 +569,12 @@ foreach x in 3 4 7 13 15 {  // Regions: Amhara, Oromia, SNNP, Harar, and Dire Da
 			scalar `var'se`x'=sqrt(`var'VV`x'[1,1])  // standard error
 		}
 		// we do the following to get min, max, and # of obs; weighted mean is computed above
-		sum    `var'  if region==`x' & wave==5
+		sum    `var'  if saq01==`x' & wave==5
 		scalar `var'minr`x'=r(min)   // "summarize" is an r-class command (see "return list")
 		scalar `var'maxr`x'=r(max)
 		scalar `var'n`x'=r(N)
 
-		qui sum region if region==`x' & wave==5
+		qui sum region if saq01==`x' & wave==5
 		local obsr`x'=r(N)  // # of households in region `x'
 
 		matrix mat`var'`x' = (`var'meanr`x', `var'se`x', `var'minr`x', `var'maxr`x', `var'n`x')
