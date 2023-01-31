@@ -963,7 +963,7 @@ foreach x in 3 4 7 0 {
 * National
 foreach var in $int {
  
-    cap:mean `var' [pw=pw_w4] if wave==4
+    cap:mean `var' [pw=pw_w5] if wave==5
     if _rc==2000 {
         matrix  `var'meanrN=0
         matrix define `var'VN= 0
@@ -980,12 +980,12 @@ foreach var in $int {
         scalar `var'seN=sqrt(`var'VVN[1,1])
     }
 
-    sum    `var'  if  wave==4
+    sum    `var'  if  wave==5
     scalar `var'minrN=r(min)
     scalar `var'maxrN=r(max)
     scalar `var'nN=r(N)
 
-    qui sum region if  wave==4
+    qui sum region if  wave==5
     local obsrN=r(N)
 
     matrix mat`var'N  = ( `var'meanrN,`var'seN, `var'minrN, `var'maxrN, `var'nN)
