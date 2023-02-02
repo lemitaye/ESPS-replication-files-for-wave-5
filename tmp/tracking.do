@@ -104,12 +104,65 @@ keep if _merge==2  // keep only hhs dropped from ESPS5 (i.e., only in ESPS4)
 save "LSMS_W5\tmp\track_ea_dropped.dta", replace
 
 
+** MAIZE-DNA TRACKING ***
+
+** Household level
+
+use "ESS5_DNA_Data\ESS_2022_DNA_Analysis\DNA_Report data\ESS4_dna_new_Mod", clear
+
+keep if s4q01b==2   // retain only maize
+
+collapse (firstnm) ea_id saq01, by(household_id)
+rename saq01 region_w4
+rename ea_id ea_id_w4
+
+tempfile dna_hh_w4
+save `dna_hh_w4'
+
+use "LSMS_W5\3_report_data\ess5_dna_hh_new.dta", clear
+
+rename saq01 region_w5
+rename ea_id ea_id_w5
+keep household_id ea_id_w5 region_w5
+
+merge 1:1 household_id using `dna_hh_w4', force
+
+tab _m
+tab region_w4 _m
+tab region_w5 _m
 
 
+save "LSMS_W5\tmp\track_dna_hh.dta", replace
 
 
+** EA level
 
+* are there new EAs added in ESS5?
 
+use "ESS5_DNA_Data\ESS_2022_DNA_Analysis\DNA_Report data\ESS4_dna_new_Mod", clear
+
+destring household_id, replace
+collapse (firstnm) saq01 (count) household_id, by(ea_id)
+rename saq01 region_w4
+rename household_id nohh_per_ea_w4
+
+tempfile dna_ea_w4
+save `dna_ea_w4'
+
+use "LSMS_W5\3_report_data\ess5_dna_hh_new.dta", clear
+
+destring household_id, replace
+collapse (firstnm) saq01 (count) household_id, by(ea_id)
+rename saq01 region_w5
+rename household_id nohh_per_ea_w5
+
+merge 1:1 ea_id using `dna_ea_w4', force
+
+tab region_w5 _m  // # of EAs added
+tab region_w4 _m  // # of EAs dropped (with 0 hhs)
+sum nohh_per_ea_w5
+
+save "LSMS_W5\tmp\track_dna_ea.dta", replace
 
 
 

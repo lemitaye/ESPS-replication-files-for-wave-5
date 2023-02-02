@@ -222,7 +222,9 @@ track_dna_ea_tbl <- bind_rows(
       nobs_ess4 = matched + dropped,
       nobs_ess5 = matched + new_added,
       attr_rate = paste0(round((dropped / nobs_ess4) * 100, 1), "%")
-      )
+      ) %>% 
+  arrange(region) %>% 
+    select(region, matched, dropped, new_added, nobs_ess4, nobs_ess5, attr_rate) 
 
 ```
 
