@@ -137,8 +137,6 @@ save "LSMS_W5\tmp\track_dna_hh.dta", replace
 
 ** EA level
 
-* are there new EAs added in ESS5?
-
 use "ESS5_DNA_Data\ESS_2022_DNA_Analysis\DNA_Report data\ESS4_dna_new_Mod", clear
 
 destring household_id, replace
@@ -163,6 +161,37 @@ tab region_w4 _m  // # of EAs dropped (with 0 hhs)
 sum nohh_per_ea_w5
 
 save "LSMS_W5\tmp\track_dna_ea.dta", replace
+
+
+* comparing covaritates b/n dropped and matched hhs:
+
+use "LSMS_W5\tmp\track_dna_hh.dta", replace
+
+keep if _merge==2 | _merge==3  // retain matched & dropped hhs
+rename _merge merge
+
+merge 1:1 household_id using "LSMS_W5\3_report_data\ess4_pp_cov_new", keepusing(household_id hhd_flab flivman parcesizeHA asset_index pssetindex income_offfarm total_cons_ann total_cons_ann_win nom_totcons_aeq consq1 consq2 adulteq )
+/*
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                         2,680
+        from master                         0  (_merge==1)
+        from using                      2,680  (_merge==2)
+
+    Matched                               219  (_merge==3)
+    -----------------------------------------
+*/
+
+drop if _merge==2   // drop non-DNA households
+drop _merge
+
+rename nom_totcons_aeq nmtotcons
+rename total_cons_ann_win totconswin
+rename ea_id_w4 ea_id
+drop ea_id_w5 
+
+
+save "LSMS_W5\tmp\track_dna_cov.dta", replace
 
 
 
