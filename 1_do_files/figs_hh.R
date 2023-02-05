@@ -51,15 +51,18 @@ vars_w5 <- setdiff(vars_all, vars_both)
 
 recode_region <- function(tbl) {
   
-  tbl %>% 
-    mutate(
-      region = recode(region, 
-                      `0` = "Other regions",
-                      `1` = "Tigray",
-                      `3` = "Amhara",
-                      `4` = "Oromia",
-                      `7` = "SNNP")
-    )
+  suppressWarnings(
+    tbl %>% 
+      mutate(
+        region = recode(region, 
+                        `0` = "Other regions",
+                        `1` = "Tigray",
+                        `3` = "Amhara",
+                        `4` = "Oromia",
+                        `7` = "SNNP")
+      )
+  )
+  
 }
 
 
