@@ -62,26 +62,21 @@ recode_region <- function(tbl) {
     )
 }
 
-hh_level_w5 <- wave5_hh_new %>% 
-  select(household_id, wave, region, pw = pw_w5, all_of(vars_both)) %>% 
-  recode_region()
 
 hh_level_w4 <- wave4_hh_new %>% 
   select(household_id, wave, region, pw_w4, all_of(vars_both)) %>% 
-  left_join(
-    hh_level_w5 %>% 
-      select(household_id, pw),
-    by = c("household_id")
-  ) %>% 
   mutate(
-    pw = case_when(!is.na(pw) ~ pw, TRUE ~ pw_w4),
     across(
       c(all_of(vars_both)), ~recode(., `100` = 1))  # since w4 vars are mult. by 100
-    ) %>% 
+  ) %>% 
+  recode_region()
+
+hh_level_w5 <- wave5_hh_new %>% 
+  select(household_id, wave, region, pw_w5, all_of(vars_both)) %>% 
   recode_region()
 
 
-mean_tbl <- function(tbl, by_region = TRUE) {
+mean_tbl <- function(tbl, pw, by_region = TRUE) {
   
   if (by_region) {
     
@@ -91,7 +86,7 @@ mean_tbl <- function(tbl, by_region = TRUE) {
                    values_to = "value") %>% 
       group_by(wave, region, variable) %>% 
       summarise(
-        mean = weighted.mean(value, w = pw, na.rm = TRUE),
+        mean = weighted.mean(value, w = {{pw}}, na.rm = TRUE),
         nobs = sum(!is.na(value)),
         .groups = "drop"
       )
@@ -104,7 +99,7 @@ mean_tbl <- function(tbl, by_region = TRUE) {
                    values_to = "value") %>% 
       group_by(wave, variable) %>% 
       summarise(
-        mean = weighted.mean(value, w = pw, na.rm = TRUE),
+        mean = weighted.mean(value, w = {{pw}}, na.rm = TRUE),
         nobs = sum(!is.na(value)),
         .groups = "drop"
       )
@@ -125,9 +120,9 @@ labels <- var_label(hh_level_w5) %>%
     ) 
 
 national_hh_level <- bind_rows(
-  mean_tbl(hh_level_w4, by_region = FALSE) %>% 
+  mean_tbl(hh_level_w4, pw = pw_w4, by_region = FALSE) %>% 
     mutate(wave = "Wave 4"),
-  mean_tbl(hh_level_w5, by_region = FALSE) %>% 
+  mean_tbl(hh_level_w5, pw = pw_w5, by_region = FALSE) %>% 
     mutate(wave = "Wave 5")
 ) %>% 
   mutate(wave = fct_relevel(wave, "Wave 5", "Wave 4")) %>% 
@@ -135,8 +130,8 @@ national_hh_level <- bind_rows(
   select(wave, variable, label, mean, nobs)  
 
 regions_hh_level <- bind_rows(
-  mean_tbl(hh_level_w4),
-  mean_tbl(hh_level_w5)
+  mean_tbl(hh_level_w4, pw = pw_w4),
+  mean_tbl(hh_level_w5, pw = pw_w5)
   ) %>% 
   mutate(wave = paste("Wave", wave) %>% 
            fct_relevel("Wave 5", "Wave 4")) %>% 
@@ -146,12 +141,12 @@ regions_hh_level <- bind_rows(
 
 # ONLY FOR PANEL HOUSEHOLDS:
 hh_level_panel <- inner_join(
-  x = hh_level_w4 %>% select(-wave, -pw_w4, -pw, -region),
+  x = hh_level_w4 %>% select(-wave, -region),
   y = hh_level_w5 %>% select(-wave), 
   by = "household_id",
   suffix = c(".w4", ".w5")
 ) %>% 
-  select(household_id, region, pw, everything()) %>% 
+  select(household_id, region, pw_w5, everything()) %>% 
   pivot_longer(hhd_ofsp.w4:hhd_impcr62.w5, 
                names_to = "variable",
                values_to = "value") %>% 
@@ -162,7 +157,7 @@ hh_level_panel <- inner_join(
 regions_hh_panel <- hh_level_panel %>% 
   group_by(wave, region, label) %>% 
   summarise(
-    mean = weighted.mean(value, w = pw, na.rm = TRUE),
+    mean = weighted.mean(value, w = pw_w5, na.rm = TRUE),
     nobs = sum(!is.na(value)),
     .groups = "drop"
   ) %>% 
@@ -174,7 +169,7 @@ regions_hh_panel <- hh_level_panel %>%
 national_hh_panel <- hh_level_panel %>% 
   group_by(wave, label) %>% 
   summarise(
-    mean = weighted.mean(value, w = pw, na.rm = TRUE),
+    mean = weighted.mean(value, w = pw_w5, na.rm = TRUE),
     nobs = sum(!is.na(value)),
     .groups = "drop"
   ) %>% 
