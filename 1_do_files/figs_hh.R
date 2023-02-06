@@ -36,9 +36,8 @@ vars_all <- c(
   "hhd_papaya", "hhd_avocado", "hotline", "hhd_malt", "hhd_durum", 
   "hhd_seedv1", "hhd_seedv2", "hhd_livIA", "hhd_livIA_publ", 
   "hhd_livIA_priv", "hhd_cross_largerum", "hhd_cross_smallrum", 
-  "hhd_cross_poultry", "hhd_grass", "hhd_impcr13", "hhd_impcr19", "hhd_impcr11", 
-  "hhd_impcr24", "hhd_impcr14", "hhd_impcr3", "hhd_impcr5", 
-  "hhd_impcr60", "hhd_impcr62"
+  "hhd_cross_poultry", "hhd_grass", "hhd_mintillage", "hhd_zerotill", 
+  "hhd_cresidue2", "hhd_rotlegume"
   )
 
 vars_both <- wave4_hh_new %>% 
@@ -150,7 +149,7 @@ hh_level_panel <- inner_join(
   suffix = c(".w4", ".w5")
 ) %>% 
   select(household_id, region, pw_w5, everything()) %>% 
-  pivot_longer(hhd_ofsp.w4:hhd_impcr62.w5, 
+  pivot_longer(hhd_ofsp.w4:hhd_rotlegume.w5, 
                names_to = "variable",
                values_to = "value") %>% 
   separate(variable, into = c("variable", "wave"), sep = "\\.") %>% 

@@ -30,7 +30,7 @@ recode_region <- function(tbl) {
 }
 
 # variable lists
-vars_all <- c(
+vars_all_ea <- c(
   "ead_ofsp", "ead_awassa83", "ead_kabuli", "ead_rdisp", "ead_motorpump", 
   "ead_swc", "ead_consag1", "ead_consag2", "ead_affor", "ead_mango", 
   "ead_papaya", "ead_avocado", "ead_malt", "ead_durum", "ead_hotline", 
@@ -39,25 +39,24 @@ vars_all <- c(
   "ead_agroind", "ead_cowpea", "ead_elepgrass", "ead_deshograss", 
   "ead_sesbaniya", "ead_sinar", "ead_lablab", "ead_alfalfa", "ead_vetch", 
   "ead_rhodesgrass", "commirr", "comm_video", "comm_video_all", 
-  "comm_2wt_own", "comm_2wt_use", "comm_psnp", "ead_impcr13", 
-  "ead_impcr19", "ead_impcr11", "ead_impcr24", "ead_impcr14", 
-  "ead_impcr3", "ead_impcr5", "ead_impcr60", "ead_impcr62"
+  "comm_2wt_own", "comm_2wt_use", "comm_psnp", "ead_mintillage", 
+  "ead_zerotill", "ead_cresidue2", "ead_rotlegume"
 )
 
-vars_both <- wave4_ea_new %>% 
-  select(any_of(vars_all)) %>% 
+vars_both_ea <- wave4_ea_new %>% 
+  select(any_of(vars_all_ea)) %>% 
   colnames()
 
-vars_w5 <- setdiff(vars_all, vars_both) # vars only in wave 5
+vars_w5_ea <- setdiff(vars_all_ea, vars_both_ea) # vars only in wave 5
 
 
 ea_level_w5 <- wave5_ea_new %>% 
-  select(ea_id, wave, region, pw = pw_w5, all_of(vars_both)) %>% 
+  select(ea_id, wave, region, pw = pw_w5, all_of(vars_both_ea)) %>% 
   recode_region()
 
 ea_level_w4 <- wave4_ea_new %>% 
-  select(ea_id, wave, region, pw_w4, all_of( vars_both ) ) %>% 
-  mutate(across(all_of(vars_both), ~recode(., `100` = 1))) %>% 
+  select(ea_id, wave, region, pw_w4, all_of( vars_both_ea ) ) %>% 
+  mutate(across(all_of(vars_both_ea), ~recode(., `100` = 1))) %>% 
   recode_region()
 
 
@@ -103,9 +102,9 @@ labels <- var_label(ea_level_w5) %>%
   ) 
 
 national_ea_level <- bind_rows(
-  mean_tbl(ea_level_w4, vars_both, by_region = FALSE) %>% 
+  mean_tbl(ea_level_w4, vars_both_ea, by_region = FALSE) %>% 
     mutate(wave = "Wave 4"),
-  mean_tbl(ea_level_w5, vars_both, by_region = FALSE) %>% 
+  mean_tbl(ea_level_w5, vars_both_ea, by_region = FALSE) %>% 
     mutate(wave = "Wave 5")
 ) %>% 
   mutate(wave = fct_relevel(wave, "Wave 5", "Wave 4")) %>% 
@@ -113,40 +112,15 @@ national_ea_level <- bind_rows(
   select(wave, variable, label, mean, nobs)
 
 regions_ea_level <- bind_rows(
-  mean_tbl(ea_level_w4, vars_both) %>% 
+  mean_tbl(ea_level_w4, vars_both_ea) %>% 
     mutate(wave = "Wave 4"),
-  mean_tbl(ea_level_w5, vars_both) %>% 
+  mean_tbl(ea_level_w5, vars_both_ea) %>% 
     mutate(wave = "Wave 5")
 ) %>% 
   mutate(wave = fct_relevel(wave, "Wave 5", "Wave 4")) %>% 
   left_join(labels, by = "variable") %>% 
   select(wave, region, variable, label, mean, nobs)
 
-
-national_ea_level %>% 
-  ggplot(aes(mean, label, fill = wave)) +
-  geom_col(position = "dodge") +
-  geom_text(aes(label = paste0( round(mean*100, 2), " %", "(", nobs, ")" )),
-            position = position_dodge(width = 1),
-            size = 1.5) +
-  scale_x_continuous(labels = percent_format()) +
-  labs(x = "Percent of EAs", 
-       y = "", 
-       fill = "Wave",
-       title = "Percent of Rural EAs Adopting Innovations - Waves 4 and 5")
-
-regions_ea_level %>% 
-  filter(region == "Amhara") %>% 
-  ggplot(aes(mean, label, fill = wave)) +
-  geom_col(position = "dodge") +
-  geom_text(aes(label = paste0( round(mean*100, 2), " %", "(", nobs, ")" )),
-            position = position_dodge(width = 1),
-            size = 1.5) +
-  scale_x_continuous(labels = percent_format()) +
-  labs(x = "Percent of EAs", 
-       y = "", 
-       fill = "Wave",
-       title = "Percent of Rural EAs Adopting Innovations - Waves 4 and 5")
 
 
 plot_compar_ea <- function(tbl, title, xlim = .8) {
@@ -221,10 +195,10 @@ for (i in seq_along(plots_ea)) {
 # for new innovations incorporated in ESPS5
 w5_ea_new <- wave5_ea_new %>% 
   select(
-    ea_id, region, all_of(vars_w5)
+    ea_id, region, all_of(vars_w5_ea)
   ) %>% 
   recode_region() %>% 
-  pivot_longer(all_of(vars_w5), 
+  pivot_longer(all_of(vars_w5_ea), 
                names_to = "variable",
                values_to = "value") 
 
@@ -247,7 +221,7 @@ w5_means_ea <- left_join(
       mutate(region = "National")
   ),
   
-  y = var_label(select(wave5_ea_new, all_of(vars_w5))) %>% 
+  y = var_label(select(wave5_ea_new, all_of(vars_w5_ea))) %>% 
     as_tibble() %>% 
     pivot_longer(
       cols = everything(), 
