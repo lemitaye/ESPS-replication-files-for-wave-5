@@ -14,3 +14,8 @@
 *.lnk
 1_do_files/tempCodeRunnerFile.do
 tmp/.Rhistory
+*.nav
+*.out
+*.snm
+*.gz
+*.toc

@@ -14,6 +14,8 @@ library(ggpubr)
 setwd("C:/Users/tayel/Dropbox/Documents/SPIA/Ethiopia")
 
 wave3_hh <- read_dta("replication_files/3_report_data/wave3_hh.dta")
+wave3_ea <- read_dta("replication_files/3_report_data/wave3_ea.dta")
+
 wave4_hh_new <- read_dta("replication_files/3_report_data/wave4_hh_new.dta")
 wave5_hh_new <- read_dta("LSMS_W5/3_report_data/wave5_hh_new.dta")
 
@@ -352,12 +354,16 @@ ggsave(
 # Comparison for Chickpea Kabuli only (against wave 3) ####
 ###############################################################################*
 
-kabuli_w3 <- wave3_hh %>% 
+kabuli_w3_hh <- wave3_hh %>% 
   select(region, hhd_kabuli_r, pw_w3) %>% 
   recode_region()
 
-mean_kabuli_w3 <- bind_rows(
-  kabuli_w3 %>% 
+kabuli_w3_ea <- wave3_ea %>% 
+  select(region, ead_kabuli_r, pw_w3) %>% 
+  recode_region()
+
+mean_kabuli_w3_hh <- bind_rows(
+  kabuli_w3_hh %>% 
     group_by(region) %>% 
     summarise(
       mean_kabuli_w3 = weighted.mean(hhd_kabuli_r, w = pw_w3, na.rm = TRUE),
@@ -373,17 +379,45 @@ mean_kabuli_w3 <- bind_rows(
     mutate(region = "National")
 )
 
+mean_kabuli_w3_ea <- bind_rows(
+  kabuli_w3_ea %>% 
+    group_by(region) %>% 
+    summarise(
+      mean_kabuli_w3 = mean(ead_kabuli_r, na.rm = TRUE),
+      nobs = sum(!is.na(ead_kabuli_r)),
+      .groups = "drop"
+    ),
+  
+  wave3_ea %>% 
+    summarise(
+      mean_kabuli_w3 = mean(ead_kabuli_r, na.rm = TRUE),
+      nobs = sum(!is.na(ead_kabuli_r))
+    ) %>% 
+    mutate(region = "National")
+)
+
 
 kabuli_bind <- bind_rows(
   w5_means_new %>% 
     filter(variable == "hhd_kabuli") %>% 
     select(-variable) %>% 
-    mutate(mean = mean*100, wave = "Wave 5"), 
+    mutate(mean = mean*100, wave = "Wave 5", level = "Household-level"), 
   
-  mean_kabuli_w3 %>% 
+  mean_kabuli_w3_hh %>% 
     filter(region!= "Tigray") %>% 
     rename(mean = mean_kabuli_w3) %>% 
-    mutate(label = "Chickpea Kabuli variety", wave = "Wave 3") 
+    mutate(label = "Chickpea Kabuli variety", wave = "Wave 3", level = "Household-level"),
+  
+  w5_means_ea %>% 
+    filter(variable == "ead_kabuli") %>% 
+    select(-variable) %>% 
+    mutate(mean = mean*100, wave = "Wave 5", level = "EA-level"), 
+  
+  mean_kabuli_w3_ea %>% 
+    filter(region!= "Tigray") %>% 
+    rename(mean = mean_kabuli_w3) %>% 
+    mutate(label = "Chickpea Kabuli variety", wave = "Wave 3", level = "EA-level")
+  
 ) %>% 
   mutate(region = fct_relevel(region, "Amhara", "Oromia", "SNNP", "Other regions", "National")) 
 
@@ -391,15 +425,17 @@ kabuli_bind <- bind_rows(
 kabuli_plot <- kabuli_bind %>% 
   ggplot(aes(region, mean/100, fill = wave)) +
   geom_col(position = "dodge") +
-  geom_text(aes(label = paste0( round(mean, 2), "%", "\n(", nobs, ")" ) ),
+  geom_text(aes(label = paste0( round(mean, 1), "%", "\n(", nobs, ")" ) ),
             position = position_dodge(width = 1),
             vjust = -.35, size = 2.5) +
+  facet_wrap(~ level, scales = "free") +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
   scale_y_continuous(labels = percent_format()) +
   expand_limits(y = .08) +
+  theme(legend.position = "top") +
   labs(x = "", y = "Percent",
        title = "Comparision of Adoption of Chickpea Kabuli Variety b/n Waves 3 and 5",
-       fill = "Wave",
+       fill = "",
        caption = "Percent are weighted sample means.
        Number of responding households in parenthesis")
 
@@ -569,50 +605,4 @@ joint_rate_tbl %>%
   ggplot(aes(joint_rate, label, fill = wave)) +
   geom_col(position = "dodge")
   
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
