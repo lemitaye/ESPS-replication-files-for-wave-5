@@ -1,5 +1,7 @@
 
+# A script for producing figures for a presentation
 
+# created on: February 7, 2022
 
 # depends on: figs_hh.R, figs_ea.R
 
@@ -24,30 +26,33 @@ animal_agri <- bind_rows(
     "Crossbred POULTRY",
     "Artificial insemination use"))
 
-animal_dynamics <- animal_agri %>% 
+animal_dyn_plt <- animal_agri %>% 
   mutate(label = str_to_sentence(label)) %>% 
   ggplot(aes(label, mean, fill = wave)) +
   geom_col(position = "dodge") +
   geom_text(aes(label = paste0( round(mean*100, 1), "%" ) ),
             position = position_dodge(width = 1),
-            vjust = -.35, size = 2.5) +
+            vjust = -.35, size = 1.3) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
   scale_y_continuous(labels = percent_format()) +
   # expand_limits(y = .6) +
   theme(legend.position = "top") +
   facet_wrap(~level, nrow = 1, scales = "free_y") +
   labs(x = "", y = "Percent",
-       title = "Adoption of crossbred animals in waves 4 and 5",
+       title = "Adoption of animal agriculture innovations in waves 4 and 5",
        fill = "",
-       caption = "Percent are weighted sample means.
-       Number of observations in parenthesis")
+       caption = "Percent at the household level are weighted sample means (using wave 5 weights)")
 
 
 ggsave(
-  filename = ,
-  plot = animal_dynamics,
-  
-)
+  filename = "LSMS_W5/tmp/figures/animal_dyn_plt.pdf",
+  plot = animal_dyn_plt,
+  device = cairo_pdf,
+  width = 6,
+  height = 4#,
+  # scale = .8,
+  # units = "mm"
+) 
 
 
 
@@ -80,7 +85,7 @@ cons_agri <- bind_rows(
   ),
   short_lab = fct_relevel(short_lab, "MT", "ZT", "CRC", "CR", "CA/MT", "CA/ZT"))
 
-cons_agri %>% 
+ca_dyn_plt <- cons_agri %>% 
   ggplot(aes(short_lab, mean, fill = wave)) +
   geom_col(position = "dodge") +
   geom_text(aes(label = paste0( round(mean*100, 1), "%" ) ),
@@ -92,10 +97,11 @@ cons_agri %>%
   theme(legend.position = "top") +
   facet_wrap(~level, nrow = 1, scales = "free_y") +
   labs(x = "", y = "Percent",
-       title = "Adoption of crossbred animals in waves 4 and 5",
+       title = "Conservation agriculture (CA) and constitutent parts in waves 4 and 5",
        fill = "",
-       caption = "Percent are weighted sample means.
-       Number of observations in parenthesis")
+       caption = "MT = Minimum tillage; ZT = Zero tillage; CRC = Crop residue cover (visual aids); CR = Crop rotation;
+CA/MT = Conservation agriculture with minimum tillage; CA/ZT = Conservation agriculture with zero tillage.
+       Percent at the household level are weighted sample means (using wave 5 weights).")
 
 
 
