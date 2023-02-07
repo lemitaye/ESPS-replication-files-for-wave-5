@@ -90,7 +90,7 @@ ca_dyn_plt <- cons_agri %>%
   geom_col(position = "dodge") +
   geom_text(aes(label = paste0( round(mean*100, 1), "%" ) ),
             position = position_dodge(width = 1),
-            vjust = -.35, size = 2.5) +
+            vjust = -.35, size = 1.5) +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
   scale_y_continuous(labels = percent_format()) +
   # expand_limits(y = .6) +
@@ -104,7 +104,15 @@ CA/MT = Conservation agriculture with minimum tillage; CA/ZT = Conservation agri
        Percent at the household level are weighted sample means (using wave 5 weights).")
 
 
-
+ggsave(
+  filename = "LSMS_W5/tmp/figures/ca_dyn_plt.pdf",
+  plot = ca_dyn_plt,
+  device = cairo_pdf,
+  width = 6,
+  height = 4#,
+  # scale = .8,
+  # units = "mm"
+) 
 
 
 
