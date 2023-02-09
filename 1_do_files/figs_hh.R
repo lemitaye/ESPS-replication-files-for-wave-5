@@ -586,7 +586,7 @@ lbl_vars <- var_label(select(synergies_hh_ess5_new, all_of(vars_joint))) %>%
 joint_rate <- function(tbl, pw, wave_no) {
   tbl %>% 
     summarise(
-      across(all_of(vars_joint), ~weighted.mean(., w={{pw}}))
+      across(all_of(vars_joint), ~weighted.mean(., w={{pw}}, na.rm = TRUE))
     ) %>% 
     mutate(wave = wave_no) %>% 
     pivot_longer(cols = -wave, names_to = "variable", values_to = "joint_rate")
@@ -597,13 +597,10 @@ joint_rate_tbl <- bind_rows(
   joint_rate(synergies_hh_ess5_new, pw_w5, "Wave 5"),
   joint_rate(synergies_hh_ess4_new, pw_w4, "Wave 4")
 ) %>% 
-  left_join(lbl_vars, by = "variable")
-
-
-joint_rate_tbl %>% 
+  left_join(lbl_vars, by = "variable") %>% 
   filter(complete.cases(.)) %>% 
-  filter(!str_detect(label, "CA1|CA2|CA3|CA4|CA5")) %>% 
-  ggplot(aes(joint_rate, label, fill = wave)) +
-  geom_col(position = "dodge")
-  
+  filter(!str_detect(label, "CA1|CA2|CA3|CA4|CA5")) 
+
+
+
 
