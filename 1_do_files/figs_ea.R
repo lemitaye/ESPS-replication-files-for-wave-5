@@ -14,6 +14,18 @@ setwd("C:/Users/tayel/Dropbox/Documents/SPIA/Ethiopia")
 wave4_ea_new <- read_dta("replication_files/3_report_data/wave4_ea_new.dta")
 wave5_ea_new <- read_dta("LSMS_W5/3_report_data/wave5_ea_new.dta")
 
+wave4_ea_new <- wave4_ea_new %>% 
+  mutate(ead_grass = case_when(
+    ead_elepgrass==100 | ead_sasbaniya==100 | ead_alfa==100 ~ 1,
+    ead_elepgrass==0 & ead_sasbaniya==0 & ead_alfa==0 ~ 0 
+  )) 
+
+wave5_ea_new <- wave5_ea_new %>% 
+  mutate(ead_grass = case_when(
+    ead_elepgrass==1 | ead_sesbaniya==1 | ead_alfalfa==1 ~ 1,
+    ead_elepgrass==0 & ead_sesbaniya==0 & ead_alfalfa==0 ~ 0 
+  )) 
+
 
 recode_region <- function(tbl) {
   
@@ -38,7 +50,7 @@ vars_all_ea <- c(
   "ead_cross_largerum", "ead_cross_smallrum", "ead_cross_poultry", 
   "ead_agroind", "ead_cowpea", "ead_elepgrass", "ead_deshograss", 
   "ead_sesbaniya", "ead_sinar", "ead_lablab", "ead_alfalfa", "ead_vetch", 
-  "ead_rhodesgrass", "commirr", "comm_video", "comm_video_all", 
+  "ead_rhodesgrass", "ead_grass", "commirr", "comm_video", "comm_video_all", 
   "comm_2wt_own", "comm_2wt_use", "comm_psnp", "ead_mintillage", 
   "ead_zerotill", "ead_cresidue2", "ead_rotlegume"
 )
@@ -91,6 +103,9 @@ mean_tbl <- function(tbl, var_vec, by_region = TRUE) {
   }
   
 }
+
+var_label(ea_level_w5$ead_grass) <- "Feed and forages: Elephant grass, Sesbaniya, & Alfalfa"
+
 
 labels <- var_label(ea_level_w5) %>% 
   .[-c(1:4)] %>% 
