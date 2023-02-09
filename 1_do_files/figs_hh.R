@@ -423,6 +423,7 @@ kabuli_bind <- bind_rows(
 
 
 kabuli_plot <- kabuli_bind %>% 
+  filter(level == "Household-level") %>% 
   ggplot(aes(region, mean/100, fill = wave)) +
   geom_col(position = "dodge") +
   geom_text(aes(label = paste0( round(mean, 1), "%", "\n(", nobs, ")" ) ),
