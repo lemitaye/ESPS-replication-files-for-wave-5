@@ -282,22 +282,22 @@ ggsave(
 
 
 nrm_joint <- joint_rate_tbl %>% 
-  filter(str_detect(label, "NRM")) %>% 
+  # filter(str_detect(label, "NRM")) %>% 
   filter(variable %in% c("nrm_ca", "nrm_tree", "nrm_animal", "nrm_breed",
                          "nrm_psnp")) 
 
 ca_joint <- joint_rate_tbl %>% 
-  filter(str_detect(label, "CA")) %>% 
-  filter(variable %in% c("ca_tree", "ca_animal", "ca_breed", "ca_psnp")) 
+  # filter(str_detect(label, "CA")) %>% 
+  filter(variable %in% c("ca_tree", "ca_animal", "ca_breed", "ca_psnp", "ca_maize")) 
 
 agrfrst_joint <- joint_rate_tbl %>% 
-  filter(str_detect(label, "Trees|Breeding")) %>% 
+  # filter(str_detect(label, "Trees|Breeding")) %>% 
   filter(variable %in% c("tree_animal", "tree_breed", "tree_psnp", "breed_psnp")) 
 
 
 maize_joint <- joint_rate_tbl %>% 
-  filter(str_detect(label, "Maize")) %>% 
-  filter(variable %in% c("nrm_maize", "ca_maize", "tree_maize", "animal_maize",
+  # filter(str_detect(label, "Maize")) %>% 
+  filter(variable %in% c("nrm_maize", "tree_maize", "animal_maize",
                          "breed_maize", "psnp_maize"))
 
 
@@ -319,7 +319,7 @@ plot_joint <- function(tbl) {
     theme_Publication() +
     theme(
       legend.position = "top",
-      legend.margin = margin(t = -0.4, unit = "cm"),
+      # legend.margin = margin(t = -0.1, unit = "cm"),
       # plot.caption = element_text(hjust = 0),
       axis.title = element_text(size = 12.5),
       plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
@@ -331,26 +331,34 @@ plot_joint <- function(tbl) {
 nrm_joint_plt <- plot_joint(nrm_joint) +
   labs(
     caption = "NRM = AWM + SWC practices; CA = Conservation agriculture. 
+    Trees = Agroforestry (mango, papaya, & avocado); Breeding = Animal crossbreeds.
     Percent are weighted sample means using each wave's respective weights."
   )
 
 ca_joint_plt <- plot_joint(ca_joint) +
   labs(
-    caption = "CA = Conservation agriculture.
+    caption = "CA = Conservation agriculture; Trees = Agroforestry (mango, papaya, & avocado); 
+    Breeding = Animal crossbreeds.
     Percent are weighted sample means using each wave's respective weights"
     )
 
 agrfrst_joint_plt <- plot_joint(agrfrst_joint) +
   labs(
-    caption = "Percent are weighted sample means using each wave's respective weights"
+    caption = "Trees = Agroforestry (mango, papaya, & avocado); Breeding = Animal crossbreeds.
+    Percent are weighted sample means using each wave's respective weights"
   )
 
-plot_joint(maize_joint)
+maize_joint_plt <- plot_joint(maize_joint) +
+  labs(
+    caption = "NRM = AWM + SWC practices; CA = Conservation agriculture. 
+    Trees = Agroforestry (mango, papaya, & avocado); Breeding = Animal crossbreeds.
+    Percent are weighted sample means using each wave's respective weights."
+  )
 
 
-joint_plots <- list(nrm_joint_plt, ca_joint_plt, agrfrst_joint_plt)
+joint_plots <- list(nrm_joint_plt, ca_joint_plt, agrfrst_joint_plt, maize_joint_plt)
 
-names(joint_plots) <- c("nrm_joint_plt", "ca_joint_plt", "agrfrst_joint_plt")
+names(joint_plots) <- c("nrm_joint_plt", "ca_joint_plt", "agrfrst_joint_plt", "maize_joint_plt")
 
 for (i in seq_along(joint_plots)) {
   
@@ -362,23 +370,90 @@ for (i in seq_along(joint_plots)) {
     filename = file,
     plot = joint_plots[[i]],
     device = cairo_pdf,
-    width = 6.58,
-    height = 5.31#,
+    width = 6.5,
+    height = 5.2#,
     # scale = 1.2#,
     # units = "mm"
   )
 }
 
-# relabel x-axis labels
-# add maize-dna
+
+# only for panel households
+
+nrm_joint_pnl <- joint_rate_tbl_panel %>% 
+  # filter(str_detect(label, "NRM")) %>% 
+  filter(variable %in% c("nrm_ca", "nrm_tree", "nrm_animal", "nrm_breed",
+                         "nrm_psnp")) 
+
+ca_joint_pnl <- joint_rate_tbl_panel %>% 
+  # filter(str_detect(label, "CA")) %>% 
+  filter(variable %in% c("ca_tree", "ca_animal", "ca_breed", "ca_psnp", "ca_maize")) 
+
+agrfrst_joint_pnl <- joint_rate_tbl_panel %>% 
+  # filter(str_detect(label, "Trees|Breeding")) %>% 
+  filter(variable %in% c("tree_animal", "tree_breed", "tree_psnp", "breed_psnp")) 
+
+
+maize_joint_pnl <- joint_rate_tbl_panel %>% 
+  # filter(str_detect(label, "Maize")) %>% 
+  filter(variable %in% c("nrm_maize", "tree_maize", "animal_maize",
+                         "breed_maize", "psnp_maize"))
 
 
 
 
+nrm_joint_plt_pnl <- plot_joint(nrm_joint_pnl) +
+  labs(
+    subtitle = "Data at the household level (only panel)",
+    caption = "NRM = AWM + SWC practices; CA = Conservation agriculture. 
+    Trees = Agroforestry (mango, papaya, & avocado); Breeding = Animal crossbreeds.
+    Percent are weighted sample means using each wave's respective weights."
+  )
+
+ca_joint_plt_pnl <- plot_joint(ca_joint_pnl) +
+  labs(
+    subtitle = "Data at the household level (only panel)",
+    caption = "CA = Conservation agriculture; Trees = Agroforestry (mango, papaya, & avocado); 
+    Breeding = Animal crossbreeds.
+    Percent are weighted sample means using each wave's respective weights"
+  )
+
+agrfrst_joint_plt_pnl <- plot_joint(agrfrst_joint_pnl) +
+  labs(
+    subtitle = "Data at the household level (only panel)",
+    caption = "Trees = Agroforestry (mango, papaya, & avocado); Breeding = Animal crossbreeds.
+    Percent are weighted sample means using each wave's respective weights"
+  )
+
+maize_joint_plt_pnl <- plot_joint(maize_joint_pnl) +
+  labs(
+    subtitle = "Data at the household level (only panel)",
+    caption = "NRM = AWM + SWC practices; CA = Conservation agriculture. 
+    Trees = Agroforestry (mango, papaya, & avocado); Breeding = Animal crossbreeds.
+    Percent are weighted sample means using each wave's respective weights."
+  )
 
 
+joint_plots_pnl <- list(nrm_joint_plt_pnl, ca_joint_plt_pnl, agrfrst_joint_plt_pnl, maize_joint_plt_pnl)
 
+names(joint_plots_pnl) <- c("nrm_joint_plt_pnl", "ca_joint_plt_pnl", "agrfrst_joint_plt_pnl", "maize_joint_plt_pnl")
 
+for (i in seq_along(joint_plots_pnl)) {
+  
+  file <- paste0("LSMS_W5/tmp/figures/", names(joint_plots_pnl)[[i]], ".pdf")
+  
+  print(paste("saving to", file))
+  
+  ggsave(
+    filename = file,
+    plot = joint_plots_pnl[[i]],
+    device = cairo_pdf,
+    width = 6.5,
+    height = 5.2#,
+    # scale = 1.2#,
+    # units = "mm"
+  )
+}
 
 
 

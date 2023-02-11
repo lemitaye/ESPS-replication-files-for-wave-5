@@ -643,21 +643,58 @@ joint_rate_tbl <- bind_rows(
   joint_rate(synergies_hh_ess4_new, pw_w4, vars_joint, "Wave 4"),
   joint_rate(synergies_dna_hh_ess5, pw_w5, vars_maize, "Wave 5"),
   joint_rate(synergies_dna_hh_ess4, pw_w4, vars_maize, "Wave 4")
-) %>% 
-  left_join(lbl_vars, by = "variable") %>% 
-  filter(complete.cases(.)) %>% 
-  filter(!str_detect(label, "CA1|CA2|CA3|CA4|CA5")) %>% 
+) %>%
+  left_join(lbl_vars, by = "variable") %>%
+  filter(complete.cases(.)) %>%
+  filter(!str_detect(label, "CA1|CA2|CA3|CA4|CA5")) %>%
   mutate(
-    label = str_remove(label, "germplasm"),
+    label = str_replace(label, "Maize - CG germplasm", "Maize-CG"),
+    label = str_replace(label, "Feed and Forages", "Forages"),
     label = str_trim(label)
-         )
+  )
 
 
+# only panel households
+
+synergies_hh_ess5_panel <- semi_join(
+  x = synergies_hh_ess5_new,
+  y = synergies_hh_ess4_new,
+  by = "household_id"
+)
+
+synergies_hh_ess4_panel <- semi_join(
+  x = synergies_hh_ess4_new,
+  y = synergies_hh_ess5_new,
+  by = "household_id"
+)
+
+synergies_dna_hh_ess5_panel <- semi_join(
+  x = synergies_dna_hh_ess5,
+  y = synergies_dna_hh_ess4,
+  by = "household_id"
+)
+
+synergies_dna_hh_ess4_panel <- semi_join(
+  x = synergies_dna_hh_ess4,
+  y = synergies_dna_hh_ess5,
+  by = "household_id"
+)
 
 
-
-
-
+joint_rate_tbl_panel <- bind_rows(
+  joint_rate(synergies_hh_ess5_panel, pw_w5, vars_joint, "Wave 5"),
+  joint_rate(synergies_hh_ess4_panel, pw_w4, vars_joint, "Wave 4"),
+  joint_rate(synergies_dna_hh_ess5_panel, pw_w5, vars_maize, "Wave 5"),
+  joint_rate(synergies_dna_hh_ess4_panel, pw_w4, vars_maize, "Wave 4")
+) %>%
+  left_join(lbl_vars, by = "variable") %>%
+  filter(complete.cases(.)) %>%
+  filter(!str_detect(label, "CA1|CA2|CA3|CA4|CA5")) %>%
+  mutate(
+    label = str_replace(label, "Maize - CG germplasm", "Maize-CG"),
+    label = str_replace(label, "Feed and Forages", "Forages"),
+    label = str_trim(label)
+  )
 
 
 
