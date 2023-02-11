@@ -1080,6 +1080,7 @@ foreach var of local vars {
     label variable `var'maize `" `lbl'"'
 }
 
+save "${data}\synergies_dna_hh_ess5", replace
 
 
 #delimit;
