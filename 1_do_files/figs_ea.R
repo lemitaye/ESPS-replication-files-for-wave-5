@@ -137,6 +137,29 @@ regions_ea_level <- bind_rows(
   select(wave, region, variable, label, mean, nobs)
 
 
+panel_ea_w4 <- semi_join(
+  x = ea_level_w4,
+  y = ea_level_w5,
+  by = "ea_id"
+)
+
+panel_ea_w5 <- semi_join(
+  x = ea_level_w5,
+  y = ea_level_w4,
+  by = "ea_id"
+)
+
+national_ea_panel <- bind_rows(
+  mean_tbl(panel_ea_w4, vars_both_ea, by_region = FALSE) %>% 
+    mutate(wave = "Wave 4"),
+  mean_tbl(panel_ea_w5, vars_both_ea, by_region = FALSE) %>% 
+    mutate(wave = "Wave 5")
+) %>% 
+  mutate(wave = fct_relevel(wave, "Wave 5", "Wave 4")) %>% 
+  left_join(labels, by = "variable") %>% 
+  select(wave, variable, label, mean, nobs)
+
+
 
 plot_compar_ea <- function(tbl, title, xlim = .8) {
   

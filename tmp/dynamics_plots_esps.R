@@ -11,7 +11,7 @@ source("LSMS_W5/tmp/ggplot_theme_Publication-2.R")
 
 animal_agri <- bind_rows(
   mutate(national_hh_panel, level = "Household-level (only panel)"),
-  mutate(national_ea_level, level = "EA-level")
+  mutate(national_ea_panel, level = "EA-level (only panel)")
 ) %>% 
   select(-variable, -improv) %>% 
   mutate(
@@ -75,7 +75,7 @@ ggsave(
 
 cons_agri <- bind_rows(
   mutate(national_hh_panel, level = "Household-level (only panel)"),
-  mutate(national_ea_level, level = "EA-level")
+  mutate(national_ea_panel, level = "EA-level (only panel)")
 ) %>% 
   select(-variable, -improv) %>% 
   mutate(label = str_to_sentence(label)) %>%
@@ -176,7 +176,7 @@ ggsave(
 
 swc_affor <- bind_rows(
   mutate(national_hh_panel, level = "Household-level (only panel)"),
-  mutate(national_ea_level, level = "EA-level")
+  mutate(national_ea_panel, level = "EA-level (only panel)")
 ) %>% 
   select(-variable, -improv) %>%
   mutate(
@@ -233,7 +233,7 @@ ggsave(
 
 agroforest <- bind_rows(
   mutate(national_hh_panel, level = "Household-level (only panel)"),
-  mutate(national_ea_level, level = "EA-level")
+  mutate(national_ea_panel, level = "EA-level (only panel)")
 ) %>% 
   select(-variable, -improv) %>% 
   filter(label %in% c(
