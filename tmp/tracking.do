@@ -194,6 +194,59 @@ drop ea_id_w5
 save "LSMS_W5\tmp\track_dna_cov.dta", replace
 
 
+* ESPS4 DNA households that were in EAs surveyed in ESPS5
+
+use "LSMS_W5\tmp\track_dna_hh", clear
+
+rename _merge hh_status
+rename ea_id_w4 ea_id
+
+label define _merge 1 "1. Newly added in ESPS5", modify
+label define _merge 2 "2. Dropped in ESPS5", modify
+label define _merge 3 "3. Matched ", modify
+
+keep if hh_status==2  // retain only dropped hhs
+drop ea_id_w5 region_w5
+
+tempfile dna_hh_w4
+save `dna_hh_w4'
+
+use "LSMS_W5\3_report_data\ess5_dna_hh_new.dta", clear
+
+destring household_id, replace
+collapse (firstnm) saq01 (count) household_id, by(ea_id)
+rename saq01 region_w5
+rename household_id nohh_per_ea_w5
+
+merge 1:m ea_id using `dna_hh_w4'
+
+keep if _merge==2 | _merge==3  // retain only missing hhs
+
+generate ea_missing=.
+replace ea_missing=1 if _merge==2  // hhs in ESPS4 whose EAs cannot be found in ESPS5 (b/c EAs are dropped)
+replace ea_missing=0 if _merge==3 // missing hhs in surveyed EAs
+
+/*
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                           196
+        from master                        40  (_merge==1)
+        from using                        156  (_merge==2)
+
+    Matched                                63  (_merge==3)
+    -----------------------------------------
+
+156 hhs are missing because the EAs were not surveyed. Our analysis focuses on the 63 missing households that were in the surveyed EAs. 40 EAs from ESPS5 cannot be matched (these can be ignored).
+*/
+
+tab region_w4 ea_missing
+
+
+
+
+
+
+
 
 
 
