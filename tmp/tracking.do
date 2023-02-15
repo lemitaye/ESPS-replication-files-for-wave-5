@@ -240,6 +240,18 @@ replace ea_missing=0 if _merge==3 // missing hhs in surveyed EAs
 */
 
 tab region_w4 ea_missing
+drop _merge
+
+* merging with data on why hhs were missing
+
+merge 1:1 household_id using "ESS5_DNA_Data\DNA_2021_22\Other_DNA_infor\Missed hhs_with DNA_From the current survey"
+
+keep if _merge==1 | _merge==3
+
+preserve
+keep if ea_missing==0
+list household_id csa_branch reasonformissingpanelhhsfieldrep reasonformissingpanelhhsdata if reasonformissingpanelhhsfieldrep!=""
+restore
 
 
 

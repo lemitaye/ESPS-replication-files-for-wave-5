@@ -20,3 +20,4 @@ tmp/.Rhistory
 *.gz
 *.toc
 *.PNG
+.Rproj.user

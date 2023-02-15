@@ -11,10 +11,12 @@ library(ggpubr)
 
 # theme_set(theme_light())
 
-setwd("C:/Users/tayel/Dropbox/Documents/SPIA/Ethiopia")
+root <- "C:/Users/tayel/OneDrive/SPIA/Ethiopia"
+w4_dir <- "replication_files/3_report_data"
+w5_dir <- "LSMS_W5/3_report_data"
 
-wave4_hh_new <- read_dta("replication_files/3_report_data/wave4_hh_new.dta")
-wave5_hh_new <- read_dta("LSMS_W5/3_report_data/wave5_hh_new.dta")
+wave4_hh_new <- read_dta(file.path(root, w4_dir, "wave4_hh_new.dta"))
+wave5_hh_new <- read_dta(file.path(root, w5_dir, "wave5_hh_new.dta"))
 
 wave4_hh_new <- wave4_hh_new %>% 
   mutate(hhd_grass = case_when(
@@ -263,7 +265,7 @@ names(plots) <- c("nat_hh", "amhara_hh", "oromia_hh", "snnp_hh", "other_hh", "na
 
 for (i in seq_along(plots)) {
   
-  file <- paste0("LSMS_W5/tmp/figures/", names(plots)[[i]], ".pdf")
+  file <- paste0(root, "/LSMS_W5/tmp/figures/", names(plots)[[i]], ".pdf")
   
   print(paste("saving to", file))
   
@@ -338,7 +340,7 @@ new_innov <- w5_means_new %>%
        title = "Adoption of innovations incorporated only in ESPS5")
 
 ggsave(
-  filename = "LSMS_W5/tmp/figures/new_innov.pdf",
+  filename = file.path(root, "LSMS_W5/tmp/figures/new_innov.pdf"),
   plot = new_innov,
   device = cairo_pdf,
   width = 200,
@@ -351,10 +353,10 @@ ggsave(
 # Comparison for Chickpea Kabuli only (against wave 3) ####
 ###############################################################################*
 
-wave3_hh <- read_dta("replication_files/3_report_data/wave3_hh.dta")
-wave3_ea <- read_dta("replication_files/3_report_data/wave3_ea.dta")
+wave3_hh <- read_dta(file.path(root, w4_dir, "wave3_hh.dta"))
+wave3_ea <- read_dta(file.path(root, w4_dir, "wave3_ea.dta"))
 
-wave5_ea_new <- read_dta("LSMS_W5/3_report_data/wave5_ea_new.dta")
+wave5_ea_new <- read_dta(file.path(root, w5_dir, "wave5_ea_new.dta"))
 
 
 chickpea_tbl <- function(tbl, kab_var, desi_var, pw, hh = TRUE) {
@@ -466,7 +468,7 @@ kabuli_plot <- kabuli_bind %>%
 
 
 ggsave(
-  filename = "LSMS_W5/tmp/figures/kabuli_plot.pdf",
+  filename = file.path(root, "LSMS_W5/tmp/figures/kabuli_plot.pdf"),
   plot = kabuli_plot,
   device = cairo_pdf,
   width = 180,
@@ -478,12 +480,12 @@ ggsave(
 
 # Comparing crop-germplasm improvements
 
-ess4_dna_hh_new <- read_dta("replication_files/3_report_data/ess4_dna_hh_new.dta") %>% 
+ess4_dna_hh_new <- read_dta(file.path(root, w4_dir, "ess4_dna_hh_new.dta")) %>% 
   filter(!is.na(maize_cg), !is.na(dtmz)) %>%  # retain only maize
   select(-barley_cg, -sorghum_cg) %>% 
   recode_region()
 
-ess5_dna_hh_new <- read_dta("LSMS_W5/3_report_data/ess5_dna_hh_new.dta") %>% 
+ess5_dna_hh_new <- read_dta(file.path(root, w5_dir, "ess5_dna_hh_new.dta")) %>% 
   recode_region()
 
 dna_means <- bind_rows(
@@ -564,7 +566,7 @@ maize_dna <- ggarrange(
 ) 
 
 ggsave(
-  filename = "LSMS_W5/tmp/figures/maize_dna_plot.pdf",
+  filename = file.path(root, "LSMS_W5/tmp/figures/maize_dna_plot.pdf"),
   plot = maize_dna,
   device = cairo_pdf,
   width = 185,
@@ -586,16 +588,16 @@ inner_join(
 
 # Synergies: comparing joint adoption rates
 
-synergies_hh_ess5_new <- read_dta("LSMS_W5/3_report_data/synergies_hh_ess5_new.dta")
+synergies_hh_ess5_new <- read_dta(file.path(root, w5_dir, "synergies_hh_ess5_new.dta"))
 
-synergies_hh_ess4_new <- read_dta("replication_files/3_report_data/synergies_hh_ess4_new.dta")
+synergies_hh_ess4_new <- read_dta(file.path(root, w4_dir, "synergies_hh_ess4_new.dta"))
 
 # Maize - DNA data
 
-synergies_dna_hh_ess4 <- read_dta("replication_files/3_report_data/synergies_dna_hh_ess4.dta") %>% 
+synergies_dna_hh_ess4 <- read_dta(file.path(root, w4_dir, "synergies_dna_hh_ess4.dta")) %>% 
   filter(!is.na(maize_cg))   # filter maize only
 
-synergies_dna_hh_ess5 <- read_dta("LSMS_W5/3_report_data/synergies_dna_hh_ess5.dta")
+synergies_dna_hh_ess5 <- read_dta(file.path(root, w5_dir, "synergies_dna_hh_ess5.dta"))
 
 
 vars <- unique(c(
