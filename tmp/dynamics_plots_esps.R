@@ -138,9 +138,10 @@ ggsave(
 # Chickpea kabuli (waves 3 vs 5)
 
 kabuli_dyn_plt <- kabuli_bind %>% 
-  ggplot(aes(region, mean/100, fill = wave)) +
+  filter(region != "Tigray") %>% 
+  ggplot(aes(region, mean_kabuli, fill = wave)) +
   geom_col(position = "dodge") +
-  geom_text(aes(label = paste0( round(mean, 1) ) ),
+  geom_text(aes(label = paste0( round(mean_kabuli*100, 1) ) ),
             position = position_dodge(width = 1),
             vjust = -.35, size = 3) +
   facet_wrap(~ level, scales = "free") +
@@ -164,6 +165,45 @@ kabuli_dyn_plt <- kabuli_bind %>%
 ggsave(
   filename = "LSMS_W5/tmp/figures/kabuli_dyn_plt.pdf",
   plot = kabuli_dyn_plt,
+  device = cairo_pdf,
+  width = 8,
+  height = 5#,
+  # scale = .8,
+  # units = "mm"
+) 
+
+
+
+# any chickpea variety:
+
+chickpea_dyn_plt <- kabuli_bind %>% 
+  filter(region != "Tigray") %>% 
+  ggplot(aes(region, mean_chickpea, fill = wave)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = paste0( round(mean_chickpea*100, 1) ) ),
+            position = position_dodge(width = 1),
+            vjust = -.35, size = 3) +
+  facet_wrap(~ level, scales = "free") +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+  scale_y_continuous(labels = percent_format()) +
+  expand_limits(y = .08) +
+  theme(legend.position = "top") +
+  labs(x = "", y = "Percent",
+       title = "Adoption rate of any chickpea variety in waves 3 and 5",
+       fill = "",
+       caption = "Percent are weighted sample means at the household level.") +
+  scale_fill_Publication() + 
+  theme_Publication() +
+  theme(
+    legend.position = "top",
+    legend.margin = margin(t = -0.4, unit = "cm"),
+    axis.title = element_text(size = 12.5),
+    plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
+  )
+
+ggsave(
+  filename = "LSMS_W5/tmp/figures/chickpea_dyn_plt.pdf",
+  plot = chickpea_dyn_plt,
   device = cairo_pdf,
   width = 8,
   height = 5#,

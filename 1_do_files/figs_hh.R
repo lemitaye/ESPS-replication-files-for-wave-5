@@ -13,9 +13,6 @@ library(ggpubr)
 
 setwd("C:/Users/tayel/Dropbox/Documents/SPIA/Ethiopia")
 
-wave3_hh <- read_dta("replication_files/3_report_data/wave3_hh.dta")
-wave3_ea <- read_dta("replication_files/3_report_data/wave3_ea.dta")
-
 wave4_hh_new <- read_dta("replication_files/3_report_data/wave4_hh_new.dta")
 wave5_hh_new <- read_dta("LSMS_W5/3_report_data/wave5_hh_new.dta")
 
@@ -33,7 +30,7 @@ wave5_hh_new <- wave5_hh_new %>%
 
 
 vars_all <- c(
-  "hhd_ofsp", "hhd_awassa83", "hhd_kabuli", "hhd_rdisp", "hhd_motorpump", 
+  "hhd_ofsp", "hhd_awassa83", "hhd_kabuli", "hhd_desi", "hhd_rdisp", "hhd_motorpump", 
   "hhd_swc", "hhd_consag1", "hhd_consag2", "hhd_affor", "hhd_mango", 
   "hhd_papaya", "hhd_avocado", "hotline", "hhd_malt", "hhd_durum", 
   "hhd_seedv1", "hhd_seedv2", "hhd_livIA", "hhd_livIA_publ", 
@@ -354,85 +351,112 @@ ggsave(
 # Comparison for Chickpea Kabuli only (against wave 3) ####
 ###############################################################################*
 
-kabuli_w3_hh <- wave3_hh %>% 
-  select(region, hhd_kabuli_r, pw_w3) %>% 
-  recode_region()
+wave3_hh <- read_dta("replication_files/3_report_data/wave3_hh.dta")
+wave3_ea <- read_dta("replication_files/3_report_data/wave3_ea.dta")
 
-kabuli_w3_ea <- wave3_ea %>% 
-  select(region, ead_kabuli_r, pw_w3) %>% 
-  recode_region()
+wave5_ea_new <- read_dta("LSMS_W5/3_report_data/wave5_ea_new.dta")
 
-mean_kabuli_w3_hh <- bind_rows(
-  kabuli_w3_hh %>% 
-    group_by(region) %>% 
-    summarise(
-      mean_kabuli_w3 = weighted.mean(hhd_kabuli_r, w = pw_w3, na.rm = TRUE),
-      nobs = sum(!is.na(hhd_kabuli_r)),
-      .groups = "drop"
-    ),
+
+chickpea_tbl <- function(tbl, kab_var, desi_var, pw, hh = TRUE) {
   
-  wave3_hh %>% 
-    summarise(
-      mean_kabuli_w3 = weighted.mean(hhd_kabuli_r, w = pw_w3, na.rm = TRUE),
-      nobs = sum(!is.na(hhd_kabuli_r))
-    ) %>% 
-    mutate(region = "National")
-)
-
-mean_kabuli_w3_ea <- bind_rows(
-  kabuli_w3_ea %>% 
-    group_by(region) %>% 
-    summarise(
-      mean_kabuli_w3 = mean(ead_kabuli_r, na.rm = TRUE),
-      nobs = sum(!is.na(ead_kabuli_r)),
-      .groups = "drop"
-    ),
+  if (hh) {
+    bind_rows(
+      tbl %>% 
+        mutate(chickpea = pmax({{kab_var}}, {{desi_var}}, na.rm = TRUE)) %>% 
+        group_by(region) %>% 
+        summarise(
+          mean_kabuli = weighted.mean({{kab_var}}, w = {{pw}}, na.rm = TRUE),
+          mean_desi = weighted.mean({{desi_var}}, w = {{pw}}, na.rm = TRUE),
+          mean_chickpea = weighted.mean(chickpea, w = {{pw}}, na.rm = TRUE),
+          nobs = sum(!is.na(chickpea)),
+          .groups = "drop"
+        ),
+      
+      tbl %>% 
+        mutate(chickpea = pmax({{kab_var}}, {{desi_var}}, na.rm = TRUE)) %>% 
+        summarise(
+          mean_kabuli = weighted.mean({{kab_var}}, w = {{pw}}, na.rm = TRUE),
+          mean_desi = weighted.mean({{desi_var}}, w = {{pw}}, na.rm = TRUE),
+          mean_chickpea = weighted.mean(chickpea, w = {{pw}}, na.rm = TRUE),
+          nobs = sum(!is.na(chickpea)),
+          .groups = "drop"
+        ) %>% 
+        mutate(region = "National")
+    )
+  } else {
+    bind_rows(
+      tbl %>% 
+        mutate(chickpea = pmax({{kab_var}}, {{desi_var}}, na.rm = TRUE)) %>% 
+        group_by(region) %>% 
+        summarise(
+          mean_kabuli = mean({{kab_var}}, na.rm = TRUE),
+          mean_desi = mean({{desi_var}}, na.rm = TRUE),
+          mean_chickpea = mean(chickpea, na.rm = TRUE),
+          nobs = sum(!is.na(chickpea)),
+          .groups = "drop"
+        ),
+      
+      tbl %>% 
+        mutate(chickpea = pmax({{kab_var}}, {{desi_var}}, na.rm = TRUE)) %>% 
+        summarise(
+          mean_kabuli = mean({{kab_var}}, na.rm = TRUE),
+          mean_desi = mean({{desi_var}}, na.rm = TRUE),
+          mean_chickpea = mean(chickpea, na.rm = TRUE),
+          nobs = sum(!is.na(chickpea)),
+          .groups = "drop"
+        ) %>% 
+        mutate(region = "National")
+    )
+  }
   
-  wave3_ea %>% 
-    summarise(
-      mean_kabuli_w3 = mean(ead_kabuli_r, na.rm = TRUE),
-      nobs = sum(!is.na(ead_kabuli_r))
-    ) %>% 
-    mutate(region = "National")
-)
+}
 
+
+
+
+mean_kabuli_w3_hh <- wave3_hh %>% 
+  recode_region() %>% 
+  chickpea_tbl(hhd_kabuli_r, hhd_desi_r, pw_w3) %>% 
+  mutate(across(c(mean_kabuli, mean_desi, mean_chickpea), ~ . / 100 ) ) %>%
+  mutate(wave = "Wave 3", level = "Household-level")
+
+mean_kabuli_w3_ea <- wave3_ea %>% 
+  recode_region() %>% 
+  chickpea_tbl(ead_kabuli_r, ead_desi_r, hh = FALSE) %>% 
+  mutate(across(c(mean_kabuli, mean_desi, mean_chickpea), ~ . / 100 ) ) %>%
+  mutate(wave = "Wave 3", level = "EA-level")
+
+mean_kabuli_w5_hh <- wave5_hh_new %>% 
+  recode_region() %>% 
+  chickpea_tbl(hhd_kabuli, hhd_desi, pw_w5) %>% 
+  mutate(wave = "Wave 5", level = "Household-level")
+
+mean_kabuli_w5_ea <- wave5_ea_new %>% 
+  recode_region() %>% 
+  chickpea_tbl(ead_kabuli, ead_desi, hh = FALSE) %>% 
+  mutate(wave = "Wave 5", level = "EA-level")
+  
 
 kabuli_bind <- bind_rows(
-  w5_means_new %>% 
-    filter(variable == "hhd_kabuli") %>% 
-    select(-variable) %>% 
-    mutate(mean = mean*100, wave = "Wave 5", level = "Household-level"), 
-  
-  mean_kabuli_w3_hh %>% 
-    filter(region!= "Tigray") %>% 
-    rename(mean = mean_kabuli_w3) %>% 
-    mutate(label = "Chickpea Kabuli variety", wave = "Wave 3", level = "Household-level"),
-  
-  w5_means_ea %>% 
-    filter(variable == "ead_kabuli") %>% 
-    select(-variable) %>% 
-    mutate(mean = mean*100, wave = "Wave 5", level = "EA-level"), 
-  
-  mean_kabuli_w3_ea %>% 
-    filter(region!= "Tigray") %>% 
-    rename(mean = mean_kabuli_w3) %>% 
-    mutate(label = "Chickpea Kabuli variety", wave = "Wave 3", level = "EA-level")
-  
+  mean_kabuli_w3_hh,
+  mean_kabuli_w3_ea,
+  mean_kabuli_w5_hh,
+  mean_kabuli_w5_ea
 ) %>% 
   mutate(region = fct_relevel(region, "Amhara", "Oromia", "SNNP", "Other regions", "National")) 
 
 
 kabuli_plot <- kabuli_bind %>% 
-  filter(level == "Household-level") %>% 
-  ggplot(aes(region, mean/100, fill = wave)) +
+  filter(level == "Household-level", region != "Tigray") %>% 
+  ggplot(aes(region, mean_chickpea, fill = wave)) +
   geom_col(position = "dodge") +
-  geom_text(aes(label = paste0( round(mean, 1), "%", "\n(", nobs, ")" ) ),
+  geom_text(aes(label = paste0( round(mean_chickpea*100, 1), "%", "\n(", nobs, ")" ) ),
             position = position_dodge(width = 1),
             vjust = -.35, size = 2.5) +
   facet_wrap(~ level, scales = "free") +
   scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
   scale_y_continuous(labels = percent_format()) +
-  expand_limits(y = .08) +
+  expand_limits(y = .15) +
   theme(legend.position = "top") +
   labs(x = "", y = "Percent",
        title = "Comparision of Adoption of Chickpea Kabuli Variety b/n Waves 3 and 5",
