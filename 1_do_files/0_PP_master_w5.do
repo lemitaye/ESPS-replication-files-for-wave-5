@@ -8,7 +8,7 @@ Purpose: Preliminary analysis of the LSMS-ESS5 data
 clear all
 
 * to be added to master later
-global root     "C:\Users\tayel\Dropbox\Documents\SPIA\Ethiopia\LSMS_W5"
+global root     "C:\Users\tayel\OneDrive\SPIA\Ethiopia\LSMS_W5"
 global code     "$root\1_do_files"
 global rawdata  "$root\2_raw_data\data"
 global data     "$root\3_report_data"
