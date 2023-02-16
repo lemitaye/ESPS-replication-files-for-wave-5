@@ -21,3 +21,5 @@ tmp/.Rhistory
 *.toc
 *.PNG
 .Rproj.user
+tmp/temp_R/.Rhistory
+tmp/temp_R/.Rhistory
