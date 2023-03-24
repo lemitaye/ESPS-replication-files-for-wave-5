@@ -24,3 +24,4 @@ tmp/.Rhistory
 tmp/temp_R/.Rhistory
 tmp/temp_R/.Rhistory
 *.zip
+*.dta
