@@ -25,3 +25,7 @@ tmp/temp_R/.Rhistory
 tmp/temp_R/.Rhistory
 *.zip
 *.dta
+*.dta
+3_report_data/w5_coverPP_new.dta
+3_report_data/ess5_pp_hhlevel_parcel_new.dta
+3_report_data/w5_sect2_pp_parcel_new.dta
