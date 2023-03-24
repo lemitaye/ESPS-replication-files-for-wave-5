@@ -23,3 +23,4 @@ tmp/.Rhistory
 .Rproj.user
 tmp/temp_R/.Rhistory
 tmp/temp_R/.Rhistory
+*.zip
