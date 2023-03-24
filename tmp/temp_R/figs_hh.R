@@ -214,23 +214,33 @@ plot_compar <- function(tbl, title, xlim = .8) {
 
 
 nat_hh <- national_hh_level %>% 
-  plot_compar("National", xlim = .85)
+  plot_compar("National", xlim = .85) +
+  labs(caption = "Percent are weighted sample means using each wave's respective weights.
+         Number of households responding in parenthesis")
 
 amhara_hh <- regions_hh_level %>% 
   filter(region == "Amhara") %>% 
-  plot_compar("Amhara", xlim = 1.05)
+  plot_compar("Amhara", xlim = 1.05) +
+  labs(caption = "Percent are weighted sample means using each wave's respective weights.
+         Number of households responding in parenthesis")
 
 oromia_hh <- regions_hh_level %>% 
   filter(region == "Oromia") %>% 
-  plot_compar("Oromia")
+  plot_compar("Oromia") +
+  labs(caption = "Percent are weighted sample means using each wave's respective weights.
+         Number of households responding in parenthesis")
 
 snnp_hh <- regions_hh_level %>% 
   filter(region == "SNNP") %>% 
-  plot_compar("SNNP")
+  plot_compar("SNNP") +
+  labs(caption = "Percent are weighted sample means using each wave's respective weights.
+         Number of households responding in parenthesis")
 
 other_hh <- regions_hh_level %>% 
   filter(region == "Other regions") %>% 
-  plot_compar("Other regions")
+  plot_compar("Other regions") +
+  labs(caption = "Percent are weighted sample means using each wave's respective weights.
+         Number of households responding in parenthesis")
 
 
 

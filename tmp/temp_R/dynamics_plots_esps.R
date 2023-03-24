@@ -44,7 +44,7 @@ animal_dyn_plt <- animal_agri %>%
   labs(x = "", y = "Percent",
        title = "Adoption of animal agriculture innovations (ESPS)",
        fill = "",
-       caption = "Percent at the household level are weighted sample means panel weights") +
+       caption = "Percent at the household level are weighted sample means using panel weights") +
   scale_fill_Publication() + 
   theme_Publication() +
   theme(
