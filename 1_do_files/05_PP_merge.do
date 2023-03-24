@@ -3,9 +3,9 @@
 * MERGE DIFFERENT MODULES *
 ********************************************************************************
 
-use "${data}\w5_coverPP_new", clear
+use "${data}/w5_coverPP_new", clear
 
-merge 1:1 household_id using "${tmp}\PP_W5S3"
+merge 1:1 household_id using "${tmp}/PP_W5S3"
 /*
     Result                      Number of obs
     -----------------------------------------
@@ -19,11 +19,11 @@ merge 1:1 household_id using "${tmp}\PP_W5S3"
 
 drop _merge
 
-merge 1:1 household_id using "${tmp}\PP_W4S81"  
+merge 1:1 household_id using "${tmp}/PP_W4S81"  
 
 drop _merge
 
-merge 1:1 household_id using "${tmp}\pp_w5s4"
+merge 1:1 household_id using "${tmp}/pp_w5s4"
 /*
     Result                      Number of obs
     -----------------------------------------
@@ -36,22 +36,25 @@ merge 1:1 household_id using "${tmp}\pp_w5s4"
 */
 
 drop _m 
-/*
-*MERGE WITH HH-COVER FOR WEIGHTS
-merge 1:1 household_id using `hh_sectcover'
 
+* Merge with household cover for panel weights ---------------------------------
+
+merge 1:1 household_id using "${rawdata}/ESS5_weights_hh.dta", keepusing(pw_panel)
 /*
-    Result                           # of obs.
+     Result                      Number of obs
     -----------------------------------------
-    not matched                         4,109
-        from master                       110  (_merge==1)
-        from using                      3,999  (_merge==2)
+    Not matched                         2,920
+        from master                         0  (_merge==1)
+        from using                      2,920  (_merge==2)
 
-    matched                             2,789  (_merge==3)
+    Matched                             2,079  (_merge==3)
     -----------------------------------------
 */
-keep if _m==3
-*/
+keep if _merge==1 | _merge==3
+drop _merge
+
+order holder_id-pw_w5 pw_panel
+
 
 generate wave = 5
 clonevar region = saq01
@@ -76,7 +79,7 @@ drop impcr*max impcr*_sum*  sh_plothh_swc2_cond*
 
 * 8028 Farmer hotline (IVR)
 preserve
-    use "${rawdata}\PP\sect7_pp_w5", clear
+    use "${rawdata}/PP/sect7_pp_w5", clear
 
     tab s7q03b  // s7q03b: Have you ever called the '8028', or agricultural hotline?
     generate hotline=.
@@ -103,7 +106,7 @@ merge 1:1 household_id using `hotline'
 drop _m
 
 
-merge 1:1 household_id using "${data}\ess5_dna_hh_new"
+merge 1:1 household_id using "${data}/ess5_dna_hh_new"
 /*
     Result                      Number of obs
     -----------------------------------------
@@ -118,5 +121,5 @@ merge 1:1 household_id using "${data}\ess5_dna_hh_new"
 drop _m
 
 
-save "${data}\wave5_hh_new", replace
-save "${data}\ess5_pp_hh_new", replace
+save "${data}/wave5_hh_new", replace
+save "${data}/ess5_pp_hh_new", replace

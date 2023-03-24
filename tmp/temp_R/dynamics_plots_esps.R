@@ -5,7 +5,7 @@
 
 # depends on: figs_hh.R, figs_ea.R
 
-source("LSMS_W5/tmp/ggplot_theme_Publication-2.R")
+source("C:/Users/l.daba/OneDrive/SPIA/Ethiopia/LSMS_W5/tmp/temp_R/ggplot_theme_Publication-2.R")
 
 # Graph comparing animal agriculture innovations:
 
@@ -44,7 +44,7 @@ animal_dyn_plt <- animal_agri %>%
   labs(x = "", y = "Percent",
        title = "Adoption of animal agriculture innovations (ESPS)",
        fill = "",
-       caption = "Percent at the household level are weighted sample means (using wave 5 weights)") +
+       caption = "Percent at the household level are weighted sample means panel weights") +
   scale_fill_Publication() + 
   theme_Publication() +
   theme(
@@ -113,7 +113,7 @@ ca_dyn_plt <- cons_agri %>%
        fill = "",
        caption = "MT = Minimum tillage; ZT = Zero tillage; CRC = Crop residue cover (visual aids); CR = Crop rotation;
 CA/MT = Conservation agriculture with minimum tillage; CA/ZT = Conservation agriculture with zero tillage.
-       Percent at the household level are weighted sample means (using wave 5 weights).") +
+       Percent at the household level are weighted sample means using panel weights.") +
   scale_fill_Publication() + 
   theme_Publication() +
   theme(
@@ -247,7 +247,7 @@ swc_aff_dyn_plt <- swc_affor %>%
   labs(x = "", y = "Percent",
        title = "Natural resource management practices",
        fill = "",
-       caption = "Percent at the household level are weighted sample means (using wave 5 weights)") +
+       caption = "Percent at the household level are weighted sample means using panel weights") +
   scale_fill_Publication() + 
   theme_Publication() +
   theme(
@@ -296,7 +296,7 @@ agroforest_dyn_plt <- agroforest %>%
   labs(x = "", y = "Percent",
        title = "Natural resource management practices: Agroforestry",
        fill = "",
-       caption = "Percent at the household level are weighted sample means (using wave 5 weights)") +
+       caption = "Percent at the household level are weighted sample means using panel weights") +
   scale_fill_Publication() + 
   theme_Publication() +
   theme(

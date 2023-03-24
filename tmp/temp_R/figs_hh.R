@@ -1,7 +1,7 @@
 
 library(haven)
 library(tidyverse)
-library(thatssorandom)
+# library(thatssorandom)
 library(labelled)
 library(janitor)
 library(kableExtra)
@@ -11,7 +11,7 @@ library(ggpubr)
 
 # theme_set(theme_light())
 
-root <- "C:/Users/tayel/OneDrive/SPIA/Ethiopia"
+root <- "C:/Users/l.daba/OneDrive/SPIA/Ethiopia"
 w4_dir <- "replication_files/3_report_data"
 w5_dir <- "LSMS_W5/3_report_data"
 
@@ -75,7 +75,7 @@ hh_level_w4 <- wave4_hh_new %>%
   recode_region()
 
 hh_level_w5 <- wave5_hh_new %>% 
-  select(household_id, wave, region, pw_w5, all_of(vars_both)) %>% 
+  select(household_id, wave, region, pw_w5, pw_panel, all_of(vars_both)) %>% 
   recode_region()
 
 
@@ -142,14 +142,15 @@ regions_hh_level <- bind_rows(
   select(wave, region, variable, label, mean, nobs)
 
 
-# ONLY FOR PANEL HOUSEHOLDS:
+# ONLY FOR PANEL HOUSEHOLDS: ####
+
 hh_level_panel <- inner_join(
   x = hh_level_w4 %>% select(-wave, -region),
   y = hh_level_w5 %>% select(-wave), 
   by = "household_id",
   suffix = c(".w4", ".w5")
 ) %>% 
-  select(household_id, region, pw_w5, everything()) %>% 
+  select(household_id, region, pw_w4, pw_w5, pw_panel, everything()) %>% 
   pivot_longer(hhd_ofsp.w4:hhd_rotlegume.w5, 
                names_to = "variable",
                values_to = "value") %>% 
@@ -160,7 +161,7 @@ hh_level_panel <- inner_join(
 regions_hh_panel <- hh_level_panel %>% 
   group_by(wave, region, label) %>% 
   summarise(
-    mean = weighted.mean(value, w = pw_w5, na.rm = TRUE),
+    mean = weighted.mean(value, w = pw_panel, na.rm = TRUE),
     nobs = sum(!is.na(value)),
     .groups = "drop"
   ) %>% 
@@ -172,7 +173,7 @@ regions_hh_panel <- hh_level_panel %>%
 national_hh_panel <- hh_level_panel %>% 
   group_by(wave, label) %>% 
   summarise(
-    mean = weighted.mean(value, w = pw_w5, na.rm = TRUE),
+    mean = weighted.mean(value, w = pw_panel, na.rm = TRUE),
     nobs = sum(!is.na(value)),
     .groups = "drop"
   ) %>% 
@@ -206,7 +207,7 @@ plot_compar <- function(tbl, title, xlim = .8) {
          y = "", 
          fill = "",
          title = paste0("Percent of Rural Households Adopting Innovations - ", title),
-         caption = "Percent are weighted sample means using the latest (wave 5) weights.
+         caption = "Percent are weighted sample means using panel weights.
          Number of households responding in parenthesis")
   
 }

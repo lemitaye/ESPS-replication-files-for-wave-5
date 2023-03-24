@@ -29,10 +29,10 @@ library(labelled)
 
 # tracking table
 
-track_hh_raw <- read_dta("track_hh_w5.dta") %>% 
+track_hh_raw <- read_dta("../track_hh_w5.dta") %>% 
   clean_names() 
 
-track_ea_raw <- read_dta("track_ea_w5.dta") %>% 
+track_ea_raw <- read_dta("../track_ea_w5.dta") %>% 
   clean_names()
 
 
@@ -133,7 +133,7 @@ kbl(
 ```{r}
 
 # Table of ESPS4 hhs with missing EAs in ESPS5
-track_ea_dropped <- read_dta("track_ea_dropped.dta") %>% 
+track_ea_dropped <- read_dta("../track_ea_dropped.dta") %>% 
   mutate(
     region_w4 = recode(region_w4,
                     `1` = "Tigray",
@@ -197,7 +197,7 @@ kbl(
 
 ## Comparing adoption of Chickpea Kabuli variety b/n waves 3 and 5
 
-![](figures/kabuli_plot.pdf)
+![](../figures/kabuli_plot.pdf)
 
 ## Comparing adoption of maize varieties across waves, household level
 
@@ -230,7 +230,7 @@ kbl(
 
 # Appendix: Comparison by region
 
-## Household level 
+## Household level
 
 ### All houehods surveyed
 

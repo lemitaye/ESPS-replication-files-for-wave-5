@@ -1,7 +1,7 @@
 
 library(haven)
 library(tidyverse)
-library(thatssorandom)
+# library(thatssorandom)
 library(labelled)
 library(janitor)
 library(kableExtra)
@@ -9,7 +9,7 @@ library(scales)
 
 # theme_set(theme_light())
 
-setwd("C:/Users/tayel/Dropbox/Documents/SPIA/Ethiopia")
+setwd("C:/Users/l.daba/OneDrive/SPIA/Ethiopia")
 
 wave4_ea_new <- read_dta("replication_files/3_report_data/wave4_ea_new.dta")
 wave5_ea_new <- read_dta("LSMS_W5/3_report_data/wave5_ea_new.dta")
