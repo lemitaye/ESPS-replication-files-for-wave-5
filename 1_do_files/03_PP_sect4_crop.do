@@ -89,7 +89,7 @@ replace  impftr = 0 if  cr41 == 1 | cr44 == 1 | cr45 == 1 | cr46 == 1 |
 replace  impftr = 1 if (cr41 == 1 | cr44 == 1 | cr45 == 1 | cr46 == 1 | 
                         cr47 == 1 | cr48 == 1 | cr50 == 1 | cr65 == 1 | 
                         cr66 == 1 | cr75 == 1 | cr84 == 1 | cr112 == 1 | 
-                        cr115 == 1 ) & improv == 1
+                        cr115 == 1 ) & improv == 1;
 delimit cr
 
 * Improved roots:
@@ -233,7 +233,7 @@ replace hsell=1 if s4q22==1
 replace hsell=0 if s4q22==2
 
 * Merge with plot area to gen % of plot area under maize, sorghum and barley
-merge m:1 parcel_id field_id holder_id household_id ea_id using "${data}\ess5_pp_nrm_plot_new", keepusing(plotarea_full)
+merge m:1 parcel_id field_id holder_id household_id ea_id using "${data}\ess5_pp_nrm_plot_new", keepusing(plotarea_sr plotarea_gps plotarea_full)
 /*
     Result                      Number of obs
     -----------------------------------------
@@ -277,7 +277,9 @@ foreach x in 1 3 4 7 0  {
 }
 }
 
-
+* saving:
+save "${tmp}/ess5_pp_plot_crop.dta", replace
+	
 	
 *Plot level - Crop variety
 preserve 
