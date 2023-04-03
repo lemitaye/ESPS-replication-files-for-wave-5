@@ -148,3 +148,4 @@ lab var hhd_flab "Share of female family labor >50%"
 tempfile  hhfamlab1
 save     `hhfamlab1'
 
+
