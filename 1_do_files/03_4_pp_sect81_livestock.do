@@ -14,6 +14,21 @@ replace ls_type=4 if ls_code>=10 & ls_code<=12  // Poultry (Chicken and Chicks)
 replace ls_type=5 if ls_code>=13 & ls_code<=15  // Horses, Mules, Donkeys
 replace ls_type=6 if ls_code==16                // Bees
 
+#delimit ;
+label define ls_type 
+    1 "1. Large ruminants (Bulls, Oxen, Cows, Steers, Heifers, and Calves)" 
+    2 "2. Small ruminants (Goats and Sheep)" 
+    3 "3. Camels" 
+    4 "4. Poultry (Chicken and Chicks)" 
+    5 "5. Horses, Mules, Donkeys" 
+    6 "6. Bees"
+;
+#delimit cr
+
+label values ls_type ls_type
+
+label variable ls_type "Livestok type"
+
 * 8.3 Livestock breeding, health, shelter, water, and feed
 merge m:1 household_id ls_type holder_id using "${rawdata}\PP\sect8_3_ls_w5"
 
@@ -124,7 +139,7 @@ gen cfdonkeys  = 0.5
 
 
 
-* Max number of crossbred animals
+* Max number of crossbred animals  (why is this needed?)
 foreach i in largerum smallrum poultry {
     egen `i'_crossm=max(`i'_cross), by(household_id)
 }
