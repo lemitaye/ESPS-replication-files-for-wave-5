@@ -114,14 +114,16 @@ foreach i in largerum smallrum poultry {
 }
 
 * save -------------------------------------------------------------------------
-save "${tmp}/01_2_ess5_livestock_urban.dta", replace
+save "${tmp}/01_2_ess5_hh_livestock.dta", replace
 
 
 * Collapse at the hh-level -----------------------------------------------------
 #delimit ;
-collapse (firstnm) ea_id pw_w5 saq01 (max) largerum_nbhh_o largerum_cross 
-smallrum_nbhh_o smallrum_cross hhd* goat_nbhh_o horse_nbhh_o donkey_nbhh_o 
-cfcattle cfsheep cfgoats cfchicken cfhorses cfyaks cfdonkeys, by(household_id)
+collapse (firstnm) ea_id pw_w5 saq01 
+         (max) largerum_nbhh_o largerum_cross smallrum_nbhh_o smallrum_cross 
+            poultry_nbhh_o poultry_cross hhd* sh_hh_* sheep_nbhh_o goat_nbhh_o horse_nbhh_o 
+            donkey_nbhh_o cfcattle cfsheep cfgoats cfchicken cfhorses cfyaks cfdonkeys, 
+            by(household_id)
 ;
 #delimit cr
 
@@ -137,8 +139,14 @@ egen TLU_total = rsum(TLU_*)
 
 lab var TLU_total "Total Livestock owned by the household (TLU)"
 
-drop goat_nbhh_o horse_nbhh_o donkey_nbhh_o cfcattle cfsheep cfgoats cfchicken ///
+drop sheep_nbhh_o goat_nbhh_o horse_nbhh_o donkey_nbhh_o cfcattle cfsheep cfgoats cfchicken ///
 cfhorses cfyaks cfdonkeys TLU_cattle TLU_horses TLU_donkeys TLU_chicken TLU_goats TLU_sheep
+
+label var ea_id "Unique Enumeration Area Identifier"
+label var pw_w5 "household sample weight"
+label var saq01 "Region code"
+
+label values saq01 saq01
 
 lab var hhd_cross			  "At least 1 crossbred animal in hh"
 lab var hhd_cross_largerum    "Crossbred large ruminants"
@@ -161,4 +169,4 @@ lab var hhd_cross_poultry     "Crossbred POULTRY"
 
 
 * save - hh level --------------------------------------------------------------
-save "${data}/01_2_urban_livestock_hh.dta", replace
+save "${data}/01_2_hh_livestock.dta", replace
