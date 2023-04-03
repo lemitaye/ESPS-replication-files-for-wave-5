@@ -16,10 +16,11 @@ global table    "$root/4_table"
 global tmp      "$root/tmp"
 
 
-do "${code}/01_PP_cover_sect2_parcel.do"
-do "${code}/02_PP_sect3_field.do"
-do "${code}/03_PP_sect4_crop.do"
-do "${code}/04_PP_sect81_livestock.do"
-do "${code}/05_PP_merge.do"
+* Call all do files:
+do "${code}/01_0_hh.do"
+do "${code}/02_0_community.do"
+do "${code}/03_0_pp.do"
+*do "${code}/04_0.do"
+*do "${code}/05_0.do"
 
 
