@@ -17,13 +17,13 @@ use "${rawdata}/HH/sect1_hh_w5.dta", clear
 merge 1:m household_id using "${rawdata}/HH/sect1_hh_w5.dta"
 drop _m 
 */
-merge 1:1 individual_id household_id using "${rawdata}/HH/sect2_hh_w4.dta"
+merge 1:1 individual_id household_id using "${rawdata}/HH/sect2_hh_w5.dta"
 drop _m
 /*
 merge 1:1 individual_id household_id using "${rawdata}/HH/sect3_hh_w4.dta"
 drop _m
 */
-merge 1:1 individual_id household_id using "${rawdata}/HH/sect5_hh_w4.dta"
+merge 1:1 individual_id household_id using "${rawdata}/HH/sect4_hh_w5.dta"
 drop _m
 
 * Individual dummy
@@ -56,7 +56,7 @@ collapse (max) hhd_psnp  hhm_psnp  hh_dpsnp hh_dpsnppc hh_ipsnp hh_dwpsnp hh_ea 
     hhea_psnp (firstnm) saq14  ea_id pw_w5  saq01 , by(household_id)
 
 
-lab var hhd_psnp    "Percentage of hh with at least 1 member benefitting from PSNP" 
+lab var hhd_psnp    "At least 1 member benefitting from PSNP" 
 lab var hhm_psnp    "No. of members per hh benefitting from PSNP"
 lab var hh_dpsnp    "No. of days per year hh benefitting from PSNP"
 lab var hh_dpsnppc  "No. of days per year hh benefitting from PSNP - per member"
@@ -76,7 +76,7 @@ gen wave=5
 
 save "${data}/ess5_hh_psnp.dta", replace
 
-
+/*
 * EA - level 
 
 egen ead_psnp=max(hhd_psnp), by(ea_id)

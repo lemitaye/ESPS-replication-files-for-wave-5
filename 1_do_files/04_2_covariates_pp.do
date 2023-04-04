@@ -322,11 +322,23 @@ order household_id ea_id saq01 saq14
 save "${tmp}/covariates/04_2_covars_pp.dta", replace
 
 
-* Merge household and pp covariates --------------------------------------------
+* Merge household and pp covariates with innovations data set ------------------
 
-use "${tmp}/covariates/04_1_covars_hh.dta", replace
+use "${data}/ess5_pp_hh_new.dta", clear
+
+merge 1:1 household_id using "${data}/ess5_hh_psnp.dta", keepusing(hhd_psnp ///
+    hhm_psnp hh_dpsnp hh_dpsnppc hh_ipsnp hh_dwpsnp)
+keep if _merge==1 | _merge==3
+drop _merge
+
+merge 1:1 household_id using "${tmp}/covariates/04_1_covars_hh.dta"
+keep if _merge==1 | _merge==3
+drop _merge
 
 merge 1:1 household_id using "${tmp}/covariates/04_2_covars_pp.dta"
+keep if _merge==1 | _merge==3
+drop _merge
 
 
 save "${tmp}/covariates/04_2_covars_hh_pp.dta", replace
+
