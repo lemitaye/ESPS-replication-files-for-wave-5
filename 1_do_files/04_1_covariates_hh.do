@@ -50,58 +50,52 @@ save "${tmp}/covariates/hh_demo_head.dta", replace
 
 use "${rawdata}/HH/sect2_hh_w5.dta", clear
 
-gen     yrseduc=.
-replace yrseduc=0  if s2q06==0
-replace yrseduc=1  if s2q06==1
-replace yrseduc=2  if s2q06==2
-replace yrseduc=3  if s2q06==3
-replace yrseduc=4  if s2q06==4
-replace yrseduc=5  if s2q06==5
-replace yrseduc=6  if s2q06==6
-replace yrseduc=7  if s2q06==7
-replace yrseduc=8  if s2q06==8
-replace yrseduc=9  if s2q06==9
-replace yrseduc=10 if s2q06==10
-replace yrseduc=11 if s2q06==11
-replace yrseduc=12 if s2q06==12
-replace yrseduc=13 if s2q06==13
-replace yrseduc=13 if s2q06==14
-replace yrseduc=13 if s2q06==15
-replace yrseduc=14 if s2q06==16
-replace yrseduc=13 if s2q06==17
-replace yrseduc=15 if s2q06==18
-replace yrseduc=13 if s2q06==19
-replace yrseduc=17 if s2q06==20
-replace yrseduc=9  if s2q06==21
-replace yrseduc=10 if s2q06==22
-replace yrseduc=11 if s2q06==23
-replace yrseduc=12 if s2q06==24
-replace yrseduc=11 if s2q06==25
-replace yrseduc=12 if s2q06==26
-replace yrseduc=12 if s2q06==27
-replace yrseduc=13 if s2q06==28
-replace yrseduc=13 if s2q06==29
-replace yrseduc=13 if s2q06==30
-replace yrseduc=13 if s2q06==31
-replace yrseduc=14 if s2q06==32
-replace yrseduc=15 if s2q06==33
-replace yrseduc=16 if s2q06==34
-replace yrseduc=17 if s2q06==35
-replace yrseduc=0  if s2q06==93
-replace yrseduc=0  if s2q06==94
-replace yrseduc=0  if s2q06==95
-replace yrseduc=0  if s2q06==96
-replace yrseduc=0  if s2q06==98
-lab var yrseduc "HH-head years of education completed"
-
-keep household_id individual_id yrseduc s2q04 s2q06
-
-
-merge 1:1 household_id individual_id using "${rawdata}/HH/sect1_hh_w5.dta"
+merge 1:1 household_id individual_id using "${rawdata}/HH/sect1_hh_w5.dta", keepusing(s1q01)
 keep if _m==3
 drop _merge
 
-keep if s1q01==1  // retain the head of the household
+gen     yrseduc=.
+replace yrseduc=0  if s2q06==0 & s1q01==1
+replace yrseduc=1  if s2q06==1 & s1q01==1
+replace yrseduc=2  if s2q06==2 & s1q01==1
+replace yrseduc=3  if s2q06==3 & s1q01==1
+replace yrseduc=4  if s2q06==4 & s1q01==1
+replace yrseduc=5  if s2q06==5 & s1q01==1
+replace yrseduc=6  if s2q06==6 & s1q01==1
+replace yrseduc=7  if s2q06==7 & s1q01==1
+replace yrseduc=8  if s2q06==8 & s1q01==1
+replace yrseduc=9  if s2q06==9 & s1q01==1
+replace yrseduc=10 if s2q06==10 & s1q01==1
+replace yrseduc=11 if s2q06==11 & s1q01==1
+replace yrseduc=12 if s2q06==12 & s1q01==1
+replace yrseduc=13 if s2q06==13 & s1q01==1
+replace yrseduc=13 if s2q06==14 & s1q01==1
+replace yrseduc=13 if s2q06==15 & s1q01==1
+replace yrseduc=14 if s2q06==16 & s1q01==1
+replace yrseduc=13 if s2q06==17 & s1q01==1
+replace yrseduc=15 if s2q06==18 & s1q01==1
+replace yrseduc=13 if s2q06==19 & s1q01==1
+replace yrseduc=17 if s2q06==20 & s1q01==1
+replace yrseduc=9  if s2q06==21 & s1q01==1
+replace yrseduc=10 if s2q06==22 & s1q01==1
+replace yrseduc=11 if s2q06==23 & s1q01==1
+replace yrseduc=12 if s2q06==24 & s1q01==1
+replace yrseduc=11 if s2q06==25 & s1q01==1
+replace yrseduc=12 if s2q06==26 & s1q01==1
+replace yrseduc=12 if s2q06==27 & s1q01==1
+replace yrseduc=13 if s2q06==28 & s1q01==1
+replace yrseduc=13 if s2q06==29 & s1q01==1
+replace yrseduc=13 if s2q06==30 & s1q01==1
+replace yrseduc=13 if s2q06==31 & s1q01==1
+replace yrseduc=14 if s2q06==32 & s1q01==1
+replace yrseduc=15 if s2q06==33 & s1q01==1
+replace yrseduc=16 if s2q06==34 & s1q01==1
+replace yrseduc=17 if s2q06==35 & s1q01==1
+replace yrseduc=0  if s2q06==93 & s1q01==1
+replace yrseduc=0  if s2q06==94 & s1q01==1
+replace yrseduc=0  if s2q06==95 & s1q01==1
+replace yrseduc=0  if s2q06==96 & s1q01==1
+replace yrseduc=0  if s2q06==98 & s1q01==1
 
 gen educ_head_att=(s2q04==1)
 
