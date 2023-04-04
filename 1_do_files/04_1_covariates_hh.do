@@ -8,7 +8,7 @@
 ********************************************************************************
 
 
-* Section 1: Demographics - household head -------------------------------------
+* Section 1a: Demographics - household head ------------------------------------
 
 use "${rawdata}/HH/sect1_hh_w5.dta", clear
 
@@ -16,7 +16,7 @@ use "${rawdata}/HH/sect1_hh_w5.dta", clear
 gen age_head= s1q03a if s1q01==1
 winsor2 age_head, cuts(1 99) suffix(_wiz) 
 
-// Sex = female:
+// MALE = female:
 gen fem_head= s1q02 if s1q01==1
 recode fem_head (1=0) (2=1)
 
@@ -47,12 +47,72 @@ label var hh_size       "Household size"
 save "${tmp}/covariates/hh_demo_head.dta", replace
 
 
+* Section 1b: Adult equivalent scale -------------------------------------------
+
+use "${rawdata}/HH/sect1_hh_w5.dta", clear
+
+gen MALE = (s1q02==1) 
+rename s1q03a AGE
+
+gen aefs=.
+
+recode aefs (.=0.33) if MALE==0 & (AGE<1)  /*under 1 year*/
+recode aefs (.=0.33) if MALE==1 & (AGE<1)  /*under 1 year*/
+
+recode aefs (.=0.46) if MALE==0 & (AGE>=1 & AGE <=1.99)  /*for 1 to 1.99 years*/
+recode aefs (.=0.46) if MALE==1 & (AGE>=1 & AGE <=1.99)  /*for 1 to 1.99 years*/
+
+recode aefs (.=0.54) if MALE==0 & (AGE>=2 & AGE <=2.99)  /*for 2 to 2.99 years*/
+recode aefs (.=0.54) if MALE==1 & (AGE>=2 & AGE <=2.99)  /*for 2 to 2.99 years*/
+
+recode aefs (.=0.62) if MALE==0 & (AGE>=3 & AGE <=4.99)  /*for 3 to 4.99 years*/
+recode aefs (.=0.62) if MALE==1 & (AGE>=3 & AGE <=4.99)  /*for 3 to 4.99 years*/
+
+recode aefs (.=0.70) if MALE==0 & (AGE>=5 & AGE <=6.99)  /*for 5 to 6.99 years*/
+recode aefs (.=0.74) if MALE==1 & (AGE>=5 & AGE <=6.99)  /*for 5 to 6.99 years*/
+
+recode aefs (.=0.72) if MALE==0 & (AGE>=7 & AGE <=9.99)  /*for 7 to 9.99 years*/
+recode aefs (.=0.84) if MALE==1 & (AGE>=7 & AGE <=9.99)  /*for 7 to 9.99 years*/
+
+recode aefs (.=0.78) if MALE==0 & (AGE>=10 & AGE <=11.99)  /*for 10 to 11.99 years*/
+recode aefs (.=0.88) if MALE==1 & (AGE>=10 & AGE <=11.99)  /*for 10 to 11.99 years*/
+
+recode aefs (.=0.84) if MALE==0 & (AGE>=12 & AGE <=13.99)  /*for 12 to 13.99 years*/
+recode aefs (.=0.96) if MALE==1 & (AGE>=12 & AGE <=13.99)  /*for 12 to 13.99 years*/
+
+recode aefs (.=0.86) if MALE==0 & (AGE>=14 & AGE <=15.99)  /*for 14 to 15.99 years*/
+recode aefs (.=1.06) if MALE==1 & (AGE>=14 & AGE <=15.99)  /*for 14 to 15.99 years*/
+
+recode aefs (.=0.86) if MALE==0 & (AGE>=16 & AGE <=17.99)  /*for 16 to 17.99 years*/
+recode aefs (.=1.14) if MALE==1 & (AGE>=16 & AGE <=17.99)  /*for 16 to 17.99 years*/
+
+recode aefs (.=0.80) if MALE==0 & (AGE>=18 & AGE <=29.99)  /*for 18 to 29.99 years*/
+recode aefs (.=1.04) if MALE==1 & (AGE>=18 & AGE <=29.99)  /*for 18 to 29.99 years*/
+
+recode aefs (.=0.82) if MALE==0 & (AGE>=30 & AGE <=59.99)  /*for 30 to 59.99 years*/
+recode aefs (.=0.1) if MALE==1 & (AGE>=30 & AGE <=59.99)  /*for 30 to 59.99 years*/
+
+recode aefs (.=0.74) if MALE==0 & (AGE>=60)  /*60+*/
+recode aefs (.=0.84) if MALE==1 & (AGE>=60 )  /*60+*/
+
+replace aefs=. if AGE==.
+replace aefs=. if MALE==.
+
+egen adulteq = sum(aefs), by( household_id)
+replace adulteq=. if aefs==.
+
+collapse (mean) adulteq, by (household_id)
+label var adulteq  "HH size in adult equivalent"
+
+save "${tmp}/covariates/hh_adulteq.dta", replace
+
+
 * Section 2: Education ---------------------------------------------------------
 
 use "${rawdata}/HH/sect2_hh_w5.dta", clear
 
 merge 1:1 household_id individual_id using "${rawdata}/HH/sect1_hh_w5.dta", keepusing(s1q01)
-keep if _m==3
+keep if _merge==3
 drop _merge
 
 gen     yrseduc=.
@@ -234,16 +294,20 @@ use "${tmp}/covariates/hh_demo_head.dta", clear
 *drop _m
 
 merge 1:1 household_id using "${tmp}/covariates/hh_educ_head.dta"
-drop _m
+drop _merge
+
+merge 1:1 household_id using "${tmp}/covariates/hh_adulteq.dta"
+drop _merge
 
 *merge 1:1 household_id using `asset_index'
-*drop _m 
+*drop _merge 
 
 merge 1:1 household_id using "${tmp}/covariates/hh_prod_asset_index.dta"
-drop _m
+drop _merge
 
 merge 1:1 household_id using "${tmp}/covariates/hh_income_off.dta"
-drop _m
+drop _merge
 
 
+* save -------------------------------------------------------------------------
 save "${tmp}/covariates/04_1_covars_hh.dta", replace
