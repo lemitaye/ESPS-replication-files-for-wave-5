@@ -184,11 +184,14 @@ use "${rawdata}/HH/sect13_hh_w5.dta", clear
 sort s13q02
 replace s13q02 = . if s13q02 >= 2000000
 
-collapse (sum) s13q02, by (household_id)
+collapse (max) s13q01 (sum) s13q02, by (household_id)
+
 rename s13q02 income_offfarm
+rename s13q01 offfarminc
 
 winsor2 income_offfarm, cuts(1 99) suffix(_wiz) label
 
+lab var offfarminc                "HH received off-farm income"
 label variable income_offfarm     "Annual Off-farm income in BIRR"
 label variable income_offfarm_wiz "Annual Off-farm income in BIRR - winsorized"
 
