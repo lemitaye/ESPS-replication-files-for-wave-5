@@ -4,7 +4,7 @@
 *                     DO: Covariates at the community (EA) level 
 * Country: Ethiopia 
 * Data: ESS 5
-* Author: Lemi Daba (tayelemi@gmail.com) [code adopted from Solomon Alemu]
+* Author: Lemi Daba (tayelemi@gmail.com) [code adopted from Paola Mallia and Solomon Alemu]
 * STATA Version: MP 17.0
 ********************************************************************************
 

@@ -8,26 +8,42 @@
 ********************************************************************************
 
 
-* Section 1: Demographics ------------------------------------------------------
-
+* Section 1: Demographics - household head -------------------------------------
 
 use "${rawdata}/HH/sect1_hh_w5.dta", clear
 
+// Age:
 gen age_head= s1q03a if s1q01==1
-
-bysort household_id : egen hh_size=count(individual_id)
-
-collapse (max) age_head hh_size, by(household_id)
-
 winsor2 age_head, cuts(1 99) suffix(_wiz) 
 
-label variable age_head "Age of household head (in years)"
-label variable hh_size "Household size"
-label variable age_head_wiz "Age of household head (in years) - winsorized"
+// Sex = female:
+gen fem_head= s1q02 if s1q01==1
+recode fem_head (1=0) (2=1)
 
-order age_head_wiz, after(age_head)
+// Marital status:
+gen marr_head=s1q09 if s1q01==1
+recode marr_head (2=1) (3=1) (1=0) (4=0) (5=0) (6=0) (7=0)
 
-save "${tmp}/covariates/hh_demo.dta", replace
+// Main occupation = Agriculture:
+gen agr_head=1 if s1q01==3 & s1q21==1  // s1q21 is the occupation of biological father
+replace agr_head=0 if s1q01==3 & s1q21>1 & s1q21!=.
+
+// household size:
+bysort household_id : egen hh_size=count(individual_id)
+
+// collapse:
+collapse (max) age_head age_head_wiz fem_head marr_head agr_head hh_size, by(household_id)
+
+// label:
+label var age_head      "Age of household head (in years)"
+label var age_head_wiz  "Age of household head (in years) - winsorized"
+label var fem_head      "HH-head is female"
+label var marr_head     "HH-head is married"
+label var agr_head      "HH-head main occupation is agriculture"
+label var hh_size       "Household size"
+
+
+save "${tmp}/covariates/hh_demo_head.dta", replace
 
 
 * Section 2: Education ---------------------------------------------------------
@@ -78,7 +94,7 @@ replace yrseduc=0  if s2q06==96
 replace yrseduc=0  if s2q06==98
 lab var yrseduc "HH-head years of education completed"
 
-keep household_id individual_id yrseduc
+keep household_id individual_id yrseduc s2q04 s2q06
 
 
 merge 1:1 household_id individual_id using "${rawdata}/HH/sect1_hh_w5.dta"
@@ -87,8 +103,16 @@ drop _merge
 
 keep if s1q01==1  // retain the head of the household
 
-collapse (max) yrseduc, by(household_id)
+gen educ_head_att=(s2q04==1)
+
+gen educ_head_fr=1 if s2q06<93
+replace educ_head_fr=0 if s2q06>=93 & s2q06!=.
+
+collapse (max) yrseduc educ_head_att educ_head_fr, by(household_id)
+
 lab var yrseduc "HH-head years of education completed"
+lab var educ_head_att "HH-head attended school"
+lab var educ_head_fr  "HH-head had formal education"
 
 replace yrseduc=0 if yrseduc==.
 
