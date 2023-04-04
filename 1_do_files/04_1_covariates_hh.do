@@ -8,14 +8,6 @@
 ********************************************************************************
 
 
-/* Paths ---------------------------------------------------------------------*/
-
-*shell rmdir "${tmp}/covariates/hh" /s /q
-*mkdir "${tmp}/covariates/hh"
-
-/* ---------------------------------------------------------------------------*/
-
-
 * Section 1: Demographics ------------------------------------------------------
 
 
@@ -36,9 +28,7 @@ label variable age_head_wiz "Age of household head (in years) - winsorized"
 
 order age_head_wiz, after(age_head)
 
-
-tempfile hh_demo
-save `hh_demo'
+save "${tmp}/covariates/hh_demo.dta", replace
 
 
 * Section 2: Education ---------------------------------------------------------
@@ -103,8 +93,8 @@ lab var yrseduc "HH-head years of education completed"
 
 replace yrseduc=0 if yrseduc==.
 
-tempfile educ_w5
-save `educ_w5'
+save "${tmp}/covariates/hh_educ_head.dta", replace
+
 
 
 * Houssing - secttion 10a ------------------------------------------------------
@@ -163,8 +153,7 @@ table prod_asset_index, stat(mean asset)
 
 keep household_id asset_prod prod_asset_index
 
-{tmp}file prod_asset_index
-save `prod_asset_index'
+save "${tmp}/covariates/hh_prod_asset_index.dta", replace
 
 
 * Non-farm enterprise and Other income- sections 12 & 13 -----------------------
@@ -178,28 +167,24 @@ collapse (sum) s13q02, by (household_id)
 label variable s13q02 "Off-farm income in the  last 12 months? (BIRR)"
 winsor2 s13q02, replace cuts(1 99)
 
-{tmp}file offfarm_inc
-save `offfarm_inc'
-
+save "${tmp}/covariates/hh_offfarm_inc.dta", replace
 
 
 * Merging ----------------------------------------------------------------------
 
 use "${rawdata}/HH/sect_cover_hh_w5.dta", clear 
 
-merge 1:1 household_id using `age_head'
+merge 1:1 household_id using "${tmp}/covariates/hh_demo.dta"
 drop _m
 
-merge 1:1 household_id using `asset_index'
+*merge 1:1 household_id using `asset_index'
+*drop _m
+
+merge 1:1 household_id using "${tmp}/covariates/hh_prod_asset_index.dta"
 drop _m
 
-merge 1:1 household_id using `prod_asset_index'
+merge 1:1 household_id using "${tmp}/covariates/hh_offfarm_inc.dta"
 drop _m
 
-merge 1:1 household_id using `offfarm_inc'
-drop _m
-
-gen HH_DEMO_EDUC_ASSET=.
-order HH_DEMO_EDUC_ASSET, after(saq21)
 
 save "${tmp}/HH_LEVEL_DATA.dta", replace
