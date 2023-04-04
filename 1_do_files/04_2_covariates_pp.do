@@ -37,7 +37,7 @@ label variable s2q165 "% of plot with mixed soil type"
 label variable s2q166 "% of plot with other soil type"
 
 
-save "${tmp}/covariates/pp_parcel.dta", replace
+save "${tmp}/covariates/pp_parcel_hh.dta", replace
 
 
 * Section 3: Field Roster ------------------------------------------------------
@@ -163,7 +163,7 @@ save "${tmp}/covariates/pp_field_plot.dta", replace
 collapse (sum) parcesizeHA  (max) fild_prp (mean) fild_prpa1 fild_prpa2 ///
   fild_prpa3 fild_prpa4 (max) s3q16 s3q17 fert_orginor inorgfer, by (household_id)
 
-label variable parcesizeHA "parcesizeHA"
+label variable parcesizeHA "Total parcels size in HA per hh"
 label variable fild_prp "Was [FIELD] prepared for planting?"
 
 label variable fild_prpa1 "% of plot prepared by Tractor"
@@ -203,7 +203,7 @@ drop _merge
 
 bys household_id parcel_id field_id: egen fhhlab1=count(s1q00) if s1q03==2 & s1q02>=15
 
-merge m:1 household_id using "${tmp}/covariates/hh_demo.dta", keepusing(hh_size)
+merge m:1 household_id using "${tmp}/covariates/hh_demo_head.dta", keepusing(hh_size)
 drop if _m==2
 drop _merge
 
@@ -295,27 +295,38 @@ collapse (max) flivman (firstnm) ea_id saq01 saq14, by(household_id)
 
 lab var flivman "At least 1 female livestock manager/keeper in the hh"
 
-* merge with ownership data:
-merge 1:1 household_id using "${tmp}/covariates/pp_female_lvstk_own.dta"
+
+save "${tmp}/covariates/pp_female_lvstk_mgmt.dta", replace
 
 
-save "${tmp}/covariates/pp_female_lvstk.dta", replace
 
-
-/*
 * Merging ----------------------------------------------------------------------
 
-use "${tmp}/HH_LEVEL_DATA.dta", clear 
+use "${tmp}/covariates/pp_parcel_hh.dta", clear 
 
-merge 1:1 household_id using "${tmp}/sect3_pp_w4_hh.dta"
-drop if _merge==2
+merge 1:1 household_id using "${tmp}/covariates/pp_field_hh.dta"
 drop _m
 
-merge 1:1 household_id using "${tmp}/sect2_pp_w4_hh.dta"
-drop if _merge==2
+merge 1:1 household_id using "${tmp}/covariates/pp_female_labour.dta"
 drop _m
 
-gen INFORMAION_plot_level =.
-order INFORMAION_plot_level, after(s13q02)
+merge 1:1 household_id using "${tmp}/covariates/pp_female_lvstk_own.dta"
+drop _m
 
-save "${tmp}/HH_PP_LEVEL_DATA.dta", replace
+merge 1:1 household_id using "${tmp}/covariates/pp_female_lvstk_mgmt.dta"
+drop _m
+
+order household_id ea_id saq01 saq14
+
+
+save "${tmp}/covariates/04_2_covars_pp.dta", replace
+
+
+* Merge household and pp covariates --------------------------------------------
+
+use "${tmp}/covariates/04_1_covars_hh.dta", replace
+
+merge 1:1 household_id using "${tmp}/covariates/04_2_covars_pp.dta"
+
+
+save "${tmp}/covariates/04_2_covars_hh_pp.dta", replace

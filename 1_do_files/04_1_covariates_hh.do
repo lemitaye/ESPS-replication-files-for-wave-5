@@ -32,7 +32,8 @@ replace agr_head=0 if s1q01==3 & s1q21>1 & s1q21!=.
 bysort household_id : egen hh_size=count(individual_id)
 
 // collapse:
-collapse (max) age_head age_head_wiz fem_head marr_head agr_head hh_size, by(household_id)
+collapse (firstnm) ea_id saq01 saq14 (max) age_head age_head_wiz fem_head ///
+    marr_head agr_head hh_size, by(household_id)
 
 // label:
 label var age_head      "Age of household head (in years)"
@@ -196,6 +197,32 @@ label variable income_offfarm     "Annual Off-farm income in BIRR"
 label variable income_offfarm_wiz "Annual Off-farm income in BIRR - winsorized"
 
 save "${tmp}/covariates/hh_income_off.dta", replace
+
+/*
+merge 1:1 household_id using "${data}\ess4_hh_psnp"
+keep if _m==3
+drop _m
+
+
+*Add consumption aggregates *
+merge 1:1 household_id using "${raw4}\HH\cons_agg_w4"
+
+drop _merge
+
+
+merge 1:1 household_id using "${data}\ess4_pp_hhlevel_parcel_new"
+drop if _m==2
+drop _m
+
+g consq1=0 if cons_quint>1
+replace consq1=1 if cons_quint==1
+
+g consq2=0 if cons_quint>2
+replace consq2=1 if cons_quint==1 | cons_quint==2
+lab var consq1 "Bottom 1 consumption quintile" 
+lab var consq2 "Bottom 1-2 (<40%) consumption quintiles"
+
+*/
 
 
 * Merging ----------------------------------------------------------------------
