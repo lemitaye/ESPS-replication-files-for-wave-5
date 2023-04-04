@@ -305,20 +305,21 @@ save "${tmp}/covariates/pp_female_lvstk_mgmt.dta", replace
 use "${tmp}/covariates/pp_parcel_hh.dta", clear 
 
 merge 1:1 household_id using "${tmp}/covariates/pp_field_hh.dta"
-drop _m
+drop _merge
 
 merge 1:1 household_id using "${tmp}/covariates/pp_female_labour.dta"
-drop _m
+drop _merge
 
 merge 1:1 household_id using "${tmp}/covariates/pp_female_lvstk_own.dta"
-drop _m
+drop _merge
 
-merge 1:1 household_id using "${tmp}/covariates/pp_female_lvstk_mgmt.dta"
-drop _m
+merge 1:1 household_id using "${tmp}/covariates/pp_female_lvstk_mergegmt.dta"
+drop _merge
 
 order household_id ea_id saq01 saq14
 
 
+* save -------------------------------------------------------------------------
 save "${tmp}/covariates/04_2_covars_pp.dta", replace
 
 
