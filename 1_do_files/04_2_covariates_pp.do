@@ -36,7 +36,8 @@ label variable s2q164 "% of plot with Luvisol soil type"
 label variable s2q165 "% of plot with mixed soil type"
 label variable s2q166 "% of plot with other soil type"
 
-save "${tmp}/sect2_pp_w4_hh", replace
+
+save "${tmp}/covariates/pp_parcel.dta", replace
 
 
 * Section 3: Field Roster ------------------------------------------------------
@@ -93,12 +94,12 @@ replace s3q35=0 if s3q35==8
 gen fild_prpa = s3q35
 order fild_prpa, after(fild_prp)
 lab values fild_prpa  s3q35
-fre fild_prpa
+
 replace fild_prpa=. if fild_prpa==7
 replace fild_prpa=. if fild_prpa==8
 
 *replace s3q35_os = subinstr(s3q35_os, " ", "", .)
-replace s3q35_o = subinstr(s3q35_o, " ", "", .)								// (!) IMPORTANT CHANGE DOUBLE-CHECK
+replace s3q35_o = subinstr(s3q35_o, " ", "", .)	 // (!) IMPORTANT CHANGE DOUBLE-CHECK
 
 replace fild_prpa= 3 if s3q35_o == "BORROWEDOXEN"
 replace fild_prpa= 3 if s3q35_o == "PARENTS/RELATIVESOXEN"
@@ -155,17 +156,15 @@ sum fert_orginor_both
 order fert_orginor_both, after(fert_orginor)
 label variable fert_orginor_both "Is fertilizer used- both organic and inorganic?"
 
+* save before collapsing:
+save "${tmp}/covariates/pp_field_plot.dta", replace
 
-save "${tmp}/sect3_pp_w4_cleaned", replace
-
-use "${tmp}/sect3_pp_w4_cleaned", replace
-
+* collapse at hh level:
 collapse (sum) parcesizeHA  (max) fild_prp (mean) fild_prpa1 fild_prpa2 ///
   fild_prpa3 fild_prpa4 (max) s3q16 s3q17 fert_orginor inorgfer, by (household_id)
 
 label variable parcesizeHA "parcesizeHA"
-
-label variable fild_prp "Was [FIELD] prepared for planting? "
+label variable fild_prp "Was [FIELD] prepared for planting?"
 
 label variable fild_prpa1 "% of plot prepared by Tractor"
 label variable fild_prpa2 "% of plot prepared by Animal"
@@ -178,12 +177,12 @@ label variable fert_orginor "Is fertilizer used   both org and inorganic?"
 label variable inorgfer "Only inorganic fert"
 
 
-save "${tmp}/sect3_pp_w4_hh", replace
+save "${tmp}/covariates/pp_field_hh.dta", replace
 
 
 * Female family farm Labor -----------------------------------------------------
 
-// Land preparation, planting, fertilizer application etc. - PP survey
+// Land preparation, planting, fertilizer application etc. 
 use "${rawdata}/PP/sect3_pp_w5.dta", clear
 
 rename s3q29a s3q29_1
@@ -204,7 +203,7 @@ drop _merge
 
 bys household_id parcel_id field_id: egen fhhlab1=count(s1q00) if s1q03==2 & s1q02>=15
 
-merge m:1 household_id using `agegroup', keepusing(hh_size)
+merge m:1 household_id using "${tmp}/covariates/hh_demo.dta", keepusing(hh_size)
 drop if _m==2
 drop _merge
 
@@ -237,11 +236,73 @@ replace hhd_flab=1 if sh_fhhlabavg1>=0.5
 lab var hhd_flab "Share of female family labor >50%"
 
 
-tempfile  hhfamlab1
-save     `hhfamlab1'
+save "${tmp}/covariates/pp_female_labour.dta", replace
 
 
+* Femal livestock owners and managers -----------------------------------------
 
+use "${rawdata}/PP/sect8_1_ls_w5.dta", clear
+
+* Owner:
+preserve
+    reshape long  ls_s8_1q04_, i(holder_id household_id ls_code) j(membernb)
+
+    drop if ls_s8_1q04_==.
+    drop if ls_s8_1q04_==.a
+
+    rename  ls_s8_1q04_ s1q00
+    merge m:1 holder_id household_id s1q00 using  "${rawdata}/PP/sect1_pp_w5.dta"
+    keep if _m==3
+    drop _merge
+
+    gen flivown1=0 
+    replace flivown1=1 if s1q03==2
+    bysort household_id: egen flivown=max(flivown1)
+    drop flivown1
+    lab var flivown "Female livestock owner"
+
+    rename   s1q00 ls_s8_1q04__
+    drop membernb
+    collapse (max) flivown (firstnm) ea_id saq01 saq14, by(household_id)
+    lab var flivown "Female livestock owner"
+
+    save "${tmp}/covariates/pp_female_lvstk_own.dta", replace
+restore
+
+* Manager:
+reshape long ls_s8_1q05_, i(holder_id household_id ls_code) j(membernb)
+
+drop if ls_s8_1q05_==.
+drop if ls_s8_1q05_==.a
+
+rename  ls_s8_1q05_ s1q00
+merge m:1 holder_id household_id s1q00 using  "${rawdata}/PP/sect1_pp_w5.dta"
+
+keep if _m==3
+drop _merge
+
+gen     flivman1=.
+replace flivman1=0 if s1q03==1
+replace flivman1=1 if s1q03==2
+
+bysort household_id: egen flivman=max(flivman1)
+drop flivman1
+
+rename   s1q00 ls_s8_1q05_
+drop membernb
+
+collapse (max) flivman (firstnm) ea_id saq01 saq14, by(household_id)
+
+lab var flivman "At least 1 female livestock manager/keeper in the hh"
+
+* merge with ownership data:
+merge 1:1 household_id using "${tmp}/covariates/pp_female_lvstk_own.dta"
+
+
+save "${tmp}/covariates/pp_female_lvstk.dta", replace
+
+
+/*
 * Merging ----------------------------------------------------------------------
 
 use "${tmp}/HH_LEVEL_DATA.dta", clear 

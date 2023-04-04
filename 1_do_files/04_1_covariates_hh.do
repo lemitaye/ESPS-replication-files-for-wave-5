@@ -19,8 +19,7 @@ bysort household_id : egen hh_size=count(individual_id)
 
 collapse (max) age_head hh_size, by(household_id)
 
-clonevar age_head_wiz = age_head
-winsor2 age_head_wiz, replace cuts(1 99)
+winsor2 age_head, cuts(1 99) suffix(_wiz) 
 
 label variable age_head "Age of household head (in years)"
 label variable hh_size "Household size"
@@ -164,15 +163,20 @@ sort s13q02
 replace s13q02 = . if s13q02 >= 2000000
 
 collapse (sum) s13q02, by (household_id)
-label variable s13q02 "Off-farm income in the  last 12 months? (BIRR)"
-winsor2 s13q02, replace cuts(1 99)
+rename s13q02 off_farm_inc
+
+winsor2 off_farm_inc, cuts(1 99) suffix(_wiz) label
+
+label variable off_farm_inc "Off-farm income in the  last 12 months? (BIRR)"
+label variable off_farm_inc_wiz "Off-farm income in the  last 12 months? (BIRR) - wonsorized"
 
 save "${tmp}/covariates/hh_offfarm_inc.dta", replace
 
 
 * Merging ----------------------------------------------------------------------
 
-use "${rawdata}/HH/sect_cover_hh_w5.dta", clear 
+* use "${rawdata}/HH/sect_cover_hh_w5.dta", clear // don't have this for now
+use "${tmp}/covariates/hh_demo.dta", clear
 
 merge 1:1 household_id using "${tmp}/covariates/hh_demo.dta"
 drop _m
@@ -187,4 +191,4 @@ merge 1:1 household_id using "${tmp}/covariates/hh_offfarm_inc.dta"
 drop _m
 
 
-save "${tmp}/HH_LEVEL_DATA.dta", replace
+save "${tmp}/covariates/04_1_covars_hh.dta", replace
