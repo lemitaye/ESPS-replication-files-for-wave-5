@@ -110,7 +110,7 @@ replace educ_head_fr=0 if s2q06>=93 & s2q06!=.
 
 collapse (max) yrseduc educ_head_att educ_head_fr, by(household_id)
 
-lab var yrseduc "HH-head years of education completed"
+lab var yrseduc       "HH-head years of education completed"
 lab var educ_head_att "HH-head attended school"
 lab var educ_head_fr  "HH-head had formal education"
 
@@ -169,12 +169,16 @@ reshape wide HHown_item, i(household_id) j(asset_cd)
 
 // employ principal component analysis (PCA)
 pca HHown_item29-HHown_item35, comp(1)
-predict asset_prod
-sum asset_prod
-xtile prod_asset_index=asset, nq(5)
-table prod_asset_index, stat(mean asset)
+predict pssetindex
+sum pssetindex
 
-keep household_id asset_prod prod_asset_index
+xtile prodasset_quint=pssetindex, nq(5)
+table prodasset_quint, stat(mean pssetindex)
+
+lab var pssetindex      "Productive asset index"
+lab var prodasset_quint "Productive asset index - quintiles"
+
+keep household_id pssetindex prodasset_quint
 
 save "${tmp}/covariates/hh_prod_asset_index.dta", replace
 
@@ -187,31 +191,34 @@ sort s13q02
 replace s13q02 = . if s13q02 >= 2000000
 
 collapse (sum) s13q02, by (household_id)
-rename s13q02 off_farm_inc
+rename s13q02 income_offfarm
 
-winsor2 off_farm_inc, cuts(1 99) suffix(_wiz) label
+winsor2 income_offfarm, cuts(1 99) suffix(_wiz) label
 
-label variable off_farm_inc "Off-farm income in the  last 12 months? (BIRR)"
-label variable off_farm_inc_wiz "Off-farm income in the  last 12 months? (BIRR) - wonsorized"
+label variable income_offfarm     "Annual Off-farm income in BIRR"
+label variable income_offfarm_wiz "Annual Off-farm income in BIRR - winsorized"
 
-save "${tmp}/covariates/hh_offfarm_inc.dta", replace
+save "${tmp}/covariates/hh_income_off.dta", replace
 
 
 * Merging ----------------------------------------------------------------------
 
 * use "${rawdata}/HH/sect_cover_hh_w5.dta", clear // don't have this for now
-use "${tmp}/covariates/hh_demo.dta", clear
+use "${tmp}/covariates/hh_demo_head.dta", clear
 
-merge 1:1 household_id using "${tmp}/covariates/hh_demo.dta"
+*merge 1:1 household_id using "${tmp}/covariates/hh_demo.dta"
+*drop _m
+
+merge 1:1 household_id using "${tmp}/covariates/hh_educ_head.dta"
 drop _m
 
 *merge 1:1 household_id using `asset_index'
-*drop _m
+*drop _m 
 
 merge 1:1 household_id using "${tmp}/covariates/hh_prod_asset_index.dta"
 drop _m
 
-merge 1:1 household_id using "${tmp}/covariates/hh_offfarm_inc.dta"
+merge 1:1 household_id using "${tmp}/covariates/hh_income_off.dta"
 drop _m
 
 
