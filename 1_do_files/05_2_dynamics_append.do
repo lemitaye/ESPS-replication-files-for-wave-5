@@ -62,6 +62,13 @@ keep if _merge==3
 drop _merge
 
 
+estpost tab hhd_cross_poultry_w4 hhd_cross_poultry_w5
+
+esttab . using "${tables}/test.tex", replace ///
+ cell(b) unstack noobs nonumber nomtitle collabels(none) modelwidth(15) ///
+ varlabels(`e(labels)') eqlabels(`e(eqlabels)')
+
+
 
 
 
