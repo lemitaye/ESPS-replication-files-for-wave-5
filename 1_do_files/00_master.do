@@ -13,9 +13,10 @@ global code     "$root/1_do_files"
 global rawdata  "$root/2_raw_data/data"
 global data     "$root/3_report_data"
 global table    "$root/4_table"
+global supp     "$root/supplemental"
 global tmp      "$root/tmp"
 
-
+/*
 * Call all do files:
 do "${code}/01_0_hh.do"
 do "${code}/02_0_community.do"
