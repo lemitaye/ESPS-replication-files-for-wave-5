@@ -7,6 +7,12 @@ Purpose: Preliminary analysis of the LSMS-ESS5 data
 
 clear all
 
+* d. Installation of packages
+* ssc install xml_tab, replace
+* ssc install winsor2, replace
+* ssc install estout, replace
+* ssc install rsource, replace   // enables to run R code from within Stata
+
 * to be added to master later
 global root     "C:/Users/l.daba/OneDrive/SPIA/Ethiopia/LSMS_W5"
 global code     "$root/1_do_files"
