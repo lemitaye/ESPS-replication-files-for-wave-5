@@ -9,7 +9,7 @@
 ********************************************************************************
 
 
-use "${data}/06_1_ess5_dna_plot.dta", clear
+use "${tmp}/missclass/06_2_misclass_purity.dta", clear
 
 
 * Year cut-off: 1990
@@ -299,10 +299,6 @@ cw(0 110, 1 55, 2 30, 3 30, 4 40, 5 55, 6 30, 7 30, 8 40, 9 55, 10 30, 11 30, 12
 format((SCLR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0))  ///
 star(.1 .05 .01) lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 2)  /// 
 notes(Point estimates are weighted sample means. Standard errors are reported below. Sub-sample of national sample used. ) 
-/*
-* NB of obs // additional
-global var3brel  maize_tp3abis maize_fn3abis maize_tp3bbis maize_fn3bbis maize_tp3cbis maize_fn3cbis barley_tp3abis barley_fn3abis barley_tp3bbis barley_fn3bbis barley_tp3cbis barley_fn3cbis sorghum_tp3abis sorghum_fn3abis sorghum_tp3bbis sorghum_fn3bbis sorghum_tp3cbis sorghum_fn3cbis 
 
-foreach var in $var3brel {
-	tab `var'
-}
+* save -------------------------------------------------------------------------
+save "${tmp}/missclass/06_3_misclass_year.dta", replace

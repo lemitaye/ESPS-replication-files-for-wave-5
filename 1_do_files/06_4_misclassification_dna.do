@@ -8,7 +8,7 @@
 * STATA Version: MP 17.0
 ********************************************************************************
 
-use "${data}/06_1_ess5_dna_plot.dta", clear
+use "${tmp}/missclass/06_3_misclass_year.dta", clear
 
  * CG - GERMPLASM AND PURITY LEVEL	
  	
@@ -171,6 +171,5 @@ lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 2)  ///
 notes(Point estimates are weighted sample means. Standard errors are reported below. Sub-sample of national sample used. ) 
 	
 
-
-
-
+* save -------------------------------------------------------------------------
+save "${tmp}/missclass/06_4_misclass_dna.dta", replace
