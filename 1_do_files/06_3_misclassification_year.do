@@ -187,6 +187,10 @@ notes(Point estimates are weighted sample means. Standard errors are reported be
 	replace maize_fn3abis=0 
 	replace maize_fn3abis=1 if cg_source=="Yes" & year>=1990 & (s4q11==1)
 
+	lab var maize_tp3abis "True positive maize (After 1990)"
+	lab var maize_tn3abis "True negative maize (After 1990)"
+	lab var maize_fp3abis "False positive maize (After 1990)"
+    lab var maize_fn3abis "False negative maize (After 1990)"
 
 
 * After 2000
@@ -210,7 +214,11 @@ notes(Point estimates are weighted sample means. Standard errors are reported be
 	g       maize_fn3bbis=.
 	replace maize_fn3bbis=0 
 	replace maize_fn3bbis=1 if cg_source=="Yes" &  (year>=2000)  & (s4q11==1)
-
+    
+	lab var maize_tp3bbis "True positive maize (After 2000)"
+	lab var maize_tn3bbis "True negative maize (After 2000)"
+	lab var maize_fp3bbis "False positive maize (After 2000)"
+	lab var maize_fn3bbis "False negative maize (After 2000)"    
 
 
 * After 2010
@@ -235,6 +243,10 @@ notes(Point estimates are weighted sample means. Standard errors are reported be
 	replace maize_fn3cbis=0 
 	replace maize_fn3cbis=1 if cg_source=="Yes" & (year>=2010)  & (s4q11==1)
 
+	lab var maize_tp3cbis "True positive maize (After 2010)"
+	lab var maize_tn3cbis "True negative maize (After 2010)"
+	lab var maize_fp3cbis "False positive maize (After 2010)"
+	lab var maize_fn3cbis "False negative maize (After 2010)"
 
 
 * Table

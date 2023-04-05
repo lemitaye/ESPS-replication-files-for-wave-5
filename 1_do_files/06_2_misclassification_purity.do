@@ -38,6 +38,10 @@ g       maize_fn1=.
 replace maize_fn1=0 
 replace maize_fn1=1 if cg_source=="Yes" & (s4q11==1)
 
+lab var maize_tp1 "True positive maize"
+lab var maize_tn1 "True negative maize"
+lab var maize_fp1 "False positive maize"
+lab var maize_fn1 "False negative maize"
 
 
 
@@ -125,6 +129,10 @@ g       maize_fn2a=.
 replace maize_fn2a=0 
 replace maize_fn2a=1 if cg_source=="Yes" & purity_percent>=70 & (s4q11==1)
 
+lab var maize_tp2a "True positive maize Purity cut-off: 70"
+lab var maize_tn2a "True negative maize Purity cut-off: 70"
+lab var maize_fp2a "False positive maize Purity cut-off: 70"
+lab var maize_fn2a "False negative maize Purity cut-off: 70"
 
 
 * Purity cut-off: 90
@@ -149,6 +157,10 @@ g       maize_fn2b=.
 replace maize_fn2b=0 
 replace maize_fn2b=1 if cg_source=="Yes" & purity_percent>=90 & (s4q11==1)
 
+lab var maize_tp2b "True positive maize Purity cut-off: 90"
+lab var maize_tn2b "True negative maize Purity cut-off: 90"
+lab var maize_fp2b "False positive maize Purity cut-off: 90"
+lab var maize_fn2b "False negative maize Purity cut-off: 90"
 
 
 * Purity cut-off: 95
@@ -172,6 +184,11 @@ replace maize_fp2c=1 if cg_source=="Yes" & purity_percent<95 & (s4q11>1 & s4q11!
 g       maize_fn2c=.
 replace maize_fn2c=0 
 replace maize_fn2c=1 if cg_source=="Yes" & purity_percent>=95 & (s4q11==1)
+
+lab var maize_tp2c "True positive maize Purity cut-off: 95"
+lab var maize_tn2c "True negative maize Purity cut-off: 95"
+lab var maize_fp2c "False positive maize Purity cut-off: 95"
+lab var maize_fn2c "False negative maize Purity cut-off: 95"
 
 
 
