@@ -169,4 +169,4 @@ lab var hhd_cross_poultry     "Crossbred POULTRY"
 
 
 * save - hh level --------------------------------------------------------------
-save "${data}/01_2_hh_livestock.dta", replace
+save "${data}/01_6_hh_livestock.dta", replace

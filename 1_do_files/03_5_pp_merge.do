@@ -125,6 +125,11 @@ merge 1:1 household_id using "${data}/ess5_dna_hh_new"
 */
 drop _m
 
+* append with livestock data from hh -------------------------------------------
 
+append using "${data}/01_6_hh_livestock.dta", generate(from_hh)
+
+
+* save -------------------------------------------------------------------------
 save "${data}/wave5_hh_new", replace
 save "${data}/ess5_pp_hh_new", replace
