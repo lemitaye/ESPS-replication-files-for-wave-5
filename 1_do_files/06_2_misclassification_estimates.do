@@ -89,7 +89,7 @@ foreach var in $var1 {
 mat C= BN
 
 
-xml_tab BN ,  save("${tables}/ESS5_Misclassification.xml") replace sheet("Table 1", nogridlines)  ///
+xml_tab BN ,  save("${tables}/06_2_ess5_missclass_purity.xml") replace sheet("Table 1", nogridlines)  ///
 rnames(`rname' "Total No. of obs. per region") cnames(`cnames') ///
 rblanks(COL_NAMES "Plot level data" S2220)	 /// Adds blank columns which are used to separate Treatment and Control graphically.
 title(Table 1: ESS4 - CG germplasm )  font("Times New Roman" 10) ///
@@ -224,7 +224,7 @@ foreach var in $var2 {
 
 mat C= BN
 
-xml_tab BN ,  save("${tables}/ESS5_Misclassification.xml") append sheet("Table 2", nogridlines)  ///
+xml_tab BN ,  save("${tables}/06_2_ess5_missclass_purity.xml") append sheet("Table 2", nogridlines)  ///
 rnames(`rname' "Total No. of obs. per region") cnames(`cnames') ///
 rblanks(COL_NAMES "Plot level data" S2220)	                   /// 
 title(Table 2: ESS4 - CG germplasm & purity level)  font("Times New Roman" 10) ///

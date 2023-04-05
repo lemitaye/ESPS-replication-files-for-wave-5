@@ -10,6 +10,8 @@
 
 /* Paths ---------------------------------------------------------------------*/
 
+clear all
+
 shell rmdir "${tmp}/missclass" /s /q
 mkdir "${tmp}/missclass"
 
