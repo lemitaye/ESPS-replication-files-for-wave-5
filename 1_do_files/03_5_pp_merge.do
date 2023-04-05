@@ -39,7 +39,7 @@ drop _m
 
 * Merge with household cover for panel weights ---------------------------------
 
-merge 1:1 household_id using "${rawdata}/ESS5_weights_hh.dta", keepusing(pw_panel)
+merge 1:1 household_id using "${rawdata}/HH/ESS5_weights_hh.dta", keepusing(pw_panel)
 /*
      Result                      Number of obs
     -----------------------------------------
@@ -54,6 +54,11 @@ keep if _merge==1 | _merge==3
 drop _merge
 
 order holder_id-pw_w5 pw_panel
+
+* Merge with psnp data:
+merge 1:1 household_id using "${data}/ess5_hh_psnp.dta", keepusing(hhd_psnp)
+keep if _merge==1 | _merge==3
+drop _merge
 
 
 generate wave = 5
