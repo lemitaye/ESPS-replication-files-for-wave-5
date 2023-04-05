@@ -61,12 +61,34 @@ merge 1:1 household_id using `wave5_hh_new', force
 keep if _merge==3
 drop _merge
 
+drop hhd_livIA_publ_w5 hhd_livIA_priv_w5
 
-estpost tab hhd_cross_poultry_w4 hhd_cross_poultry_w5
+#delimit ;
+global hhlevel     
+hhd_ofsp hhd_awassa83 hhd_rdisp hhd_motorpump hhd_swc hhd_consag1 hhd_consag2 
+hhd_affor hhd_mango hhd_papaya hhd_avocado hhd_livIA hhd_cross_largerum 
+hhd_cross_smallrum hhd_cross_poultry
+hhd_elepgrass hhd_grass hhd_impcr13 hhd_impcr19 hhd_impcr11 hhd_impcr24  
+hhd_impcr14 hhd_impcr3 hhd_impcr5 hhd_impcr60 hhd_impcr62 
+;
+#delimit cr
 
-esttab . using "${tables}/test.tex", replace ///
- cell(b) unstack noobs nonumber nomtitle collabels(none) modelwidth(15) ///
- varlabels(`e(labels)') eqlabels(`e(eqlabels)')
+
+label define Yes_no 1 "Yes" 0 "No"
+
+foreach var in $hhlevel {
+    label values `var'_* Yes_no
+    
+    local lbl : variable label `var'_w4
+
+    est clear
+    estpost tab `var'_*
+
+    esttab . using "${tables}/05_2_adoption_matrix_`var'.tex", replace ///
+        cell(b pct(fmt(2) par) par) unstack noobs nonumber mtitle("Wave 5") ///
+        collabels(none) modelwidth(15) ///
+        label booktabs title("`lbl'") eqlabels(, lhs("Wave 4"))
+}
 
 
 
