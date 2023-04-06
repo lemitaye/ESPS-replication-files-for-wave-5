@@ -58,17 +58,7 @@ order holder_id-pw_w5 pw_panel
 * Merge with psnp data:
 merge 1:1 household_id using "${data}/ess5_hh_psnp.dta", keepusing(hhd_psnp)
 keep if _merge==1 | _merge==3
-drop _merge
-
-
-generate wave = 5
-clonevar region = saq01
-replace region=0 if saq01==2 | saq01==5 | saq01==6 | saq01==12 | saq01==13 | saq01==15 
-// region = 0 for Afar (2), Somali (5), Benishangul Gumuz (6), Gambela (12), 
-// Harar (12), and Dire Dawa (15)
-
-generate othregion = 0
-replace othregion = saq01 if saq01==2 | saq01==5 | saq01==6 | saq01==12 | saq01==13 | saq01==15 
+drop _merge 
 
 
 foreach i in cr1 cr2 cr6 po_livIA po_agroind po_elepgrass po_deshograss po_sesbaniya ///
@@ -128,6 +118,22 @@ drop _m
 * append with livestock data from hh -------------------------------------------
 
 append using "${data}/01_6_hh_livestock.dta", generate(from_hh)
+
+// take care of duplicates
+duplicates tag household_id, generate(dup)
+drop if dup==1 & from_hh==1
+drop dup
+
+// final cleaning:
+generate wave = 5
+drop region
+clonevar region = saq01
+replace region=0 if saq01==2 | saq01==5 | saq01==6 | saq01==12 | saq01==13 | saq01==15 
+// region = 0 for Afar (2), Somali (5), Benishangul Gumuz (6), Gambela (12), 
+// Harar (12), and Dire Dawa (15)
+
+generate othregion = 0
+replace othregion = saq01 if saq01==2 | saq01==5 | saq01==6 | saq01==12 | saq01==13 | saq01==15
 
 
 * save -------------------------------------------------------------------------

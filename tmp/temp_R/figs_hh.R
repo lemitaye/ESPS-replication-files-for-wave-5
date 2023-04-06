@@ -38,7 +38,7 @@ vars_all <- c(
   "hhd_seedv1", "hhd_seedv2", "hhd_livIA", "hhd_livIA_publ", 
   "hhd_livIA_priv", "hhd_cross_largerum", "hhd_cross_smallrum", 
   "hhd_cross_poultry", "hhd_grass", "hhd_mintillage", "hhd_zerotill", 
-  "hhd_cresidue2", "hhd_rotlegume"
+  "hhd_cresidue2", "hhd_rotlegume", "hhd_psnp"
   )
 
 vars_both <- wave4_hh_new %>% 

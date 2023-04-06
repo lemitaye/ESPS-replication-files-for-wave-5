@@ -65,14 +65,6 @@ lab var hh_dwpsnp   "Avg. daily income per hh-member from PSNP"
 lab var ea_id       "ea id"
 lab var pw_w5       "Sampling weight - wave 5" 
 
-clonevar region=saq01
-replace region=0 if saq01==2 | saq01==6 | saq01==15 | saq01==12 | saq01==13 | saq01==5
-
-gen othregion=0
-replace othregion=saq01 if  saq01==2 | saq01==6 | saq01==15 | saq01==12 | saq01==13 | saq01==5
-
-gen wave=5
-
 
 save "${data}/ess5_hh_psnp.dta", replace
 
