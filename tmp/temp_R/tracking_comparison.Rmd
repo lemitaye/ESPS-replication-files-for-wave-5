@@ -199,9 +199,9 @@ kbl(
 
 ![](../figures/kabuli_plot.pdf)
 
-## Comparing adoption of maize varieties across waves, household level
+<!-- ## Comparing adoption of maize varieties across waves, household level -->
 
-![](../figures/maize_dna_plot.pdf)
+<!-- ![](../figures/maize_dna_plot.pdf) -->
 
 ## All houehods surveyed
 
