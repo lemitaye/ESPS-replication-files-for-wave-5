@@ -154,7 +154,7 @@ hh_level_panel <- inner_join(
   suffix = c(".w4", ".w5")
 ) %>% 
   select(household_id, region, pw_w4, pw_w5, pw_panel, everything()) %>% 
-  pivot_longer(hhd_ofsp.w4:hhd_rotlegume.w5, 
+  pivot_longer(-c("household_id", "region", "pw_w4", "pw_w5", "pw_panel"), 
                names_to = "variable",
                values_to = "value") %>% 
   separate(variable, into = c("variable", "wave"), sep = "\\.") %>% 
