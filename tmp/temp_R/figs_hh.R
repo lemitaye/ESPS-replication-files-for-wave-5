@@ -18,11 +18,14 @@ w5_dir <- "LSMS_W5/3_report_data"
 wave4_hh_new <- read_dta(file.path(root, w4_dir, "wave4_hh_new.dta"))
 wave5_hh_new <- read_dta(file.path(root, w5_dir, "wave5_hh_new.dta"))
 
+ess4_hh_psnp <- read_dta(file.path(root, w4_dir, "ess4_hh_psnp.dta"))
+
 wave4_hh_new <- wave4_hh_new %>% 
   mutate(hhd_grass = case_when(
     hhd_elepgrass==100 | hhd_sasbaniya==100 | hhd_alfa==100 ~ 1,
     hhd_elepgrass==0 & hhd_sasbaniya==0 & hhd_alfa==0 ~ 0 
-  )) 
+  )) %>% 
+  left_join(select(ess4_hh_psnp, household_id, hhd_psnp), by = "household_id")
 
 wave5_hh_new <- wave5_hh_new %>% 
   mutate(hhd_grass = case_when(
