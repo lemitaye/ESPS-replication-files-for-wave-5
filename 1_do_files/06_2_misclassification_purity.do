@@ -2,9 +2,9 @@
 *                           Ethiopia Synthesis Report - v2
 *                     DO: Misclassification using maize DNA data
 * Country: Ethiopia 
-* Data: ESS4 (replication files) and ESS 5
+* Data: ESS5 (replication files) and ESS 5
 * Author: Lemi Daba (tayelemi@gmail.com) 
-*         [code adopted from Paola Mallia from ESS4 rep. file]
+*         [code adopted from Paola Mallia from ESS5 rep. file]
 * STATA Version: MP 17.0
 ********************************************************************************
 
@@ -96,7 +96,7 @@ mat C= BN
 xml_tab BN ,  save("${tables}/06_2_ess5_missclass_purity.xml") replace sheet("Table 1", nogridlines)  ///
 rnames(`rname' "Total No. of obs. per region") cnames(`cnames') ///
 rblanks(COL_NAMES "Plot level data" S2220)	 /// Adds blank columns which are used to separate Treatment and Control graphically.
-title(Table 1: ESS4 - CG germplasm )  font("Times New Roman" 10) ///
+title(Table 1: ESS5 - CG germplasm )  font("Times New Roman" 10) ///
 cw(0 110, 1 55, 2 30, 3 30, 4 40, 5 55, 6 30, 7 30, 8 40, 9 55, 10 30, 11 30, 12 40, 13 55,  14 30,  15 30, 16 40, 17 55, 18 30, 19 30, 20 40, 21 55, 22 30, 23 30, 24 40, 25 55, 26 30, 27 30, 28 40, 29 55, 30 30, 31 30, 32 40, 33 55, 34 30, 35 30, 36 40, 37 55, 38 30, 39 30, 40 40  ) /// *Adjust the column width of the table, column 0 are the variable names* 1, 5 and 9 are the blank columns. 
 	format((SCLR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0))  /// * format the columns. Each parentheses represents one column*
 	star(.1 .05 .01)  /// Define your star values/signs here (which are stored in B_STARS)
@@ -244,7 +244,7 @@ mat C= BN
 xml_tab BN ,  save("${tables}/06_2_ess5_missclass_purity.xml") append sheet("Table 2", nogridlines)  ///
 rnames(`rname' "Total No. of obs. per region") cnames(`cnames') ///
 rblanks(COL_NAMES "Plot level data" S2220)	                   /// 
-title(Table 2: ESS4 - CG germplasm & purity level)  font("Times New Roman" 10) ///
+title(Table 2: ESS5 - CG germplasm & purity level)  font("Times New Roman" 10) ///
 cw(0 110, 1 55, 2 30, 3 30, 4 40, 5 55, 6 30, 7 30, 8 40, 9 55, 10 30, 11 30, 12 40, 13 55,  14 30,  15 30, 16 40, 17 55, 18 30, 19 30, 20 40, 21 55, 22 30, 23 30, 24 40, 25 55, 26 30, 27 30, 28 40, 29 55, 30 30, 31 30, 32 40, 33 55, 34 30, 35 30, 36 40, 37 55, 38 30, 39 30, 40 40  ) /// 
 format((SCLR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR0) (NBCR0) (NBCR0))  /// 
 star(.1 .05 .01) lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 2)  /// 

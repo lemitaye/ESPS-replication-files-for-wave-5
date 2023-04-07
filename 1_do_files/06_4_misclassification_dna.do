@@ -10,116 +10,116 @@
 
 use "${tmp}/missclass/06_3_misclass_year.dta", clear
 
- * CG - GERMPLASM AND PURITY LEVEL	
- 	
-	g       maize_cgp70=.
-	replace maize_cgp70=0 
-	replace maize_cgp70=1 if cg_source=="Yes" & purity_percent>=70
-	
-	g       maize_cgp90=.
-	replace maize_cgp90=0 
-	replace maize_cgp90=1 if cg_source=="Yes" & purity_percent>=90
-	
-	g       maize_cgp95=.
-	replace maize_cgp95=0 
-	replace maize_cgp95=1 if cg_source=="Yes" & purity_percent>=95
+* CG - GERMPLASM AND PURITY LEVEL	
+
+g       maize_cgp70=.
+replace maize_cgp70=0 
+replace maize_cgp70=1 if cg_source=="Yes" & purity_percent>=70
+
+g       maize_cgp90=.
+replace maize_cgp90=0 
+replace maize_cgp90=1 if cg_source=="Yes" & purity_percent>=90
+
+g       maize_cgp95=.
+replace maize_cgp95=0 
+replace maize_cgp95=1 if cg_source=="Yes" & purity_percent>=95
 
 
- * CG - GERMPLASM AND YEAR OF RELEASE
- 
-	g       maize_cgy1=.
-	replace maize_cgy1=0 
-	replace maize_cgy1=1 if cg_source=="Yes" & year<1990
-	
-	g       maize_cgy2=.
-	replace maize_cgy2=0 
-	replace maize_cgy2=1 if cg_source=="Yes" & (year>=1990 & year<2000) 
-	
-	
-	g       maize_cgy3=.
-	replace maize_cgy3=0 
-	replace maize_cgy3=1 if cg_source=="Yes" & (year>=2000 & year<2010) 
-	
-	g       maize_cgy4=.
-	replace maize_cgy4=0 
-	replace maize_cgy4=1 if cg_source=="Yes" & (year>=2010 & year<=2020) 
+* CG - GERMPLASM AND YEAR OF RELEASE
+
+g       maize_cgy1=.
+replace maize_cgy1=0 
+replace maize_cgy1=1 if cg_source=="Yes" & year<1990
+
+g       maize_cgy2=.
+replace maize_cgy2=0 
+replace maize_cgy2=1 if cg_source=="Yes" & (year>=1990 & year<2000) 
 
 
- * EXOTIC GERMPLASM 
- 
-	g       maize_ex=.
-	replace maize_ex=0 
-	replace maize_ex=1 if exotic_source=="Yes"
+g       maize_cgy3=.
+replace maize_cgy3=0 
+replace maize_cgy3=1 if cg_source=="Yes" & (year>=2000 & year<2010) 
+
+g       maize_cgy4=.
+replace maize_cgy4=0 
+replace maize_cgy4=1 if cg_source=="Yes" & (year>=2010 & year<=2020) 
+
+
+* EXOTIC GERMPLASM 
+
+g       maize_ex=.
+replace maize_ex=0 
+replace maize_ex=1 if exotic_source=="Yes"
 
 * EXOTIC GERMPLASM & PURITY LEVEL	
- 	
-	g       maize_exp70=.
-	replace maize_exp70=0 
-	replace maize_exp70=1 if exotic_source=="Yes" & purity_percent>=70
-	
-	g       maize_exp90=.
-	replace maize_exp90=0 
-	replace maize_exp90=1 if exotic_source=="Yes" & purity_percent>=90
-	
-	g       maize_exp95=.
-	replace maize_exp95=0 
-	replace maize_exp95=1 if exotic_source=="Yes" & purity_percent>=95
+
+g       maize_exp70=.
+replace maize_exp70=0 
+replace maize_exp70=1 if exotic_source=="Yes" & purity_percent>=70
+
+g       maize_exp90=.
+replace maize_exp90=0 
+replace maize_exp90=1 if exotic_source=="Yes" & purity_percent>=90
+
+g       maize_exp95=.
+replace maize_exp95=0 
+replace maize_exp95=1 if exotic_source=="Yes" & purity_percent>=95
 
 
 * EXOTIC GERMPLASM & YEAR OF RELEASE
- 
-	g       maize_exy1=.
-	replace maize_exy1=0 
-	replace maize_exy1=1 if exotic_source=="Yes" & year<1990
-	
-	g       maize_exy2=.                                  
-	replace maize_exy2=0                        
-	replace maize_exy2=1 if exotic_source=="Yes" & (year>=1990 & year<2000) 
-														
-	g       maize_exy3=.                                  
-	replace maize_exy3=0                        
-	replace maize_exy3=1 if exotic_source=="Yes" & (year>=2000 & year<2010)  
-														
-	g       maize_exy4=.                                  
-	replace maize_exy4=0                        
-	replace maize_exy4=1 if exotic_source=="Yes" & (year>=2010 & year<=2020) 
-                                                   
+
+g       maize_exy1=.
+replace maize_exy1=0 
+replace maize_exy1=1 if exotic_source=="Yes" & year<1990
+
+g       maize_exy2=.                                  
+replace maize_exy2=0                        
+replace maize_exy2=1 if exotic_source=="Yes" & (year>=1990 & year<2000) 
                                                     
+g       maize_exy3=.                                  
+replace maize_exy3=0                        
+replace maize_exy3=1 if exotic_source=="Yes" & (year>=2000 & year<2010)  
+                                                    
+g       maize_exy4=.                                  
+replace maize_exy4=0                        
+replace maize_exy4=1 if exotic_source=="Yes" & (year>=2010 & year<=2020) 
+                                                
+                                                
 
 
 * UNCONDITIONAL - PURITY LEVEL
- 	
-	g       maize_p70=.
-	replace maize_p70=0 
-	replace maize_p70=1  & purity_percent>=70
-	
-	g       maize_p90=.
-	replace maize_p90=0 
-	replace maize_p90=1  & purity_percent>=90
-	
-	g       maize_p95=.
-	replace maize_p95=0 
-	replace maize_p95=1  & purity_percent>=95
+
+g       maize_p70=.
+replace maize_p70=0 
+replace maize_p70=1  & purity_percent>=70
+
+g       maize_p90=.
+replace maize_p90=0 
+replace maize_p90=1  & purity_percent>=90
+
+g       maize_p95=.
+replace maize_p95=0 
+replace maize_p95=1  & purity_percent>=95
 
 
 * UNCONDITIONAL - YEAR OF RELEASE
 
- 
-	g       maize_y1=.
-	replace maize_y1=0 
-	replace maize_y1=1 if year<1990
-	
-	g       maize_y2=.
-	replace maize_y2=0 
-	replace maize_y2=1  & (year>=1990 & year<2000)
-	
-	g       maize_y3=.
-	replace maize_y3=0 
-	replace maize_y3=1  & (year>=2000 & year<2010) 
-	
-	g       maize_y4=.
-	replace maize_y4=0 
-	replace maize_y4=1  & (year>=2010 & year<=2020) 
+
+g       maize_y1=.
+replace maize_y1=0 
+replace maize_y1=1 if year<1990
+
+g       maize_y2=.
+replace maize_y2=0 
+replace maize_y2=1  & (year>=1990 & year<2000)
+
+g       maize_y3=.
+replace maize_y3=0 
+replace maize_y3=1  & (year>=2000 & year<2010) 
+
+g       maize_y4=.
+replace maize_y4=0 
+replace maize_y4=1  & (year>=2010 & year<=2020) 
 
 
  * Table 
