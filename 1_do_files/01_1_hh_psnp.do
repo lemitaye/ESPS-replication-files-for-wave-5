@@ -56,34 +56,33 @@ collapse (max) hhd_psnp  hhm_psnp  hh_dpsnp hh_dpsnppc hh_ipsnp hh_dwpsnp hh_ea 
     hhea_psnp (firstnm) saq14  ea_id pw_w5  saq01 , by(household_id)
 
 
-lab var hhd_psnp    "At least 1 member benefitting from PSNP" 
-lab var hhm_psnp    "No. of members per hh benefitting from PSNP"
-lab var hh_dpsnp    "No. of days per year hh benefitting from PSNP"
-lab var hh_dpsnppc  "No. of days per year hh benefitting from PSNP - per member"
-lab var hh_ipsnp    "Total income per hh per year from PSNP - USD"
-lab var hh_dwpsnp   "Avg. daily income per hh-member from PSNP"
-lab var ea_id       "ea id"
-lab var pw_w5       "Sampling weight - wave 5" 
+label var hhd_psnp    "At least 1 member benefitting from PSNP" 
+label var hhm_psnp    "No. of members per hh benefitting from PSNP"
+label var hh_dpsnp    "No. of days per year hh benefitting from PSNP"
+label var hh_dpsnppc  "No. of days per year hh benefitting from PSNP - per member"
+label var hh_ipsnp    "Total income per hh per year from PSNP - USD"
+label var hh_dwpsnp   "Avg. daily income per hh-member from PSNP"
+label var ea_id       "ea id"
+label var pw_w5       "Sampling weight - wave 5" 
 
 
 save "${data}/ess5_hh_psnp.dta", replace
 
-/*
+
 * EA - level 
 
 egen ead_psnp=max(hhd_psnp), by(ea_id)
 gen sh_ea_psnp=hhea_psnp/hh_ea
 
-collapse (max) ead_psnp sh_ea_psnp (firstnm) saq14 wave region othregion saq01 pw_w5, by(ea_id)
+collapse (max) ead_psnp sh_ea_psnp (firstnm) saq14 saq01 pw_w5, by(ea_id)
 
-lab var ead_psnp   "Perc. of EA with at least 1 hh benefitting from PSNP"
-lab var sh_ea_psnp "Perc. of hh per EA benefitting from PSNP"
-lab var wave       "wave"
-lab var region     "region"
-lab var othregion  "other regions"
-lab var pw_w5      "Sampling weight - wave 4" 
+label var ead_psnp   "Perc. of EA with at least 1 hh benefitting from PSNP"
+label var sh_ea_psnp "Perc. of hh per EA benefitting from PSNP"
+label var pw_w5      "Sampling weight - wave 5" 
+label var saq14      "Rural/Urban"
+label var saq01      "Region code"
 
-save "${data}/ess4_ea_psnp.dta", replace
+save "${data}/ess5_ea_psnp.dta", replace
 
 
 
