@@ -313,7 +313,7 @@ drop _merge
 merge 1:1 household_id using "${tmp}/covariates/pp_female_lvstk_own.dta"
 drop _merge
 
-merge 1:1 household_id using "${tmp}/covariates/pp_female_lvstk_mergegmt.dta"
+merge 1:1 household_id using "${tmp}/covariates/pp_female_lvstk_mgmt.dta"
 drop _merge
 
 order household_id ea_id saq01 saq14
