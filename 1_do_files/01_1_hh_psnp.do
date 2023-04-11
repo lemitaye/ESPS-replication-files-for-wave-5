@@ -83,7 +83,3 @@ label var saq14      "Rural/Urban"
 label var saq01      "Region code"
 
 save "${data}/ess5_ea_psnp.dta", replace
-
-
-
-

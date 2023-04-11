@@ -13,6 +13,11 @@
 shell rmdir "${tmp}/covariates" /s /q
 mkdir "${tmp}/covariates"
 
+shell rmdir "${tmp}/covariates/tables" /s /q
+shell rmdir "${tmp}/covariates/figures" /s /q
+mkdir "${tmp}/covariates/tables"
+mkdir "${tmp}/covariates/figures"
+
 /* ---------------------------------------------------------------------------*/
 
 * do 
