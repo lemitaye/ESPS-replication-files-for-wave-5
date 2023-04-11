@@ -8,55 +8,28 @@
 ********************************************************************************
 
 
-use "${supp}/replication_files/3_report_data/wave4_hh_new.dta", clear
-
-drop sh_*
-
-// recode 100 to 1 for dummies for consistency:
-for var hhd_treadle-hhd_ploc hhd_cross-hhd_grass lr_livIA-sr_grass ///
-    hhd_ofsp-hhd_fieldp hhd_impcr1-ead_impccr: recode X (100=1)
-
-preserve
-    use "${data}/wave5_hh_new.dta", clear
-    drop sh_*
-
-    tempfile wave5_hh_new 
-    save `wave5_hh_new'
-restore
-
-// append with ESS5:
-append using `wave5_hh_new', force
-
-// merge with tracking file:
-merge m:1 household_id using "${tmp}/dynamics/05_1_track_hh.dta", keepusing(hh_status) nogenerate
-
 * Merging ---------------------------------------------------------------------
 
-use "${supp}/replication_files/3_report_data/wave4_hh_new.dta", clear
+use "${supp}/replication_files/3_report_data/ess4_pp_cov_new.dta", clear
 
-merge 1:1 household_id using "${supp}/replication_files/3_report_data/ess4_hh_psnp.dta", ///
-    keepusing(hhd_psnp)
-
-keep if _merge==1 | _merge==3
-drop _merge
-
-drop sh_*
+drop sh_* s2* s3* s4* cs* 
 
 // recode 100 to 1 for dummies for consistency:
 for var hhd_treadle-hhd_ploc hhd_cross-hhd_grass lr_livIA-sr_grass ///
     hhd_ofsp-hhd_fieldp hhd_impcr1-ead_impccr: recode X (100=1)
 
+order hhd_psnp, after(ead_impccr)
+
 for var hh_ea-hhd_psnp: rename X X_w4
-/*
-foreach var of varlist hh_ea-othregion {
-    local lbl : variable label `var'
-    label var `"`lbl'"' + "wave 4" 	
-}
-*/
+
 preserve
     use "${data}/wave5_hh_new.dta", clear
     drop sh_*
 
+    rename hhd_cross_largerum hhd_crlr
+    rename hhd_cross_smallrum hhd_crsr
+    rename hhd_cross_poultry hhd_crpo
+ 
     for var hh_ea-othregion: rename X X_w5
 
     tempfile wave5_hh_new 
@@ -64,6 +37,16 @@ preserve
 restore
 
 merge 1:1 household_id using `wave5_hh_new', force
+/*
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                         1,265
+        from master                       947  (_merge==1)
+        from using                        318  (_merge==2)
+
+    Matched                             1,952  (_merge==3)
+    -----------------------------------------
+*/
 keep if _merge==3
 drop _merge
 
@@ -72,14 +55,14 @@ drop hhd_livIA_publ_w5 hhd_livIA_priv_w5
 #delimit ;
 global hhlevel     
 hhd_ofsp hhd_awassa83 hhd_rdisp hhd_motorpump hhd_swc hhd_consag1 hhd_consag2 
-hhd_affor hhd_mango hhd_papaya hhd_avocado hhd_livIA hhd_cross_largerum 
-hhd_cross_smallrum hhd_cross_poultry hhd_elepgrass hhd_grass hhd_psnp 
+hhd_affor hhd_mango hhd_papaya hhd_avocado hhd_livIA hhd_crlr hhd_crsr hhd_crpo
+hhd_elepgrass hhd_grass hhd_psnp 
 hhd_impcr13 hhd_impcr19 hhd_impcr11 hhd_impcr24  
 hhd_impcr14 hhd_impcr3 hhd_impcr5 hhd_impcr60 hhd_impcr62 
 ;
 #delimit cr
 
-
+// Adoption matrices:
 label define Yes_no 1 "Yes" 0 "No"
 
 foreach var in $hhlevel {
@@ -96,11 +79,27 @@ foreach var in $hhlevel {
         label booktabs title("`lbl'") eqlabels(, lhs("Wave 4"))
 }
 
+
 foreach var in $hhlevel {
-    label variable `var'_w4 ""
-    label variable `var'_w5 ""
-    tab `var'_*
-}
+    gen `var'_a_a = .
+    replace `var'_a_a = 0 if `var'_w4!=. & `var'_w5!=.
+    replace `var'_a_a = 1 if `var'_w4==1 & `var'_w5==1
+
+    gen `var'_a_d = 0
+    replace `var'_a_d = 0 if `var'_w4!=. & `var'_w5!=.
+    replace `var'_a_d = 1 if `var'_w4==1 & `var'_w5==0
+
+    gen `var'_d_a = 0
+    replace `var'_d_a = 0 if `var'_w4!=. & `var'_w5!=.
+    replace `var'_d_a = 1 if `var'_w4==0 & `var'_w5==1
+
+    gen `var'_d_d = 0
+    replace `var'_d_d = 0 if `var'_w4!=. & `var'_w5!=.
+    replace `var'_d_d = 1 if `var'_w4==1 & `var'_w5==1
+} 
+
+
+
 
 
 
