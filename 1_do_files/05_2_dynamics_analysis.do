@@ -53,7 +53,7 @@ drop _merge
 drop hhd_livIA_publ_w5 hhd_livIA_priv_w5
 
 #delimit ;
-global hhlevel     
+global hhinnov     
 hhd_ofsp hhd_awassa83 hhd_rdisp hhd_motorpump hhd_swc hhd_consag1 hhd_consag2 
 hhd_affor hhd_mango hhd_papaya hhd_avocado hhd_livIA hhd_crlr hhd_crsr hhd_crpo
 hhd_elepgrass hhd_grass hhd_psnp 
@@ -65,7 +65,7 @@ hhd_impcr14 hhd_impcr3 hhd_impcr5 hhd_impcr60 hhd_impcr62
 // Adoption matrices:
 label define Yes_no 1 "Yes" 0 "No"
 
-foreach var in $hhlevel {
+foreach var in $hhinnov {
     label values `var'_* Yes_no
     
     local lbl : variable label `var'_w4
@@ -80,7 +80,7 @@ foreach var in $hhlevel {
 }
 
 
-foreach var in $hhlevel {
+foreach var in $hhinnov {
     gen `var'_a_a = .
     replace `var'_a_a = 0 if `var'_w4!=. & `var'_w5!=.
     replace `var'_a_a = 1 if `var'_w4==1 & `var'_w5==1
@@ -95,13 +95,96 @@ foreach var in $hhlevel {
 
     gen `var'_d_d = 0
     replace `var'_d_d = 0 if `var'_w4!=. & `var'_w5!=.
-    replace `var'_d_d = 1 if `var'_w4==1 & `var'_w5==1
+    replace `var'_d_d = 1 if `var'_w4==0 & `var'_w5==0
 } 
 
+rename nom_totcons_aeq nmtotcons
+rename income_offfarm incofffarm
+rename hhd_sweetpotato hhd_sp
+rename  total_cons_ann_win totconswin
 
+#delimit;
+global hhcovar   
+parcesizeHA fem_head fowner flivman hhd_flab  age_head nmtotcons consq1 
+consq2 asset_index pssetindex incofffarm
+;
+#delimit cr
 
+matrix drop _all
+ 
+foreach var in $hhinnov {
 
+    foreach covar in $hhcovar {
 
+        qui: reg `covar' `var'_a_a `var'_a_d `var'_d_a [pw=pw_panel]
+
+        matrix b`var'`covar'=e(b)'
+
+        // extract p-values:
+        matrix p_mat = r(table)[4,1..4]
+
+        scalar `var'pval`covar'_aa=p_mat[1,1]
+        scalar `var'pval`covar'_ad=p_mat[1,2]
+        scalar `var'pval`covar'_da=p_mat[1,3]
+        scalar `var'pval`covar'_cc=p_mat[1,4]
+
+        foreach suffix in _aa _ad _da _cc {
+                
+            if (`var'pval`covar'`suffix'<=0.1 & `var'pval`covar'`suffix'>0.05)  {
+                matrix mstr`var'`covar'`suffix' = (3)      // significant at 10% level
+            }
+            
+            if (`var'pval`covar'`suffix'  <=0.05 & `var'pval`covar'`suffix'>0.01)  {
+                matrix mstr`var'`covar'`suffix' = (2)      // significant at 5% level
+            }
+            
+            if `var'pval`covar'`suffix'  <=0.01 {
+                matrix mstr`var'`covar'`suffix' = (1)      // significant at 1% level
+            }
+            
+            if `var'pval`covar'`suffix'   >0.1 {
+                matrix mstr`var'`covar'`suffix' = (0)       // Non-significant
+            }
+        }
+
+        matrix mstr`var'`covar' = (mstr`var'`covar'_aa\ mstr`var'`covar'_ad\ mstr`var'`covar'_da\ mstr`var'`covar'_cc)
+
+        matrix A1`var' = nullmat(A1`var')\ b`var'`covar'
+
+        matrix A1`var'_STARS =  nullmat(A1`var'_STARS)\mstr`var'`covar'`suffix'
+
+    }
+
+    matrix colnames A1`var' = `var'
+
+    matrix C = (nullmat(C), A1`var')
+    matrix C_STARS = (nullmat(C_STARS), A1`var'_STARS)
+
+}
+
+local cname ""
+foreach var in $hhinnov {
+    local lbl : variable label `var'_w4
+    local cname `" `cname' "`lbl'" "'		
+}
+/*
+local rname ""
+foreach var in $adopt {
+	local lbl : variable label `var'
+	local rname `" `rname' "`lbl'" "'		
+}
+*/
+#delimit ;
+xml_tab C,  save("${tmp}/dynamics/tables/05_2_matrix_reg.xml") replace 
+sheet("regs", nogridlines)  
+/*rnames(`rname')*/ cnames(`cname') lines(COL_NAMES 2 LAST_ROW 2)  
+title(Table 1: ESPS5 - Correlates of adoption (only for panel households))  font("Times New Roman" 10) 
+cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12 55) 
+	format((SCLR0) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) 
+    (NBCR2) (NBCR2) (NBCR2) (NBCR2))  
+	stars(* 0.1 ** 0.05 *** 0.01)  
+	notes(Each cell is a coefficient estimate from a separate regression of the column variable on the row variable.); 
+# delimit cr
 
 
 

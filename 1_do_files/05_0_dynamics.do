@@ -19,9 +19,6 @@ mkdir "${tmp}/dynamics/tables"
 mkdir "${tmp}/dynamics/figures"
 
 
-global tables "${tmp}/dynamics/tables"
-global figures "${tmp}/dynamics/figures"
-
 /* ---------------------------------------------------------------------------*/
 
 * do 
