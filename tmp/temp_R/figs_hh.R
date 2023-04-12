@@ -144,6 +144,14 @@ regions_hh_level <- bind_rows(
   left_join(labels, by = "variable") %>% 
   select(wave, region, variable, label, mean, nobs)
 
+adopt_rates_all_hh <- bind_rows(
+  regions_hh_level, 
+  national_hh_level %>% 
+    mutate(region = "National")
+)
+
+write_csv(adopt_rates_all_hh, file = "./adopt_rates_all_hh.csv")
+
 
 # ONLY FOR PANEL HOUSEHOLDS: ####
 
@@ -184,6 +192,16 @@ national_hh_panel <- hh_level_panel %>%
     str_detect(label, "Improved") ~ 1,
     TRUE ~ 0
   ))
+
+
+adopt_rates_panel_hh <- bind_rows(
+  regions_hh_panel, 
+  national_hh_panel %>% 
+    mutate(region = "National")
+)
+
+write_csv(adopt_rates_panel_hh, file = "./adopt_rates_panel_hh.csv")
+
 
 
 plot_compar <- function(tbl, title, xlim = .8) {

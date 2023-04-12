@@ -1,0 +1,13 @@
+name: adoption_rates_ESS
+title: adoption_rates_ESS
+username:
+account: lemitaye
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 8820415
+bundleId: 7076387
+url: https://lemitaye.shinyapps.io/adoption_rates_ESS/
+when: 1681233163.95166
+lastSyncTime: 1681233163.95167
+asMultiple: FALSE
+asStatic: FALSE
