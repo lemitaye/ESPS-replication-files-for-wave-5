@@ -85,15 +85,15 @@ foreach var in $hhinnov {
     replace `var'_a_a = 0 if `var'_w4!=. & `var'_w5!=.
     replace `var'_a_a = 1 if `var'_w4==1 & `var'_w5==1
 
-    gen `var'_a_d = 0
+    gen `var'_a_d = .
     replace `var'_a_d = 0 if `var'_w4!=. & `var'_w5!=.
     replace `var'_a_d = 1 if `var'_w4==1 & `var'_w5==0
 
-    gen `var'_d_a = 0
+    gen `var'_d_a = .
     replace `var'_d_a = 0 if `var'_w4!=. & `var'_w5!=.
     replace `var'_d_a = 1 if `var'_w4==0 & `var'_w5==1
 
-    gen `var'_d_d = 0
+    gen `var'_d_d = .
     replace `var'_d_d = 0 if `var'_w4!=. & `var'_w5!=.
     replace `var'_d_d = 1 if `var'_w4==0 & `var'_w5==0
 } 
@@ -186,32 +186,41 @@ cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12
 # delimit cr
 
 
+* Disaggregating (dis-)adoption of conservation agriculture (CA)
+
+// CA with minimum tillage
+
+for var hhd_rotlegume_w4 hhd_cresidue2_w4 hhd_mintillage_w4 hhd_zerotill_w4: ///
+    replace X=0 if (X==. & hhd_consag1_w4!=.)
+
+for var hhd_rotlegume_w5 hhd_cresidue2_w5 hhd_mintillage_w5 hhd_zerotill_w4: ///
+    replace X=0 if (X==. & hhd_consag1_w5!=.)
+
+gen no_compntca_mtw4 = hhd_rotlegume_w4 + hhd_cresidue2_w4 + hhd_mintillage_w4
+gen no_compntca_mtw5 = hhd_rotlegume_w5 + hhd_cresidue2_w5 + hhd_mintillage_w5
+
+gen ca_mt_da = .
+replace ca_mt_da = 0 if hhd_consag1_d_a==1 & (no_compntca_mtw4==0 | no_compntca_mtw4==.)
+replace ca_mt_da = 1 if hhd_consag1_d_a==1 & no_compntca_mtw4==1
+replace ca_mt_da = 2 if hhd_consag1_d_a==1 & (no_compntca_mtw4==2 | no_compntca_mtw4==3)
+
+gen ca_mt_ad = .
+replace ca_mt_ad = 0 if hhd_consag1_a_d==1 & (no_compntca_mtw5==0 | no_compntca_mtw5==.)
+replace ca_mt_ad = 1 if hhd_consag1_a_d==1 & no_compntca_mtw5==1
+replace ca_mt_ad = 2 if hhd_consag1_a_d==1 & (no_compntca_mtw5==2 | no_compntca_mtw5==3)
 
 
+// CA with zero tillage
 
+gen no_compntca_ztw4 = hhd_rotlegume_w4 + hhd_cresidue2_w4 + hhd_zerotill_w4
+gen no_compntca_ztw5 = hhd_rotlegume_w5 + hhd_cresidue2_w5 + hhd_zerotill_w4
 
+gen ca_zt_da = .
+replace ca_zt_da = 0 if hhd_consag2_d_a==1 & (no_compntca_ztw4==0 | no_compntca_ztw4==.)
+replace ca_zt_da = 1 if hhd_consag2_d_a==1 & no_compntca_ztw4==1
+replace ca_zt_da = 2 if hhd_consag2_d_a==1 & (no_compntca_ztw4==2 | no_compntca_ztw4==3)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+gen ca_zt_ad = .
+replace ca_zt_ad = 0 if hhd_consag2_a_d==1 & (no_compntca_ztw5==0 | no_compntca_ztw5==.)
+replace ca_zt_ad = 1 if hhd_consag2_a_d==1 & no_compntca_ztw5==1
+replace ca_zt_ad = 2 if hhd_consag2_a_d==1 & (no_compntca_ztw5==2 | no_compntca_ztw5==3)
