@@ -115,19 +115,27 @@ foreach covar in $hhcovar {
 
     foreach var in $hhinnov {
 
-        qui: reg `covar' `var'_a_a `var'_a_d `var'_d_a [pw=pw_panel]
+        qui: reg `covar' `var'_a_a [pw=pw_panel]
+        scalar b`covar'`var'_a_a=e(b)[1,1]
+        scalar `covar'pval`var'_aa=r(table)[4,1]
 
-        matrix b`covar'`var'=e(b)'
+        qui: reg `covar' `var'_a_d [pw=pw_panel]
+        scalar b`covar'`var'_a_d=e(b)[1,1]
+        scalar `covar'pval`var'_ad=r(table)[4,1]        
 
-        // extract p-values:
-        matrix p_mat = r(table)[4,1..4]
+        qui: reg `covar' `var'_d_a [pw=pw_panel]
+        scalar b`covar'`var'_d_a=e(b)[1,1]
+        scalar `covar'pval`var'_da=r(table)[4,1]
 
-        scalar `covar'pval`var'_aa=p_mat[1,1]
-        scalar `covar'pval`var'_ad=p_mat[1,2]
-        scalar `covar'pval`var'_da=p_mat[1,3]
-        scalar `covar'pval`var'_cc=p_mat[1,4]
+        qui: reg `covar' `var'_d_d [pw=pw_panel]
+        scalar b`covar'`var'_d_d=e(b)[1,1]
+        scalar `covar'pval`var'_dd=r(table)[4,1]
 
-        foreach suffix in _aa _ad _da _cc {
+        matrix b`covar'`var'=(b`covar'`var'_a_a\ b`covar'`var'_a_d \ b`covar'`var'_d_a \ b`covar'`var'_d_d)
+        matrix rownames b`covar'`var' = `var'_a_a `var'_a_d `var'_d_a `var'_d_d
+        
+        // p-values:
+        foreach suffix in _aa _ad _da _dd {
                 
             if (`covar'pval`var'`suffix'<=0.1 & `covar'pval`var'`suffix'>0.05)  {
                 matrix mstr`covar'`var'`suffix' = (3)      // significant at 10% level
@@ -146,7 +154,7 @@ foreach covar in $hhcovar {
             }
         }
 
-        matrix mstr`covar'`var' = (mstr`covar'`var'_aa\ mstr`covar'`var'_ad\ mstr`covar'`var'_da\ mstr`covar'`var'_cc)
+        matrix mstr`covar'`var' = (mstr`covar'`var'_aa\ mstr`covar'`var'_ad\ mstr`covar'`var'_da\ mstr`covar'`var'_dd)
 
         matrix A1`covar' = nullmat(A1`covar')\ b`covar'`var'
 
