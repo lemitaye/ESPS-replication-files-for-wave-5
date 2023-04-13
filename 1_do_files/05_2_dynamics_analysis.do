@@ -20,11 +20,21 @@ for var hhd_treadle-hhd_ploc hhd_cross-hhd_grass lr_livIA-sr_grass ///
 
 order hhd_psnp, after(ead_impccr)
 
+gen hhd_fruitrees=., after( hhd_papaya )
+replace hhd_fruitrees=0 if hhd_avocado==0 & hhd_mango==0 & hhd_papaya==0
+replace hhd_fruitrees=1 if hhd_avocado==1 | hhd_mango==1 | hhd_papaya==1
+label variable hhd_fruitrees "Avocado, Mango, or Papaya tree"
+
 for var hh_ea-hhd_psnp: rename X X_w4
 
 preserve
     use "${data}/wave5_hh_new.dta", clear
     drop sh_*
+
+    gen hhd_fruitrees=., after( hhd_papaya )
+    replace hhd_fruitrees=0 if hhd_avocado==0 & hhd_mango==0 & hhd_papaya==0
+    replace hhd_fruitrees=1 if hhd_avocado==1 | hhd_mango==1 | hhd_papaya==1
+    label variable hhd_fruitrees "Avocado, Mango, or Papaya tree"
 
     rename hhd_cross_largerum hhd_crlr
     rename hhd_cross_smallrum hhd_crsr
@@ -55,8 +65,8 @@ drop hhd_livIA_publ_w5 hhd_livIA_priv_w5
 #delimit ;
 global hhinnov     
 hhd_ofsp hhd_awassa83 hhd_rdisp hhd_motorpump hhd_swc hhd_consag1 hhd_consag2 
-hhd_affor hhd_mango hhd_papaya hhd_avocado hhd_livIA hhd_crlr hhd_crsr hhd_crpo
-hhd_elepgrass hhd_grass hhd_psnp 
+hhd_affor hhd_mango hhd_papaya hhd_avocado hhd_fruitrees hhd_livIA hhd_crlr 
+hhd_crsr hhd_crpo hhd_elepgrass hhd_grass hhd_psnp 
 hhd_impcr13 hhd_impcr19 hhd_impcr11 hhd_impcr24  
 hhd_impcr14 hhd_impcr3 hhd_impcr5 hhd_impcr60 hhd_impcr62 
 ;
