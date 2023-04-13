@@ -73,7 +73,7 @@ foreach var in $hhinnov {
     est clear
     estpost tab `var'_*
 
-    esttab . using "${tables}/05_2_adoption_matrix_`var'.tex", replace ///
+    esttab . using "${tmp}/dynamics/tables/05_2_adoption_matrix_`var'.tex", replace ///
         cell(b pct(fmt(2) par) par) unstack noobs nonumber mtitle("Wave 5") ///
         collabels(none) modelwidth(15) ///
         label booktabs title("`lbl'") eqlabels(, lhs("Wave 4"))
@@ -100,7 +100,6 @@ foreach var in $hhinnov {
 
 rename nom_totcons_aeq nmtotcons
 rename income_offfarm incofffarm
-rename hhd_sweetpotato hhd_sp
 rename  total_cons_ann_win totconswin
 
 #delimit;
@@ -112,59 +111,59 @@ consq2 asset_index pssetindex incofffarm
 
 matrix drop _all
  
-foreach var in $hhinnov {
+foreach covar in $hhcovar {
 
-    foreach covar in $hhcovar {
+    foreach var in $hhinnov {
 
         qui: reg `covar' `var'_a_a `var'_a_d `var'_d_a [pw=pw_panel]
 
-        matrix b`var'`covar'=e(b)'
+        matrix b`covar'`var'=e(b)'
 
         // extract p-values:
         matrix p_mat = r(table)[4,1..4]
 
-        scalar `var'pval`covar'_aa=p_mat[1,1]
-        scalar `var'pval`covar'_ad=p_mat[1,2]
-        scalar `var'pval`covar'_da=p_mat[1,3]
-        scalar `var'pval`covar'_cc=p_mat[1,4]
+        scalar `covar'pval`var'_aa=p_mat[1,1]
+        scalar `covar'pval`var'_ad=p_mat[1,2]
+        scalar `covar'pval`var'_da=p_mat[1,3]
+        scalar `covar'pval`var'_cc=p_mat[1,4]
 
         foreach suffix in _aa _ad _da _cc {
                 
-            if (`var'pval`covar'`suffix'<=0.1 & `var'pval`covar'`suffix'>0.05)  {
-                matrix mstr`var'`covar'`suffix' = (3)      // significant at 10% level
+            if (`covar'pval`var'`suffix'<=0.1 & `covar'pval`var'`suffix'>0.05)  {
+                matrix mstr`covar'`var'`suffix' = (3)      // significant at 10% level
             }
             
-            if (`var'pval`covar'`suffix'  <=0.05 & `var'pval`covar'`suffix'>0.01)  {
-                matrix mstr`var'`covar'`suffix' = (2)      // significant at 5% level
+            if (`covar'pval`var'`suffix'  <=0.05 & `covar'pval`var'`suffix'>0.01)  {
+                matrix mstr`covar'`var'`suffix' = (2)      // significant at 5% level
             }
             
-            if `var'pval`covar'`suffix'  <=0.01 {
-                matrix mstr`var'`covar'`suffix' = (1)      // significant at 1% level
+            if `covar'pval`var'`suffix'  <=0.01 {
+                matrix mstr`covar'`var'`suffix' = (1)      // significant at 1% level
             }
             
-            if `var'pval`covar'`suffix'   >0.1 {
-                matrix mstr`var'`covar'`suffix' = (0)       // Non-significant
+            if `covar'pval`var'`suffix'   >0.1 {
+                matrix mstr`covar'`var'`suffix' = (0)       // Non-significant
             }
         }
 
-        matrix mstr`var'`covar' = (mstr`var'`covar'_aa\ mstr`var'`covar'_ad\ mstr`var'`covar'_da\ mstr`var'`covar'_cc)
+        matrix mstr`covar'`var' = (mstr`covar'`var'_aa\ mstr`covar'`var'_ad\ mstr`covar'`var'_da\ mstr`covar'`var'_cc)
 
-        matrix A1`var' = nullmat(A1`var')\ b`var'`covar'
+        matrix A1`covar' = nullmat(A1`covar')\ b`covar'`var'
 
-        matrix A1`var'_STARS =  nullmat(A1`var'_STARS)\mstr`var'`covar'`suffix'
+        matrix A1`covar'_STARS =  nullmat(A1`covar'_STARS)\mstr`covar'`var'`suffix'
 
     }
 
-    matrix colnames A1`var' = `var'
+    matrix colnames A1`covar' = `covar'
 
-    matrix C = (nullmat(C), A1`var')
-    matrix C_STARS = (nullmat(C_STARS), A1`var'_STARS)
+    matrix C = (nullmat(C), A1`covar')
+    matrix C_STARS = (nullmat(C_STARS), A1`covar'_STARS)
 
 }
 
 local cname ""
-foreach var in $hhinnov {
-    local lbl : variable label `var'_w4
+foreach covar in $hhcovar {
+    local lbl : variable label `covar'
     local cname `" `cname' "`lbl'" "'		
 }
 /*
