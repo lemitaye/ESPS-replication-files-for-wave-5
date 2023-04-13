@@ -12,7 +12,7 @@
 
 use "${supp}/replication_files/3_report_data/ess4_pp_cov_new.dta", clear
 
-drop sh_* s2* s3* s4* cs* 
+drop sh_* s2* s3* s4* 
 
 // recode 100 to 1 for dummies for consistency:
 for var hhd_treadle-hhd_ploc hhd_cross-hhd_grass lr_livIA-sr_grass ///
@@ -25,6 +25,11 @@ replace hhd_fruitrees=0 if hhd_avocado==0 & hhd_mango==0 & hhd_papaya==0
 replace hhd_fruitrees=1 if hhd_avocado==1 | hhd_mango==1 | hhd_papaya==1
 label variable hhd_fruitrees "Avocado, Mango, or Papaya tree"
 
+gen hhd_beansall=., after( ead_impcr19 )
+replace hhd_beansall=0 if hhd_impcr9==0 & hhd_impcr12==0 & hhd_impcr13==0 & hhd_impcr18==0 & hhd_impcr19==0
+replace hhd_beansall=1 if hhd_impcr9==1 |hhd_impcr12==1 |hhd_impcr13==1 |hhd_impcr18==1 |hhd_impcr19==0
+label variable hhd_beansall "Improved BEANS: Mung, Haricot, Horse, Soya, or Red Kidney"
+
 for var hh_ea-hhd_psnp: rename X X_w4
 
 preserve
@@ -35,6 +40,11 @@ preserve
     replace hhd_fruitrees=0 if hhd_avocado==0 & hhd_mango==0 & hhd_papaya==0
     replace hhd_fruitrees=1 if hhd_avocado==1 | hhd_mango==1 | hhd_papaya==1
     label variable hhd_fruitrees "Avocado, Mango, or Papaya tree"
+
+    gen hhd_beansall=., after( ead_impcr19 )
+    replace hhd_beansall=0 if hhd_impcr9==0 & hhd_impcr12==0 & hhd_impcr13==0 & hhd_impcr18==0 & hhd_impcr19==0
+    replace hhd_beansall=1 if hhd_impcr9==1 |hhd_impcr12==1 |hhd_impcr13==1 |hhd_impcr18==1 |hhd_impcr19==0
+    label variable hhd_beansall "Improved BEANS: Mung, Haricot, Horse, Soya, or Red Kidney"
 
     rename hhd_cross_largerum hhd_crlr
     rename hhd_cross_smallrum hhd_crsr
@@ -67,8 +77,8 @@ global hhinnov
 hhd_ofsp hhd_awassa83 hhd_rdisp hhd_motorpump hhd_swc hhd_consag1 hhd_consag2 
 hhd_affor hhd_mango hhd_papaya hhd_avocado hhd_fruitrees hhd_livIA hhd_crlr 
 hhd_crsr hhd_crpo hhd_elepgrass hhd_grass hhd_psnp 
-hhd_impcr13 hhd_impcr19 hhd_impcr11 hhd_impcr24  
-hhd_impcr14 hhd_impcr3 hhd_impcr5 hhd_impcr60 hhd_impcr62 
+hhd_impcr1 hhd_impcr2 hhd_impcr6 hhd_impcr8 hhd_beansall
+hhd_impcr10 hhd_impcr11 hhd_impcr24 hhd_impcr14 hhd_impcr3 hhd_impcr5 
 ;
 #delimit cr
 
