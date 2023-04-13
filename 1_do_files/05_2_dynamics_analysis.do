@@ -209,18 +209,6 @@ replace ca_mt_ad = 0 if hhd_consag1_a_d==1 & (no_compntca_mtw5==0 | no_compntca_
 replace ca_mt_ad = 1 if hhd_consag1_a_d==1 & no_compntca_mtw5==1
 replace ca_mt_ad = 2 if hhd_consag1_a_d==1 & (no_compntca_mtw5==2 | no_compntca_mtw5==3)
 
+tab ca_mt_da
+tab ca_mt_ad
 
-// CA with zero tillage
-
-gen no_compntca_ztw4 = hhd_rotlegume_w4 + hhd_cresidue2_w4 + hhd_zerotill_w4
-gen no_compntca_ztw5 = hhd_rotlegume_w5 + hhd_cresidue2_w5 + hhd_zerotill_w4
-
-gen ca_zt_da = .
-replace ca_zt_da = 0 if hhd_consag2_d_a==1 & (no_compntca_ztw4==0 | no_compntca_ztw4==.)
-replace ca_zt_da = 1 if hhd_consag2_d_a==1 & no_compntca_ztw4==1
-replace ca_zt_da = 2 if hhd_consag2_d_a==1 & (no_compntca_ztw4==2 | no_compntca_ztw4==3)
-
-gen ca_zt_ad = .
-replace ca_zt_ad = 0 if hhd_consag2_a_d==1 & (no_compntca_ztw5==0 | no_compntca_ztw5==.)
-replace ca_zt_ad = 1 if hhd_consag2_a_d==1 & no_compntca_ztw5==1
-replace ca_zt_ad = 2 if hhd_consag2_a_d==1 & (no_compntca_ztw5==2 | no_compntca_ztw5==3)
