@@ -361,7 +361,22 @@ merge 1:1 ea_id using "${data}\ess5_dna_ea_new"
 
 drop if _m==2
 drop _merge
+/
+* merge with psnp at EA level -----
+merge 1:1 ea_id using "${data}/ess5_ea_psnp.dta"
+/*
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                           219
+        from master                         3  (_merge==1)
+        from using                        216  (_merge==2)
+
+    Matched                               219  (_merge==3)
+    -----------------------------------------
+*/
+keep if _merge==1 | _merge==3
+drop _merge
 
 
-save "${data}\wave5_ea_new", replace
-save "${data}\ess5_pp_ea_new", replace
+save "${data}/wave5_ea_new.dta", replace
+save "${data}/ess5_pp_ea_new.dta", replace
