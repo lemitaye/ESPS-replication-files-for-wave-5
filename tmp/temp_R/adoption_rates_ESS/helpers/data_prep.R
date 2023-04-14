@@ -41,7 +41,9 @@ adoption_rates <- bind_rows(
       "Motor pump used for irrigation" = "Motorized pumps",
       "Motor pump" = "Motorized pumps",
       "Conservation Agriculture - using Minimum tillage" = "Conservation Agriculture - using minimum tillage",
-      "Conservation Agriculture - using Zero tillage" = "Conservation Agriculture - using zero tillage"
+      "Conservation Agriculture - using Zero tillage" = "Conservation Agriculture - using zero tillage",
+      "At least 1 hh benefitting from PSNP" = "At least 1 member/hh benefitting from PSNP",
+      "At least 1 member benefitting from PSNP" = "At least 1 member/hh benefitting from PSNP"
     ))
 
 labels_vec <- unique(adoption_rates$label)
