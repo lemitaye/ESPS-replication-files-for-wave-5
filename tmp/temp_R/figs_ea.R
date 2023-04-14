@@ -14,11 +14,15 @@ setwd("C:/Users/l.daba/OneDrive/SPIA/Ethiopia")
 wave4_ea_new <- read_dta("replication_files/3_report_data/wave4_ea_new.dta")
 wave5_ea_new <- read_dta("LSMS_W5/3_report_data/wave5_ea_new.dta")
 
+ess4_ea_psnp <- read_dta("replication_files/3_report_data/ess4_ea_psnp.dta") %>% 
+  select(ea_id, ead_psnp, sh_ea_psnp)
+
 wave4_ea_new <- wave4_ea_new %>% 
   mutate(ead_grass = case_when(
     ead_elepgrass==100 | ead_sasbaniya==100 | ead_alfa==100 ~ 1,
     ead_elepgrass==0 & ead_sasbaniya==0 & ead_alfa==0 ~ 0 
-  )) 
+  )) %>% 
+  left_join(ess4_ea_psnp, by = "ea_id")
 
 wave5_ea_new <- wave5_ea_new %>% 
   mutate(ead_grass = case_when(
@@ -52,7 +56,7 @@ vars_all_ea <- c(
   "ead_sesbaniya", "ead_sinar", "ead_lablab", "ead_alfalfa", "ead_vetch", 
   "ead_rhodesgrass", "ead_grass", "commirr", "comm_video", "comm_video_all", 
   "comm_2wt_own", "comm_2wt_use", "comm_psnp", "ead_mintillage", 
-  "ead_zerotill", "ead_cresidue2", "ead_rotlegume"
+  "ead_zerotill", "ead_cresidue2", "ead_rotlegume", "ead_psnp"
 )
 
 vars_both_ea <- wave4_ea_new %>% 
