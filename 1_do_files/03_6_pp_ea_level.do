@@ -361,7 +361,7 @@ merge 1:1 ea_id using "${data}\ess5_dna_ea_new"
 
 drop if _m==2
 drop _merge
-/
+
 * merge with psnp at EA level -----
 merge 1:1 ea_id using "${data}/ess5_ea_psnp.dta"
 /*

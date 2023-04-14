@@ -76,7 +76,7 @@ gen sh_ea_psnp=hhea_psnp/hh_ea
 
 collapse (max) ead_psnp sh_ea_psnp (firstnm) saq14 saq01 pw_w5, by(ea_id)
 
-label var ead_psnp   "Perc. of EA with at least 1 hh benefitting from PSNP"
+label var ead_psnp   "At least 1 hh benefitting from PSNP"
 label var sh_ea_psnp "Perc. of hh per EA benefitting from PSNP"
 label var pw_w5      "Sampling weight - wave 5" 
 label var saq14      "Rural/Urban"
