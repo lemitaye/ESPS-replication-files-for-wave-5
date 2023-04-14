@@ -1,33 +1,23 @@
 #
-# This is a Shiny web application. You can run the application by clicking
-# the 'Run App' button above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
+# Created on: April 11, 2023
 
+
+# load packages ----
 library(shiny)
 library(tidyverse)
 library(scales)
 # library(plotly)
 
-adopt_rates_all_hh <- read_csv("data/adopt_rates_all_hh.csv")
+# source scripts ----
+source("helpers/data_prep.R")
+source("helpers/ggplot_theme_Publication-2.R")
 
-adopt_rates_panel_hh <- read_csv("data/adopt_rates_panel_hh.csv")
 
-adoption_rates <- bind_rows(
-  adopt_rates_all_hh %>% 
-    mutate(sample = "All households"),
-  adopt_rates_panel_hh %>% 
-    mutate(sample = "Panel households")
-) %>% 
-  mutate(
-    region = fct_relevel(region, 
-                         "Amhara", "Oromia", "SNNP", "Other regions", "National")
-    ) 
+# next steps: 
+# - add psnp at EA level
+# - add maize DNA
+# 
 
-labels <- unique(adoption_rates$label)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -41,15 +31,16 @@ ui <- fluidPage(
       
       selectInput("var", 
                   label = "Choose a variable to display",
-                  choices = labels,
-                  selected = "Afforestation"),
+                  choices = labels_choices,
+                  multiple = TRUE,
+                  selected = NULL),
       
       radioButtons("type",
                    label = "Choose sample type to display",
                    choices = list(
-                     "All households", 
-                     "Panel households"),
-                   selected = "All households")
+                     "All households/EA", 
+                     "Panel households/EA"),
+                   selected = "All households/EA")
      
     ),
     
@@ -64,9 +55,8 @@ server <- function(input, output) {
       
       adoption_rates %>% 
         filter(
-          label == input$var, 
-          sample == input$type,
-          region != "Tigray"
+          label %in% input$var, 
+          sample == input$type
           ) %>% 
         ggplot(aes(region, mean, fill = wave)) +
         geom_col(position = "dodge") +
@@ -76,7 +66,15 @@ server <- function(input, output) {
         scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
         scale_y_continuous(labels = percent_format()) +
         expand_limits(y = .15) +
-        theme(legend.position = "top") +
+        facet_grid(label ~ level) +
+        scale_fill_Publication() + 
+        theme_Publication() +
+        theme(
+          legend.position = "top",
+          legend.margin = margin(t = -0.4, unit = "cm"),
+          axis.title = element_text(size = 12.5),
+          plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
+        ) +
         labs(x = "", y = "Percent",
              title = "Add title",
              fill = "",

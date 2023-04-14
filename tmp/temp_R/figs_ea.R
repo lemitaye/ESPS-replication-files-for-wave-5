@@ -136,6 +136,15 @@ regions_ea_level <- bind_rows(
   left_join(labels, by = "variable") %>% 
   select(wave, region, variable, label, mean, nobs)
 
+adopt_rates_all_ea <- bind_rows(
+  regions_ea_level, 
+  national_ea_level %>% 
+    mutate(region = "National")
+)
+
+write_csv(adopt_rates_all_ea, 
+          file = file.path("LSMS_W5/tmp/temp_R", "adopt_rates_all_ea.csv"))
+
 
 panel_ea_w4 <- semi_join(
   x = ea_level_w4,
@@ -149,6 +158,16 @@ panel_ea_w5 <- semi_join(
   by = "ea_id"
 )
 
+regions_ea_panel <- bind_rows(
+  mean_tbl(panel_ea_w4, vars_both_ea) %>% 
+    mutate(wave = "Wave 4"),
+  mean_tbl(panel_ea_w5, vars_both_ea) %>% 
+    mutate(wave = "Wave 5")
+) %>% 
+  mutate(wave = fct_relevel(wave, "Wave 5", "Wave 4")) %>% 
+  left_join(labels, by = "variable") %>% 
+  select(wave, region, variable, label, mean, nobs)
+
 national_ea_panel <- bind_rows(
   mean_tbl(panel_ea_w4, vars_both_ea, by_region = FALSE) %>% 
     mutate(wave = "Wave 4"),
@@ -159,7 +178,18 @@ national_ea_panel <- bind_rows(
   left_join(labels, by = "variable") %>% 
   select(wave, variable, label, mean, nobs)
 
+adopt_rates_panel_ea <- bind_rows(
+  regions_ea_panel, 
+  national_ea_panel %>% 
+    mutate(region = "National")
+)
 
+write_csv(adopt_rates_panel_ea, 
+          file = file.path("LSMS_W5/tmp/temp_R", "adopt_rates_panel_ea.csv"))
+
+
+
+# plots ----
 
 plot_compar_ea <- function(tbl, title, xlim = .8) {
   
