@@ -22,17 +22,17 @@ source("helpers/ggplot_theme_Publication-2.R")
 # Define UI for application that draws a histogram
 ui <- fluidPage(
 
-  titlePanel("Comparing adoption rates of CGIAR across waves in the ESPS"),
+  titlePanel("Comparing adoption rates of CGIAR innovations across waves in the ESPS"),
   
   sidebarLayout(
     sidebarPanel(
       helpText("Create bar graphs comparing adoption rates from the Ethiopian 
-               Socio-economic Panle Survey."),
+               Socio-economic Panle Survey (ESPS)."),
       
       selectInput("var", 
                   label = "Choose a variable to display",
                   choices = labels_choices,
-                  multiple = TRUE,
+                  multiple = FALSE,
                   selected = NULL),
       
       radioButtons("type",
@@ -50,23 +50,31 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+  
+  filteredData <- reactive({
+    adoption_rates %>% 
+      filter(
+        label %in% input$var, 
+        sample == input$type
+      )
+  })
+  
+  maxGrid <- reactive({
+    filteredData() %>% slice_max(mean) %>% pull(mean)
+  })
 
     output$plot <- renderPlot({
       
-      adoption_rates %>% 
-        filter(
-          label %in% input$var, 
-          sample == input$type
-          ) %>% 
+      filteredData() %>% 
         ggplot(aes(region, mean, fill = wave)) +
         geom_col(position = "dodge") +
-        # geom_text(aes(label = paste0( round(mean_chickpea*100, 1), "%", "\n(", nobs, ")" ) ),
-        #           position = position_dodge(width = 1),
-        #           vjust = -.35, size = 2.5) +
+        geom_text(aes(label = paste0( round(mean*100, 1), "%", "\n(", nobs, ")" ) ),
+                  position = position_dodge(width = 1),
+                  vjust = -.35, size = 3) +
         scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
         scale_y_continuous(labels = percent_format()) +
-        expand_limits(y = .15) +
-        facet_grid(label ~ level) +
+        expand_limits(y = maxGrid() + .15) +
+        facet_wrap(~ level, ncol=2) +
         scale_fill_Publication() + 
         theme_Publication() +
         theme(
@@ -76,13 +84,13 @@ server <- function(input, output) {
           plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
         ) +
         labs(x = "", y = "Percent",
-             title = "Add title",
+             title = input$var,
              fill = "",
-             caption = "Percent are weighted sample means.
-       Number of responding households in parenthesis")
+             caption = "Percent at the household level are weighted sample means.
+             Number of observations in parenthesis.")
       
       
-    })
+    }, height = 450)
 }
 
 # Run the application 
