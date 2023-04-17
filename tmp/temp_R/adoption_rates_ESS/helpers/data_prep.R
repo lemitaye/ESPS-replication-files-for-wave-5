@@ -9,6 +9,11 @@ adopt_rates_all_ea <- read_csv("data/innov_ea_all.csv")
 
 adopt_rates_panel_ea <- read_csv("data/innov_ea_panel.csv")
 
+dna_means_hh <- read_csv("data/dna_means_hh.csv")
+
+dna_means_ea <- read_csv("data/dna_means_ea.csv")
+
+
 
 # cleaning ----
 
@@ -20,14 +25,17 @@ adoption_rates <- bind_rows(
   adopt_rates_all_ea %>% 
     mutate(sample = "All households/EA", level = "EA"),
   adopt_rates_panel_ea %>% 
-    mutate(sample = "Panel households/EA", level = "EA")
+    mutate(sample = "Panel households/EA", level = "EA"),
+  dna_means_hh,
+  dna_means_ea
 ) %>% 
+  filter(region != "Tigray") %>% 
   mutate(
-    region = fct_relevel(region, 
-                         "Amhara", "Oromia", "SNNP", "Other regions", "National"),
+    region = fct_relevel(
+      region, 
+      "Amhara", "Oromia", "SNNP", "Other regions", "Harar", "Dire Dawa", "National"),
     level = fct_rev(level)
-  ) %>% 
-  filter(region != "Tigray") #%>% 
+  ) #%>% 
   # mutate(
   #   label = recode(
   #     label,
