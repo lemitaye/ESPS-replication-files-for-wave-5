@@ -9,7 +9,7 @@
 ********************************************************************************
 
 
-use "${data}/06_1_ess5_dna_plot.dta", clear
+use "${data}/03_5_ess5_dna_plot.dta", clear
 
 * CG - germplasm recode
 g       cg=0 if cg_source=="No"

@@ -3,7 +3,7 @@
 * EA - LEVEL ANALYSIS *
 ********************************************************************************
 
-use "${data}\wave5_hh_new", clear
+use "${data}/wave5_hh_new.dta", clear
 
 // livIA elepgrass gaya sasbaniya alfa indprod cross grass [livestock vars.]
 foreach i in  treadle motorpump rotlegume cresidue1 cresidue2 mintillage ///
@@ -332,7 +332,7 @@ lab var sh_ea_poultry_o   "Poultry crossbred"
 
 
 
-merge 1:1 ea_id using "${data}\ess5_community_new"
+merge 1:1 ea_id using "${data}/ess5_community_new.dta"
 /*
     Result                      Number of obs
     -----------------------------------------
@@ -347,7 +347,7 @@ merge 1:1 ea_id using "${data}\ess5_community_new"
 drop if _m==2
 drop _merge
 
-merge 1:1 ea_id using "${data}\ess5_dna_ea_new"
+merge 1:1 ea_id using "${data}/ess5_dna_ea_new.dta"
 /*
     Result                      Number of obs
     -----------------------------------------

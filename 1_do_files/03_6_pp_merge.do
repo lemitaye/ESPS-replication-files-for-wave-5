@@ -107,12 +107,18 @@ merge 1:1 household_id using "${rawdata}/HH/ESS5_weights_hh.dta", keepusing(pw_p
 keep if _merge==1 | _merge==3
 drop _merge
 
-* Merge with psnp data:
+* Merge with psnp data ----
 merge 1:1 household_id using "${data}/ess5_hh_psnp.dta", keepusing(hhd_psnp)
 keep if _merge==1 | _merge==3
 drop _merge 
 
 order holder_id-pw_w5 pw_panel
+
+* Merge with DNA data ----
+merge 1:1 household_id using "${data}/03_5_ess5_dna_hh.dta", keepusing(qpm_status dtmz maize_cg)
+keep if _merge==1 | _merge==3
+drop _merge 
+
 
 * Final cleaning:
 

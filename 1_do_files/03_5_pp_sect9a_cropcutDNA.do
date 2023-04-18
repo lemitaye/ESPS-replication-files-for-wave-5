@@ -162,9 +162,9 @@ lab var dtmz      "Drought Tolerant Maize"
 lab var qpm       "Quality Protein Maize"
 lab var maize_cg  "Maize CG-germplasm"
 
-save "${data}/06_1_ess5_dna_plot.dta", replace
+save "${data}/03_5_ess5_dna_plot.dta", replace
  
-/*
+
 * A file collapsed at the household level: 
 
 #delimit ;
@@ -172,5 +172,9 @@ collapse (max) sccq01 sccq01b panel_EA panel_hh qpm dtmz maize_cg (firstnm)
 pw_w5 region saq12 ea_id wave, by(household_id) ;
 #delimit cr
 
-save "${output}/01_3_ess5_dna_hh.dta", replace
+lab var dtmz      "Drought Tolerant Maize"
+lab var qpm       "Quality Protein Maize"
+lab var maize_cg  "Maize CG-germplasm"
+
+save "${data}/03_5_ess5_dna_hh.dta", replace
 
