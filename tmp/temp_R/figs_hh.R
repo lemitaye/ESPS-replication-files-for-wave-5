@@ -41,8 +41,10 @@ vars_all <- c(
   "hhd_seedv1", "hhd_seedv2", "hhd_livIA", "hhd_livIA_publ", 
   "hhd_livIA_priv", "hhd_cross_largerum", "hhd_cross_smallrum", 
   "hhd_cross_poultry", "hhd_grass", "hhd_mintillage", "hhd_zerotill", 
-  "hhd_cresidue2", "hhd_rotlegume", "hhd_psnp"
+  "hhd_cresidue2", "hhd_rotlegume", "hhd_psnp", "hhd_impcr1", "hhd_impcr2", 
+  "hhd_impcr6", "hhd_impcr8"
   )
+
 
 vars_both <- wave4_hh_new %>% 
   select(any_of(vars_all)) %>% 
@@ -150,7 +152,7 @@ adopt_rates_all_hh <- bind_rows(
     mutate(region = "National")
 )
 
-write_csv(adopt_rates_all_hh, file = "./adopt_rates_all_hh.csv")
+write_csv(adopt_rates_all_hh, file = "adoption_rates_ESS/data/adopt_rates_all_hh.csv")
 
 
 # ONLY FOR PANEL HOUSEHOLDS: ####
@@ -170,28 +172,20 @@ hh_level_panel <- inner_join(
   left_join(labels, by = "variable")  
 
 regions_hh_panel <- hh_level_panel %>% 
-  group_by(wave, region, label) %>% 
+  group_by(wave, region, variable, label) %>% 
   summarise(
     mean = weighted.mean(value, w = pw_panel, na.rm = TRUE),
     nobs = sum(!is.na(value)),
     .groups = "drop"
-  ) %>% 
-  mutate(improv = case_when(
-    str_detect(label, "Improved") ~ 1,
-    TRUE ~ 0
-  ))
+  ) 
 
 national_hh_panel <- hh_level_panel %>% 
-  group_by(wave, label) %>% 
+  group_by(wave, variable, label) %>% 
   summarise(
     mean = weighted.mean(value, w = pw_panel, na.rm = TRUE),
     nobs = sum(!is.na(value)),
     .groups = "drop"
-  ) %>% 
-  mutate(improv = case_when(
-    str_detect(label, "Improved") ~ 1,
-    TRUE ~ 0
-  ))
+  ) 
 
 
 adopt_rates_panel_hh <- bind_rows(
@@ -200,7 +194,7 @@ adopt_rates_panel_hh <- bind_rows(
     mutate(region = "National")
 )
 
-write_csv(adopt_rates_panel_hh, file = "./adopt_rates_panel_hh.csv")
+write_csv(adopt_rates_panel_hh, file = "adoption_rates_ESS/data/adopt_rates_panel_hh.csv")
 
 
 
@@ -212,12 +206,12 @@ collapse_ea <- function(tbl) {
   tbl %>% 
     summarise(
       n = n(),
-      across(hhd_ofsp:hhd_psnp, ~max(.x, na.rm = TRUE) ),
+      across(hhd_ofsp:hhd_impcr8, ~max(.x, na.rm = TRUE) ),
       .groups = "drop"
     ) %>% 
     modify(~ifelse(is.infinite(.), 0, .)) %>% 
     rename_with(~str_replace(., "hhd_", "ead_"), starts_with("hhd_")) %>% 
-    pivot_longer(ead_ofsp:ead_psnp, names_to = "variable", values_to = "value") 
+    pivot_longer(ead_ofsp:ead_impcr8, names_to = "variable", values_to = "value") 
 }
 
 
@@ -321,52 +315,8 @@ innov_ea_panel <- bind_rows(
                          "Amhara", "Oromia", "SNNP", "Other regions", "National")
   )
 
-innov_ea_panel %>% 
-  filter(
-    region != "Tigray",
-    variable == "ead_psnp"
-  ) %>% 
-  ggplot(aes(region, mean, fill = wave)) +
-  geom_col(position = "dodge") +
-  geom_text(aes(label = paste0( round(mean*100, 1), "%", "\n(", nobs, ")" ) ),
-            position = position_dodge(width = 1),
-            vjust = -.35, size = 2.5) +
-  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
-  scale_y_continuous(labels = percent_format()) +
-  expand_limits(y = .15) +
-  labs(x = "", y = "Percent",
-       title = "New version",
-       fill = "",
-       caption = "Percent at the household level are weighted sample means.")
-
-adopt_rates_panel_ea %>% 
-  mutate(
-    region = fct_relevel(region, 
-                         "Amhara", "Oromia", "SNNP", "Other regions", "National")
-  ) %>% 
-  filter(
-    region != "Tigray",
-    variable == "ead_psnp"
-  ) %>% 
-  ggplot(aes(region, mean, fill = wave)) +
-  geom_col(position = "dodge") +
-  geom_text(aes(label = paste0( round(mean*100, 1), "%", "\n(", nobs, ")" ) ),
-            position = position_dodge(width = 1),
-            vjust = -.35, size = 2.5) +
-  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
-  scale_y_continuous(labels = percent_format()) +
-  expand_limits(y = .15) +
-  labs(x = "", y = "Percent",
-       title = "Add title",
-       fill = "",
-       caption = "Percent at the household level are weighted sample means.")
 
 write_csv(innov_ea_panel, "adoption_rates_ESS/data/innov_ea_panel.csv")
-
-
-
-
-
 
 
 

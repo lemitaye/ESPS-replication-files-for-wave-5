@@ -14,9 +14,8 @@ source("helpers/ggplot_theme_Publication-2.R")
 
 
 # next steps: 
-# - add psnp at EA level
-# - add maize DNA
-# 
+# - a button to show numbers/percents
+# - facets?
 
 
 # Define UI for application that draws a histogram
