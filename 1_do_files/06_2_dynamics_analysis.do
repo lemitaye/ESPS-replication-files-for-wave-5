@@ -72,13 +72,75 @@ drop _merge
 
 drop hhd_livIA_publ_w5 hhd_livIA_priv_w5
 
+
+* Adding vars from DNA data ----
+
+preserve
+    use "${supp}/replication_files/3_report_data/misclassification_plot_new.dta", clear
+
+    keep if maize==1
+    drop barley_* sorghum_*
+
+    gen correct_w4=.
+    replace correct_w4=1 if maize_tp1==1 | maize_tn1==1
+    replace correct_w4=0 if maize_fp1==1 | maize_fn1==1
+
+    gen     cg_w4=0 if cg_source=="No"
+    replace cg_w4=1 if cg_source=="Yes"
+
+    collapse (max) cg_w4 correct_w4, by(household_id)
+
+    tempfile correct_hh_w4
+    save `correct_hh_w4'
+restore
+
+preserve
+    use "${tmp}/missclass/06_3_misclass_year.dta", clear
+
+    gen correct_w5=.
+    replace correct_w5=1 if maize_tp1==1 | maize_tn1==1
+    replace correct_w5=0 if maize_fp1==1 | maize_fn1==1
+
+    gen     cg_w5=0 if cg_source=="No"
+    replace cg_w5=1 if cg_source=="Yes"
+
+    collapse (max) cg_w5 correct_w5, by(household_id)
+
+    merge 1:1 household_id using `correct_hh_w4'
+    keep if _merge==3
+    drop _merge
+
+    label var cg_w5 "Maize CG-germplasm"
+    label var cg_w4 "Maize CG-germplasm"
+    label var correct_w5 "Correctly classified (TP + TN)"
+    label var correct_w4 "Correctly classified (TP + TN)"
+
+    tempfile correct_hh_dna
+    save `correct_hh_dna'
+restore
+
+
+merge 1:1 household_id using `correct_hh_dna'
+/*
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                         1,724
+        from master                     1,724  (_merge==1)
+        from using                          0  (_merge==2)
+
+    Matched                               228  (_merge==3)
+    -----------------------------------------
+*/
+drop _merge
+
+
 #delimit ;
 global hhinnov     
-hhd_ofsp hhd_awassa83 hhd_rdisp hhd_motorpump hhd_swc hhd_consag1 hhd_consag2 
-hhd_affor hhd_mango hhd_papaya hhd_avocado hhd_fruitrees hhd_livIA hhd_crlr 
-hhd_crsr hhd_crpo hhd_elepgrass hhd_grass hhd_psnp 
-hhd_impcr1 hhd_impcr2 hhd_impcr6 hhd_impcr8 hhd_beansall
-hhd_impcr10 hhd_impcr11 hhd_impcr24 hhd_impcr14 hhd_impcr3 hhd_impcr5 
+    hhd_ofsp hhd_awassa83 hhd_rdisp hhd_motorpump hhd_swc hhd_consag1 hhd_consag2 
+    hhd_affor hhd_mango hhd_papaya hhd_avocado hhd_fruitrees hhd_livIA hhd_crlr 
+    hhd_crsr hhd_crpo hhd_elepgrass hhd_grass hhd_psnp cg correct
+    hhd_impcr1 hhd_impcr2 hhd_impcr6 hhd_impcr8 hhd_beansall
+    hhd_impcr10 hhd_impcr11 hhd_impcr24 hhd_impcr14 hhd_impcr3 hhd_impcr5 
 ;
 #delimit cr
 
@@ -124,8 +186,8 @@ rename  total_cons_ann_win totconswin
 
 #delimit;
 global hhcovar   
-parcesizeHA fem_head fowner flivman hhd_flab  age_head nmtotcons consq1 
-consq2 asset_index pssetindex incofffarm
+    parcesizeHA fem_head fowner flivman hhd_flab age_head yrseduc nmtotcons  
+    consq1 consq2 asset_index pssetindex incofffarm
 ;
 #delimit cr
 

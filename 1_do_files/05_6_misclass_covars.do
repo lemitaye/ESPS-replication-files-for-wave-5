@@ -60,37 +60,4 @@ count if cg_source=="Yes" & year>=2000 & source==2
 count if cg_source=="Yes" & year>=2010 & source==1
 count if cg_source=="Yes" & year>=2010 & source==2
 
-
-* matrix of misclassification --------------------------------------------------
-
-use "${tmp}/missclass/06_3_misclass_year.dta", clear
-
-gen correct_w5=.
-replace correct_w5=1 if maize_tp1==1 | maize_tn1==1
-replace correct_w5=0 if maize_fp1==1 | maize_fn1==1
-
-collapse (max) correct_w5, by(household_id)
-
-preserve
-    use "${supp}/replication_files/3_report_data/misclassification_plot_new.dta", clear
-
-    keep if maize==1
-    drop barley_* sorghum_*
-
-    gen correct_w4=.
-    replace correct_w4=1 if maize_tp1==1 | maize_tn1==1
-    replace correct_w4=0 if maize_fp1==1 | maize_fn1==1
-
-    collapse (max) correct_w4, by(household_id)
-
-    tempfile correct_hh_w4
-    save `correct_hh_w4'
-restore
-
-merge 1:1 household_id using `correct_hh_w4'
-keep if _merge==3
-drop _merge
-
-// table presented 
-tab correct_w4 correct_w5
-
+    
