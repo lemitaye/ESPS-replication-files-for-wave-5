@@ -1,10 +1,12 @@
 
 
+# Depends on: fig_hh.R
+
 ###############################################################################*
 # New innovations incorporated in ESPS5 ####
 ###############################################################################*
 
-w5_hh_new <- wave5_hh_new %>% 
+w5_hh_new <- wave5_8hh_new %>% 
   select(
     household_id, region, pw_w5, all_of(vars_w5)
   ) %>% 
@@ -627,11 +629,255 @@ joint_rate_tbl_panel <- bind_rows(
   )
 
 
+# PSNP: Special edition ----
+
+
+ess4_hh_psnp <- read_dta(file.path(root, w4_dir, "ess4_hh_psnp.dta")) 
+
+ess5_hh_psnp <- read_dta(file.path(root, w5_dir, "ess5_hh_psnp.dta")) %>% 
+  mutate(wave = "Wave 5")
+
+recode_all_regions <- function(tbl, var) {
+  
+  suppressWarnings(
+    tbl %>% 
+      mutate(
+        region = case_match(
+          {{var}}, 
+          1 ~ "Tigray",
+          2 ~ "Afar",
+          3 ~ "Amhara",
+          4 ~ "Oromia",
+          5 ~ "Somali",
+          6 ~ "Benishangul Gumuz",
+          7 ~ "SNNP",
+          12 ~ "Gambela",
+          13 ~ "Harar",
+          14 ~ "Addis Ababa",
+          15 ~ "Dire Dawa"
+          )
+      )
+  )
+  
+}
+
+psnp_w4 <- ess4_hh_psnp %>% 
+  mutate(
+    wave = "Wave 4",
+    locality = recode(saq14, `1` = "Rural", `2` = "Urban")
+    ) %>% 
+  recode_all_regions(saq01) %>% 
+  select(household_id, pw_w4, locality, hhd_psnp, region, wave)
+
+psnp_w5 <- ess5_hh_psnp %>% 
+  mutate(
+    wave = "Wave 5",
+    locality = recode(saq14, `1` = "Rural", `2` = "Urban")
+  ) %>% 
+  recode_all_regions(saq01) %>% 
+  select(household_id, pw_w5, locality, hhd_psnp, region, wave) 
+
+
+psnp_all <- bind_rows(
+  mean_tbl(psnp_w4, "hhd_psnp", group_vars = c("wave", "region"), pw = pw_w4),
+  mean_tbl(psnp_w4, "hhd_psnp", group_vars = c("wave"), pw = pw_w4) %>% 
+    mutate(region = "National"),
+  
+  mean_tbl(psnp_w5, "hhd_psnp", group_vars = c("wave", "region"), pw = pw_w5),
+  mean_tbl(psnp_w5, "hhd_psnp", group_vars = c("wave"), pw = pw_w5) %>% 
+    mutate(region = "National")
+) %>% 
+  mutate(
+    region = fct_relevel(
+      region, 
+      "Tigray", "Afar", "Amhara", "Oromia", "Somali", "Benishangul Gumuz", 
+      "SNNP", "Gambela", "Harar", "Addis Ababa", "Dire Dawa", "National")
+  )
+
+psnp_local <- bind_rows(
+  mean_tbl(psnp_w4, "hhd_psnp", group_vars = c("wave", "region", "locality"), pw = pw_w4),
+  mean_tbl(psnp_w4, "hhd_psnp", group_vars = c("wave", "locality"), pw = pw_w4) %>% 
+    mutate(region = "National"),
+  
+  mean_tbl(psnp_w5, "hhd_psnp", group_vars = c("wave", "region", "locality"), pw = pw_w5),
+  mean_tbl(psnp_w5, "hhd_psnp", group_vars = c("wave", "locality"), pw = pw_w5) %>% 
+    mutate(region = "National")
+) %>% 
+  mutate(
+    region = fct_relevel(
+      region, 
+      "Tigray", "Afar", "Amhara", "Oromia", "Somali", "Benishangul Gumuz", 
+      "SNNP", "Gambela", "Harar", "Addis Ababa", "Dire Dawa", "National")
+  )
+
+
+psnp_all %>% 
+  filter(region != "Tigray") %>% 
+  ggplot(aes(region, mean, fill = wave)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = paste0( round(mean*100, 1), "%", "\n(", nobs, ")" ) ),
+            position = position_dodge(width = 1),
+            vjust = -.35, size = 2.5) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+  scale_y_continuous(labels = percent_format()) +
+  expand_limits(y = .35) +
+  theme(
+    legend.position = "top"#,
+    # legend.margin = margin(t = -0.4, unit = "cm"),
+    # axis.title = element_text(size = 12.5),
+    # plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
+  ) +
+  labs(x = "", y = "Percent", fill = "",
+       title = "PSNP - all households in each wave")
+
+
+ggsave(
+  filename = file.path(root, "LSMS_W5/tmp/figures/psnp_all.pdf"),
+  device = cairo_pdf,
+  width = 180,
+  height = 127,
+  units = "mm"
+)  
+
+
+psnp_local %>% 
+  filter(region != "Tigray") %>% 
+  ggplot(aes(region, mean, fill = wave)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = paste0( round(mean*100, 1), "%", "\n(", nobs, ")" ) ),
+            position = position_dodge(width = 1),
+            vjust = -.35, size = 2.5) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+  scale_y_continuous(labels = percent_format()) +
+  expand_limits(y = .4) +
+  facet_wrap(~ locality, nrow = 2, scales = "free_y") +
+  theme(
+    legend.position = "top"#,
+    # legend.margin = margin(t = -0.4, unit = "cm"),
+    # axis.title = element_text(size = 12.5),
+    # plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
+  ) +
+  labs(x = "", y = "Percent", fill = "",
+       title = "PSNP - all households in each wave by locality")
+
+
+ggsave(
+  filename = file.path(root, "LSMS_W5/tmp/figures/psnp_all_local.pdf"),
+  device = cairo_pdf,
+  width = 180,
+  height = 200,
+  units = "mm"
+)  
+
+
+## PSNP: Only panel hhs ----
+
+
+ess5_weights_hh <- read_dta(file.path(root, "LSMS_W5/2_raw_data/data/HH/ESS5_weights_hh.dta"))
+
+psnp_w4_panel <- psnp_w4 %>% 
+  semi_join(psnp_w5, by = "household_id") %>% 
+  left_join(select(ess5_weights_hh, household_id, pw_panel), 
+            by = "household_id")
+
+psnp_w5_panel <- psnp_w5 %>% 
+  semi_join(psnp_w4, by = "household_id") %>% 
+  left_join(select(ess5_weights_hh, household_id, pw_panel), 
+            by = "household_id")
+
+
+psnp_all_panel <- bind_rows(
+  mean_tbl(psnp_w4_panel, "hhd_psnp", group_vars = c("wave", "region"), pw = pw_panel),
+  mean_tbl(psnp_w4_panel, "hhd_psnp", group_vars = c("wave"), pw = pw_panel) %>% 
+    mutate(region = "National"),
+  
+  mean_tbl(psnp_w5_panel, "hhd_psnp", group_vars = c("wave", "region"), pw = pw_panel),
+  mean_tbl(psnp_w5_panel, "hhd_psnp", group_vars = c("wave"), pw = pw_panel) %>% 
+    mutate(region = "National")
+) %>% 
+  mutate(
+    region = fct_relevel(
+      region, 
+      "Afar", "Amhara", "Oromia", "Somali", "Benishangul Gumuz", 
+      "SNNP", "Gambela", "Harar", "Addis Ababa", "Dire Dawa", "National")
+  )
+
+
+psnp_local_panel <- bind_rows(
+  mean_tbl(psnp_w4_panel, "hhd_psnp", group_vars = c("wave", "region", "locality"), pw = pw_panel),
+  mean_tbl(psnp_w4_panel, "hhd_psnp", group_vars = c("wave", "locality"), pw = pw_panel) %>% 
+    mutate(region = "National"),
+  
+  mean_tbl(psnp_w5_panel, "hhd_psnp", group_vars = c("wave", "region", "locality"), pw = pw_panel),
+  mean_tbl(psnp_w5_panel, "hhd_psnp", group_vars = c("wave", "locality"), pw = pw_panel) %>% 
+    mutate(region = "National")
+) %>% 
+  mutate(
+    region = fct_relevel(
+      region, 
+      "Afar", "Amhara", "Oromia", "Somali", "Benishangul Gumuz", 
+      "SNNP", "Gambela", "Harar", "Addis Ababa", "Dire Dawa", "National")
+  )
+
+
+psnp_all_panel %>% 
+  filter(region != "Tigray") %>% 
+  ggplot(aes(region, mean, fill = wave)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = paste0( round(mean*100, 1), "%", "\n(", nobs, ")" ) ),
+            position = position_dodge(width = 1),
+            vjust = -.35, size = 2.5) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+  scale_y_continuous(labels = percent_format()) +
+  expand_limits(y = .35) +
+  theme(
+    legend.position = "top"#,
+    # legend.margin = margin(t = -0.4, unit = "cm"),
+    # axis.title = element_text(size = 12.5),
+    # plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
+  ) +
+  labs(x = "", y = "Percent", fill = "",
+       title = "PSNP - only panel households")
+
+
+ggsave(
+  filename = file.path(root, "LSMS_W5/tmp/figures/psnp_all_panel.pdf"),
+  device = cairo_pdf,
+  width = 180,
+  height = 127,
+  units = "mm"
+)  
 
 
 
+psnp_local_panel %>% 
+  filter(region != "Tigray") %>% 
+  ggplot(aes(region, mean, fill = wave)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = paste0( round(mean*100, 1), "%", "\n(", nobs, ")" ) ),
+            position = position_dodge(width = 1),
+            vjust = -.35, size = 2.5) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+  scale_y_continuous(labels = percent_format()) +
+  expand_limits(y = .4) +
+  facet_wrap(~ locality, nrow = 2, scales = "free_y") +
+  theme(
+    legend.position = "top"#,
+    # legend.margin = margin(t = -0.4, unit = "cm"),
+    # axis.title = element_text(size = 12.5),
+    # plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
+  ) +
+  labs(x = "", y = "Percent", fill = "",
+       title = "PSNP - panel households by locality")
 
 
+ggsave(
+  filename = file.path(root, "LSMS_W5/tmp/figures/psnp_local_panel.pdf"),
+  device = cairo_pdf,
+  width = 180,
+  height = 200,
+  units = "mm"
+)  
 
 
 

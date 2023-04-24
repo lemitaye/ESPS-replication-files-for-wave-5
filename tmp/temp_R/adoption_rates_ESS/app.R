@@ -61,6 +61,18 @@ server <- function(input, output) {
   maxGrid <- reactive({
     filteredData() %>% slice_max(mean) %>% pull(mean)
   })
+  
+  facetLabs <- reactive({ 
+    if_else(
+    input$type == "All households/EA",
+    c("Household" = "All households", 
+                  "EA" = "All EA"),
+    c("Household" = "Household - panel sample", 
+                  "EA" = "EA - panel sample")
+    ) 
+  })
+    
+  
 
     output$plot <- renderPlot({
       

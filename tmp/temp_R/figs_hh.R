@@ -84,36 +84,20 @@ hh_level_w5 <- wave5_hh_new %>%
   recode_region()
 
 
-mean_tbl <- function(tbl, pw, by_region = TRUE) {
+mean_tbl <- function(tbl, vars = vars_both, group_vars, pw) {
   
-  if (by_region) {
     
     tbl %>% 
-      pivot_longer(all_of(vars_both), 
+      pivot_longer(all_of(vars), 
                    names_to = "variable",
                    values_to = "value") %>% 
-      group_by(wave, region, variable) %>% 
+      group_by(pick(group_vars)) %>% 
       summarise(
         mean = weighted.mean(value, w = {{pw}}, na.rm = TRUE),
         nobs = sum(!is.na(value)),
         .groups = "drop"
       )
     
-  } else {
-    
-    tbl %>% 
-      pivot_longer(all_of(vars_both), 
-                   names_to = "variable",
-                   values_to = "value") %>% 
-      group_by(wave, variable) %>% 
-      summarise(
-        mean = weighted.mean(value, w = {{pw}}, na.rm = TRUE),
-        nobs = sum(!is.na(value)),
-        .groups = "drop"
-      )
-    
-  }
-  
 }
 
 var_label(hh_level_w5$hhd_grass) <- "Feed and forages: Elephant grass, Sesbaniya, & Alfalfa"
@@ -128,9 +112,9 @@ labels <- var_label(hh_level_w5) %>%
     ) 
 
 national_hh_level <- bind_rows(
-  mean_tbl(hh_level_w4, pw = pw_w4, by_region = FALSE) %>% 
+  mean_tbl(hh_level_w4, group_vars = c("wave", "variable"), pw = pw_w4) %>% 
     mutate(wave = "Wave 4"),
-  mean_tbl(hh_level_w5, pw = pw_w5, by_region = FALSE) %>% 
+  mean_tbl(hh_level_w5, group_vars = c("wave", "variable"), pw = pw_w5) %>% 
     mutate(wave = "Wave 5")
 ) %>% 
   mutate(wave = fct_relevel(wave, "Wave 5", "Wave 4")) %>% 
@@ -138,8 +122,8 @@ national_hh_level <- bind_rows(
   select(wave, variable, label, mean, nobs)  
 
 regions_hh_level <- bind_rows(
-  mean_tbl(hh_level_w4, pw = pw_w4),
-  mean_tbl(hh_level_w5, pw = pw_w5)
+  mean_tbl(hh_level_w4, group_vars = c("wave", "variable", "region"), pw = pw_w4),
+  mean_tbl(hh_level_w5, group_vars = c("wave", "variable", "region"), pw = pw_w5)
   ) %>% 
   mutate(wave = paste("Wave", wave) %>% 
            fct_relevel("Wave 5", "Wave 4")) %>% 

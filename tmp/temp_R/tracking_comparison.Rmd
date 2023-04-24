@@ -262,4 +262,14 @@ kbl(
 
 ![](../figures/other_ea.pdf)
 
+## PSNP 
+
+![](../figures/psnp_all.pdf)
+
+![](../figures/psnp_all_panel.pdf)
+
+![](../figures/psnp_all_local.pdf)
+
+![](../figures/psnp_local_panel.pdf)
+
 
