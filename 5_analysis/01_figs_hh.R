@@ -11,9 +11,9 @@ library(ggpubr)
 
 # theme_set(theme_light())
 
-root <- "C:/Users/l.daba/OneDrive/SPIA/Ethiopia"
-w4_dir <- "replication_files/3_report_data"
-w5_dir <- "LSMS_W5/3_report_data"
+root <- "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Country teams/Ethiopia/LSMS_W5"
+w4_dir <- "supplemental/replication_files/3_report_data"
+w5_dir <- "3_report_data"
 
 wave4_hh_new <- read_dta(file.path(root, w4_dir, "wave4_hh_new.dta"))
 wave5_hh_new <- read_dta(file.path(root, w5_dir, "wave5_hh_new.dta"))
@@ -59,12 +59,19 @@ recode_region <- function(tbl) {
   suppressWarnings(
     tbl %>% 
       mutate(
-        region = recode(region, 
-                        `0` = "Other regions",
-                        `1` = "Tigray",
-                        `3` = "Amhara",
-                        `4` = "Oromia",
-                        `7` = "SNNP")
+        region = recode(
+          region, 
+          `1` = "Tigray",
+          `2` = "Afar",
+          `3` = "Amhara",
+          `4` = "Oromia",
+          `5` = "Somali",
+          `6` = "Benishangul Gumuz",
+          `7` = "SNNP",
+          `12` = "Gambela",
+          `13` = "Harar",
+          `15` = "Dire Dawa"
+          )
       )
   )
   
@@ -72,7 +79,7 @@ recode_region <- function(tbl) {
 
 
 hh_level_w4 <- wave4_hh_new %>% 
-  select(household_id, ea_id, wave, region, pw_w4, all_of(vars_both)) %>% 
+  select(household_id, ea_id, wave, region = saq01, pw_w4, all_of(vars_both)) %>% 
   mutate(
     across(
       c(all_of(vars_both)), ~recode(., `100` = 1))  # since w4 vars are mult. by 100
@@ -80,7 +87,7 @@ hh_level_w4 <- wave4_hh_new %>%
   recode_region()
 
 hh_level_w5 <- wave5_hh_new %>% 
-  select(household_id, ea_id, wave, region, pw_w5, pw_panel, all_of(vars_both)) %>% 
+  select(household_id, ea_id, wave, region = saq01, pw_w5, pw_panel, all_of(vars_both)) %>% 
   recode_region()
 
 
@@ -251,11 +258,7 @@ innov_ea_all <- bind_rows(
   left_join(
     labels %>% 
       mutate( variable = str_replace(variable, "hhd_", "ead_") ), 
-    by = "variable") %>% 
-  mutate(
-    region = fct_relevel(region, 
-                         "Amhara", "Oromia", "SNNP", "Other regions", "National")
-  )
+    by = "variable") 
 
 write_csv(innov_ea_all, "adoption_rates_ESS/data/innov_ea_all.csv")
 
@@ -293,11 +296,7 @@ innov_ea_panel <- bind_rows(
   left_join(
     labels %>% 
       mutate( variable = str_replace(variable, "hhd_", "ead_") ), 
-    by = "variable") %>% 
-  mutate(
-    region = fct_relevel(region, 
-                         "Amhara", "Oromia", "SNNP", "Other regions", "National")
-  )
+    by = "variable") 
 
 
 write_csv(innov_ea_panel, "adoption_rates_ESS/data/innov_ea_panel.csv")

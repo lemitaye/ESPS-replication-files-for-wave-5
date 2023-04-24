@@ -85,7 +85,7 @@ server <- function(input, output) {
         scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
         scale_y_continuous(labels = percent_format()) +
         expand_limits(y = maxGrid() + .15) +
-        facet_wrap(~ level, ncol=2) +
+        facet_wrap(~ level, nrow=2, scales = "free") +
         scale_fill_Publication() + 
         theme_Publication() +
         theme(
@@ -101,7 +101,7 @@ server <- function(input, output) {
              Number of observations in parenthesis.")
       
       
-    }, height = 450)
+    }, height = 700)
 }
 
 # Run the application 

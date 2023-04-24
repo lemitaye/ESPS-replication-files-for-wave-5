@@ -33,7 +33,7 @@ adoption_rates <- bind_rows(
   mutate(
     region = fct_relevel(
       region, 
-      "Amhara", "Oromia", "SNNP", "Other regions", "Harar", "Dire Dawa", "National"),
+      "Afar", "Amhara", "Oromia", "Somali", "Benishangul Gumuz", "SNNP", "Gambela", "Harar", "Dire Dawa", "National"),
     level = fct_rev(level)
   ) #%>% 
   # mutate(

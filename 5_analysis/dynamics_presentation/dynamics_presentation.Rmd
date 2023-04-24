@@ -1,6 +1,6 @@
 ---
 title: "Dynamics in the adoption of CGIAR related innovations in the ESPS with a focus on regional comparison"
-author: "Lemi Daba (tayelemi@gmail.com) - SPIA"
+author: "Lemi Daba (tayelemi@gmail.com) - SPIA CGIAR"
 date: "`r Sys.Date()`"
 output: html_document
 runtime: shiny
