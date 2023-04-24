@@ -1,0 +1,275 @@
+---
+title: "ESPS Exploratory Analysis - Tracking and Comparison"
+author: "Lemi Daba"
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+```{r}
+# set up:
+library(haven)
+library(dplyr)
+library(tidyr)
+library(forcats)
+library(janitor)
+library(kableExtra)
+library(labelled)
+
+```
+
+## Tracking
+
+```{r}
+
+# tracking table
+
+track_hh_raw <- read_dta("../track_hh_w5.dta") %>% 
+  clean_names() 
+
+track_ea_raw <- read_dta("../track_ea_w5.dta") %>% 
+  clean_names()
+
+
+# dealing with region:
+
+summ_region <- function(tbl) {
+  
+  tbl %>% 
+    mutate(region = case_when(!is.na(region_w5) ~ region_w5, 
+                              TRUE ~ region_w4)) %>% 
+    select(-region_w4, -region_w5) %>% 
+    mutate(
+      region = recode(region,
+                      `1` = "Tigray",
+                      `2` = "Afar",
+                      `3` = "Amhara",
+                      `4` = "Oromia",
+                      `5` = "Somali",
+                      `6` = "Benishangul Gumuz",
+                      `7` = "SNNP",
+                      `12` = "Gambela",
+                      `13` = "Harar",
+                      `15` = "Dire Dawa" ),
+      
+      merge = recode(as.numeric(merge), 
+                     `1` = "new_added", 
+                     `2` = "dropped",
+                     `3` = "matched" )
+    ) 
+  
+}
+
+track_hh <- summ_region(track_hh_raw)
+track_ea <- summ_region(track_ea_raw)
+
+form_tab <- function(tbl) {
+  
+  bind_rows(
+    tbl %>% 
+      count(region, merge) %>% 
+      complete(region, merge, fill = list(n = 0)),
+    
+    tbl %>% 
+      count(merge) %>% 
+      mutate(region = "National")
+  ) %>% 
+    pivot_wider(names_from = "merge", values_from = "n") %>% 
+    mutate(
+      region = fct_relevel(
+        factor(region), "Tigray", "Afar", "Amhara", "Oromia", "Somali", "Benishangul Gumuz", "SNNP", "Gambela", "Harar", "Dire Dawa" 
+      ),
+      nobs_ess4 = matched + dropped,
+      nobs_ess5 = matched + new_added,
+      attr_rate = paste0(round((dropped / nobs_ess4) * 100, 1), "%")
+      ) %>% 
+    arrange(region) %>% 
+    select(region, matched, dropped, new_added, nobs_ess4, nobs_ess5, attr_rate)  
+    
+}
+
+track_hh_tbl <- form_tab(track_hh)
+track_ea_tbl <- form_tab(track_ea)
+
+```
+
+```{r}
+
+kbl(
+  track_hh_tbl,
+  caption = "Number of rural households in ESPS4 and ESPS5 by region",
+  booktabs = TRUE,
+  align = c("l", "c", "c", "c", "c", "c", "c"),
+  col.names = c("Region", "Matched", "Dropped in ESPS5 (only in ESPS4)", "Newly added in ESPS5", "No. of hhs in ESPS4 (col. 1 + col. 2)", "No. of hhs in ESPS5 (col. 1 + col. 3)", "Attrition Rate (col. 2 / col. 4)")
+) %>% 
+  column_spec(2:7, width = "5em", latex_valign = "b") %>% 
+  row_spec(11, bold = T)  %>%
+  kable_styling(latex_options = c("striped", "hold_position"))
+  
+
+```
+
+```{r}
+
+kbl(
+  track_ea_tbl,
+  caption = "Number of rural EAs in ESPS4 and ESPS5 by region",
+  booktabs = TRUE,
+  align = c("l", "c", "c", "c", "c", "c", "c"),
+  col.names = c("Region", "Matched", "Dropped in ESPS5 (only in ESPS4)", "Newly added in ESPS5", "No. of EAs in ESPS4 (col. 1 + col. 2)", "No. of EAs in ESPS5 (col. 1 + col. 3)", "Attrition Rate (col. 2 / col. 4)")
+  
+) %>% 
+  column_spec(2:7, width = "5em", latex_valign = "b") %>% 
+  row_spec(11, bold = T)  %>%
+  kable_styling(latex_options = c("striped", "hold_position"))
+
+```
+
+```{r}
+
+# Table of ESPS4 hhs with missing EAs in ESPS5
+track_ea_dropped <- read_dta("../track_ea_dropped.dta") %>% 
+  mutate(
+    region_w4 = recode(region_w4,
+                    `1` = "Tigray",
+                    `2` = "Afar",
+                    `3` = "Amhara",
+                    `4` = "Oromia",
+                    `5` = "Somali",
+                    `6` = "Benishangul Gumuz",
+                    `7` = "SNNP",
+                    `12` = "Gambela",
+                    `13` = "Harar",
+                    `15` = "Dire Dawa" )
+  ) 
+
+ea_dropped_tbl <- bind_rows(
+  track_ea_dropped %>% 
+    count(region_w4, ea_missing), 
+  
+  track_ea_dropped %>% 
+    count(ea_missing) %>% 
+    mutate(region_w4 = "National")
+) %>% 
+  complete(region_w4, ea_missing, fill = list(n = 0)) %>% 
+  mutate(ea_missing = recode(ea_missing, `1` = "ea_missing", `0` = "ea_not_missing")) %>% 
+  pivot_wider(names_from = "ea_missing", values_from = "n") %>% 
+  mutate(total = ea_missing + ea_not_missing,
+         region_w4 = fct_relevel(
+           factor(region_w4), "Tigray", "Afar", "Amhara", "Oromia", "Somali", 
+           "Benishangul Gumuz", "SNNP", "Gambela", "Harar", "Dire Dawa", "National"
+         )) %>% 
+  arrange(region_w4) %>% 
+  left_join(
+    track_hh_tbl %>% select(region, matched),
+    by = c("region_w4" = "region")
+  ) %>% 
+  mutate(total_ea_not_missing = matched + ea_not_missing) %>% 
+  select(region_w4, matched, ea_not_missing, total_ea_not_missing, ea_missing, total)
+
+```
+
+```{r}
+
+kbl(
+  ea_dropped_tbl,
+  caption = "Number of households in ESPS4 with missing and non-missing EAs in ESPS5",
+  booktabs = TRUE,
+  align = c("l", "c", "c", "c", "c", "c"),
+  col.names = c("Region", "Matched", "Not-matched", "Total (col. 1 + col . 2)", "EA missing in ESPS5", "Total dropped in ESPS5 (col. 2 + col. 4)")
+) %>% 
+  add_header_above(c(" ", "EA not missing in ESPS5" = 3, " ", " ")) %>% 
+  column_spec(2:4, width = "5em", latex_valign = "b") %>% 
+  column_spec(5:6, width = "7em", latex_valign = "b") %>% 
+  row_spec(11, bold = T)  %>%
+  kable_styling(latex_options = c("striped", "hold_position"))
+
+```
+
+
+
+# Comparing adoption of innovations across waves
+
+## Comparing adoption of Chickpea Kabuli variety b/n waves 3 and 5
+
+![](../figures/kabuli_plot.pdf)
+
+<!-- ## Comparing adoption of maize varieties across waves, household level -->
+
+<!-- ![](../figures/maize_dna_plot.pdf) -->
+
+## All houehods surveyed
+
+![](../figures/nat_hh.pdf)
+
+## Only for panel househods
+
+![](../figures/nat_panel.pdf)
+
+
+## New innovations incorporated in ESPS5
+
+![](../figures/new_innov.pdf)
+
+
+## Comparison: EA level
+
+![](../figures/nat_ea.pdf)
+
+### New innovations incorporated in ESPS5 - EA level
+
+![](../figures/new_innov_ea_1.pdf)
+
+![](../figures/new_innov_ea_2.pdf)
+
+
+# Appendix: Comparison by region
+
+## Household level
+
+### All houehods surveyed
+
+![](../figures/amhara_hh.pdf)
+
+![](../figures/oromia_hh.pdf)
+
+![](../figures/snnp_hh.pdf)
+
+![](../figures/other_hh.pdf)
+
+### Only for panel households
+
+![](../figures/amhara_panel.pdf)
+
+![](../figures/oromia_panel.pdf)
+
+![](../figures/snnp_panel.pdf)
+
+![](../figures/other_panel.pdf)
+
+## EA level
+
+![](../figures/amhara_ea.pdf)
+
+![](../figures/oromia_ea.pdf)
+
+![](../figures/snnp_ea.pdf)
+
+![](../figures/other_ea.pdf)
+
+## PSNP 
+
+![](../figures/psnp_all.pdf)
+
+![](../figures/psnp_all_panel.pdf)
+
+![](../figures/psnp_all_local.pdf)
+
+![](../figures/psnp_local_panel.pdf)
+
+
