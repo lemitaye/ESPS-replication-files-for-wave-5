@@ -15,23 +15,28 @@ root <- "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Co
 w4_dir <- "supplemental/replication_files/3_report_data"
 w5_dir <- "3_report_data"
 
-wave4_hh_new <- read_dta(file.path(root, w4_dir, "wave4_hh_new.dta"))
-wave5_hh_new <- read_dta(file.path(root, w5_dir, "wave5_hh_new.dta"))
+wave4_hh <- read_dta(file.path(root, w4_dir, "wave4_hh_new.dta"))
+wave5_hh <- read_dta(file.path(root, w5_dir, "wave5_hh_new.dta"))
 
 ess4_hh_psnp <- read_dta(file.path(root, w4_dir, "ess4_hh_psnp.dta"))
+hh_livestock <- read_dta(file.path(root, w5_dir, "01_6_hh_livestock.dta"))
 
-wave4_hh_new <- wave4_hh_new %>% 
+wave4_hh_new <- wave4_hh %>% 
   mutate(hhd_grass = case_when(
     hhd_elepgrass==100 | hhd_sasbaniya==100 | hhd_alfa==100 ~ 1,
     hhd_elepgrass==0 & hhd_sasbaniya==0 & hhd_alfa==0 ~ 0 
   )) %>% 
   left_join(select(ess4_hh_psnp, household_id, hhd_psnp), by = "household_id")
 
-wave5_hh_new <- wave5_hh_new %>% 
+wave5_hh_new <- wave5_hh %>% 
   mutate(hhd_grass = case_when(
     hhd_elepgrass==1 | hhd_sesbaniya==1 | hhd_alfalfa==1 ~ 1,
     hhd_elepgrass==0 & hhd_sesbaniya==0 & hhd_alfalfa==0 ~ 0 
-  )) 
+  )) %>% 
+  bind_rows(
+    hh_livestock %>% 
+      select(household_id:saq01, contains("hhd_cross"))
+  )
 
 
 vars_all <- c(
@@ -93,7 +98,6 @@ hh_level_w5 <- wave5_hh_new %>%
 
 mean_tbl <- function(tbl, vars = vars_both, group_vars, pw) {
   
-    
     tbl %>% 
       pivot_longer(all_of(vars), 
                    names_to = "variable",
@@ -109,8 +113,10 @@ mean_tbl <- function(tbl, vars = vars_both, group_vars, pw) {
 
 var_label(hh_level_w5$hhd_grass) <- "Feed and forages: Elephant grass, Sesbaniya, & Alfalfa"
 
-labels <- var_label(hh_level_w5) %>% 
-  .[-c(1:4)] %>% 
+labels <- wave5_hh %>% 
+  select(colnames(hh_level_w5)) %>% 
+  var_label() %>% 
+  .[-c(1:6)] %>% 
   as_tibble() %>% 
   pivot_longer(
     cols = everything(), 
@@ -144,6 +150,7 @@ adopt_rates_all_hh <- bind_rows(
 )
 
 write_csv(adopt_rates_all_hh, file = "adoption_rates_ESS/data/adopt_rates_all_hh.csv")
+write_csv(adopt_rates_all_hh, file = "dynamics_presentation/data/adopt_rates_all_hh.csv")
 
 
 # ONLY FOR PANEL HOUSEHOLDS: ####
@@ -186,7 +193,7 @@ adopt_rates_panel_hh <- bind_rows(
 )
 
 write_csv(adopt_rates_panel_hh, file = "adoption_rates_ESS/data/adopt_rates_panel_hh.csv")
-
+write_csv(adopt_rates_panel_hh, file = "dynamics_presentation/data/adopt_rates_panel_hh.csv")
 
 
 # EA level ----
@@ -261,7 +268,7 @@ innov_ea_all <- bind_rows(
     by = "variable") 
 
 write_csv(innov_ea_all, "adoption_rates_ESS/data/innov_ea_all.csv")
-
+write_csv(innov_ea_all, "dynamics_presentation/data/innov_ea_all.csv")
 
 
 ## Panel hhs ----
@@ -300,7 +307,7 @@ innov_ea_panel <- bind_rows(
 
 
 write_csv(innov_ea_panel, "adoption_rates_ESS/data/innov_ea_panel.csv")
-
+write_csv(innov_ea_panel, "dynamics_presentation/data/innov_ea_panel.csv")
 
 
 
