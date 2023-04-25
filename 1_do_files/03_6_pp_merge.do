@@ -3,7 +3,7 @@
 * MERGE DIFFERENT MODULES *
 ********************************************************************************
 
-use "${data}/w5_coverPP_new", clear
+use "${data}/w5_coverPP_new.dta", clear
 
 merge 1:1 household_id using "${tmp}/PP_W5S3"
 /*
@@ -20,8 +20,19 @@ merge 1:1 household_id using "${tmp}/PP_W5S3"
 drop _merge
 
 merge 1:1 household_id using "${tmp}/PP_W4S81"  
+/*
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                           124
+        from master                       124  (_merge==1)
+        from using                          0  (_merge==2)
+
+    Matched                             1,955  (_merge==3)
+    -----------------------------------------
+*/
 
 drop _merge
+
 
 merge 1:1 household_id using "${tmp}/pp_w5s4"
 /*
@@ -35,7 +46,7 @@ merge 1:1 household_id using "${tmp}/pp_w5s4"
     -----------------------------------------
 */
 
-drop _m 
+drop _merge 
 
 * 8028 Farmer hotline (IVR)
 preserve
@@ -81,7 +92,7 @@ merge 1:1 household_id using "${data}/ess5_dna_hh_new.dta"
 drop _m
 
 
-* append with livestock data from hh -------------------------------------------
+/* append with livestock data from hh -------------------------------------------
 
 append using "${data}/01_6_hh_livestock.dta", generate(from_hh)
 
@@ -89,7 +100,7 @@ append using "${data}/01_6_hh_livestock.dta", generate(from_hh)
 duplicates tag household_id, generate(dup)
 drop if dup==1 & from_hh==1
 drop dup
-
+*/
 
 * Merge with household cover for panel weights ---------------------------------
 

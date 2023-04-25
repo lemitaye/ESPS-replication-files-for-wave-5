@@ -14,14 +14,14 @@ clear all
 * ssc install rsource, replace   // enables to run R code from within Stata
 
 * to be added to master later
-global root     "C:/Users/l.daba/OneDrive/SPIA/Ethiopia/LSMS_W5"
-global code     "$root/1_do_files"
-global rawdata  "$root/2_raw_data/data"
-global aux      "$root/2_raw_data/auxiliary"
-global data     "$root/3_report_data"
-global table    "$root/4_table"
-global supp     "$root/supplemental"
-global tmp      "$root/tmp"
+global root     "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Country teams/Ethiopia/LSMS_W5"
+global code     "${root}/1_do_files"
+global rawdata  "${root}/2_raw_data/data"
+global aux      "${root}/2_raw_data/auxiliary"
+global data     "${root}/3_report_data"
+global table    "${root}/4_table"
+global supp     "${root}/supplemental"
+global tmp      "${root}/tmp"
 
 /*
 * Call all do files:
