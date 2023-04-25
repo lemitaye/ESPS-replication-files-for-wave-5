@@ -130,12 +130,11 @@ mean_tbl <- function(tbl, vars = vars_both, group_vars, pw) {
     
 }
 
-var_label(hh_level_w5$hhd_grass) <- "Feed and forages: Elephant grass, Sesbaniya, & Alfalfa"
+var_label(wave5_hh$hhd_grass) <- "Feed and forages: Elephant grass, Sesbaniya, & Alfalfa"
 
 labels <- wave5_hh %>% 
-  select(colnames(hh_level_w5)) %>% 
+  select(all_of(vars_both), all_of(vars_urban_hhs)) %>% 
   var_label() %>% 
-  .[-c(1:6)] %>% 
   as_tibble() %>% 
   pivot_longer(
     cols = everything(), 
@@ -241,67 +240,74 @@ write_csv(adopt_rates_panel_hh, file = "dynamics_presentation/data/adopt_rates_p
 
 ## All households ----
 
-collapse_ea <- function(tbl) {
+collapse_ea <- function(tbl, group_vars = c("variable", "region")) {
+  
   tbl %>% 
     summarise(
-      n = n(),
-      across(hhd_ofsp:hhd_impcr8, ~max(.x, na.rm = TRUE) ),
+      # n = n(),
+      across(
+        -any_of(c("household_id", "ea_id", "wave", "region", "pw_w4", "pw_w5", "pw_panel")), 
+        ~max(.x, na.rm = TRUE) ),
       .groups = "drop"
     ) %>% 
+    suppressWarnings() %>% 
     modify(~ifelse(is.infinite(.), 0, .)) %>% 
     rename_with(~str_replace(., "hhd_", "ead_"), starts_with("hhd_")) %>% 
-    pivot_longer(ead_ofsp:ead_impcr8, names_to = "variable", values_to = "value") 
+    pivot_longer(
+      -any_of(c("household_id", "ea_id", "wave", "region", "pw_w4", "pw_w5", "pw_panel")), 
+      names_to = "variable", values_to = "value") %>% 
+    group_by(pick(group_vars)) %>% 
+    summarise(
+      mean = mean(value, na.rm = TRUE),
+      nobs = sum(!is.na(value)),
+      .groups = "drop"
+    )
+  
 }
+
+
 
 
 innov_ea_all <- bind_rows(
   hh_level_w4 %>% 
     group_by(ea_id) %>% 
-    collapse_ea() %>% 
-    group_by(variable) %>% 
-    summarise(
-      mean = mean(value, na.rm = TRUE),
-      nobs = sum(!is.na(value)),
-      .groups = "drop"
-    ) %>% 
-    mutate(region = "National", wave = "Wave 4") %>% 
-    suppressWarnings(),
+    collapse_ea(group_vars = "variable") %>% 
+    mutate(region = "National", wave = "Wave 4"),
+  
+  hh_level_w4_urb_hh %>% 
+    group_by(ea_id) %>% 
+    collapse_ea(group_vars = "variable") %>% 
+    mutate(region = "National", wave = "Wave 4"),
   
   hh_level_w4 %>% 
     group_by(ea_id, region) %>% 
     collapse_ea() %>% 
-    group_by(variable, region) %>% 
-    summarise(
-      mean = mean(value, na.rm = TRUE),
-      nobs = sum(!is.na(value)),
-      .groups = "drop"
-    ) %>% 
-    mutate(wave = "Wave 4") %>% 
-    suppressWarnings(),
+    mutate(wave = "Wave 4"),
+  
+  hh_level_w4_urb_hh %>% 
+    group_by(ea_id, region) %>% 
+    collapse_ea() %>% 
+    mutate(wave = "Wave 4"),
   
   hh_level_w5 %>% 
     group_by(ea_id) %>% 
-    collapse_ea() %>% 
-    group_by(variable) %>% 
-    summarise(
-      mean = mean(value, na.rm = TRUE),
-      nobs = sum(!is.na(value)),
-      .groups = "drop"
-    ) %>% 
-    mutate(region = "National", wave = "Wave 5") %>% 
-    suppressWarnings(),
+    collapse_ea(group_vars = "variable") %>% 
+    mutate(region = "National", wave = "Wave 5"),
+  
+  hh_level_w5_urb_hh %>% 
+    group_by(ea_id) %>% 
+    collapse_ea(group_vars = "variable") %>% 
+    mutate(region = "National", wave = "Wave 5"),
   
   hh_level_w5 %>% 
     group_by(ea_id, region) %>% 
     collapse_ea() %>% 
-    group_by(variable, region) %>% 
-    summarise(
-      mean = mean(value, na.rm = TRUE),
-      nobs = sum(!is.na(value)),
-      .groups = "drop"
-    ) %>% 
-    mutate(wave = "Wave 5") %>% 
-    suppressWarnings()
+    mutate(wave = "Wave 5"),
+  
+  hh_level_w5_urb_hh %>% 
+    group_by(ea_id, region) %>% 
+    collapse_ea() %>% 
+    mutate(wave = "Wave 5")
 ) %>% 
   left_join(
     labels %>% 
@@ -315,32 +321,46 @@ write_csv(innov_ea_all, "dynamics_presentation/data/innov_ea_all.csv")
 ## Panel hhs ----
 
 innov_ea_panel <- bind_rows(
-  hh_level_panel %>% 
-    group_by(wave, ea_id, variable) %>% 
-    summarise( value = max(value, na.rm = T), .groups = "drop" ) %>% 
-    mutate( variable = str_replace(variable, "hhd_", "ead_") ) %>% 
-    modify(~ifelse(is.infinite(.), 0, .)) %>% 
-    group_by(wave, variable) %>% 
-    summarise(
-      mean = mean(value, na.rm = TRUE),
-      nobs = sum(!is.na(value)),
-      .groups = "drop"
-    ) %>% 
-    mutate(region = "National"),
+  hh_panel_w4 %>% 
+    group_by(ea_id) %>% 
+    collapse_ea(group_vars = "variable") %>% 
+    mutate(region = "National", wave = "Wave 4"),
   
-  hh_level_panel %>% 
-    group_by(wave, region, ea_id, variable) %>% 
-    summarise( value = max(value, na.rm = T), .groups = "drop" ) %>% 
-    mutate( variable = str_replace(variable, "hhd_", "ead_") ) %>% 
-    modify(~ifelse(is.infinite(.), 0, .)) %>% 
-    group_by(wave, region, variable) %>% 
-    summarise(
-      mean = mean(value, na.rm = TRUE),
-      nobs = sum(!is.na(value)),
-      .groups = "drop"
-    )
+  hh_panel_w4_urb_hh %>% 
+    group_by(ea_id) %>% 
+    collapse_ea(group_vars = "variable") %>% 
+    mutate(region = "National", wave = "Wave 4"),
+  
+  hh_panel_w4 %>% 
+    group_by(ea_id, region) %>% 
+    collapse_ea() %>% 
+    mutate(wave = "Wave 4"),
+  
+  hh_panel_w4_urb_hh %>% 
+    group_by(ea_id, region) %>% 
+    collapse_ea() %>% 
+    mutate(wave = "Wave 4"),
+  
+  hh_panel_w5 %>% 
+    group_by(ea_id) %>% 
+    collapse_ea(group_vars = "variable") %>% 
+    mutate(region = "National", wave = "Wave 5"),
+  
+  hh_panel_w5_urb_hh %>% 
+    group_by(ea_id) %>% 
+    collapse_ea(group_vars = "variable") %>% 
+    mutate(region = "National", wave = "Wave 5"),
+  
+  hh_panel_w5 %>% 
+    group_by(ea_id, region) %>% 
+    collapse_ea() %>% 
+    mutate(wave = "Wave 5"),
+  
+  hh_panel_w5_urb_hh %>% 
+    group_by(ea_id, region) %>% 
+    collapse_ea() %>% 
+    mutate(wave = "Wave 5")
 ) %>% 
-  suppressWarnings() %>% 
   left_join(
     labels %>% 
       mutate( variable = str_replace(variable, "hhd_", "ead_") ), 
