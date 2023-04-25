@@ -32,11 +32,14 @@ wave5_hh_new <- wave5_hh %>%
   mutate(hhd_grass = case_when(
     hhd_elepgrass==1 | hhd_sesbaniya==1 | hhd_alfalfa==1 ~ 1,
     hhd_elepgrass==0 & hhd_sesbaniya==0 & hhd_alfalfa==0 ~ 0 
-  )) %>% 
-  bind_rows(
-    hh_livestock %>% 
-      select(household_id:saq01, contains("hhd_cross"))
-  )
+  )) #%>% 
+  # bind_rows(
+  #   hh_livestock %>% 
+  #     select(household_id:pw_panel, contains("hhd_cross")) %>% 
+  #     # b/c of duplicates:
+  #     anti_join(wave5_hh, by = "household_id") %>% 
+  #     mutate(wave = 5)
+  # )
 
 
 vars_all <- c(
@@ -168,6 +171,29 @@ hh_level_panel <- inner_join(
   separate(variable, into = c("variable", "wave"), sep = "\\.") %>% 
   mutate(wave = recode(wave, "w4" = "Wave 4", "w5" = "Wave 5")) %>% 
   left_join(labels, by = "variable")  
+
+hh_panel_w4 <- hh_level_w4 %>% 
+  semi_join(hh_level_w5,
+            by = "household_id") %>% 
+  inner_join(select(hh_level_w5, household_id, pw_panel),
+            by = "household_id")
+
+hh_panel_w5 <- hh_level_w5 %>% 
+  semi_join(hh_level_w4,
+            by = "household_id") 
+
+mean_tbl(hh_panel_w4, group_vars = c("wave", "variable"), pw = pw_panel) %>% 
+  mutate(wave = "Wave 4")
+
+mean_tbl(hh_panel_w5, group_vars = c("wave", "variable"), pw = pw_panel) %>% 
+  mutate(wave = "Wave 5")
+
+mean_tbl(hh_panel_w4, group_vars = c("wave", "variable", "region"), pw = pw_panel) %>% 
+  mutate(wave = "Wave 4")
+
+mean_tbl(hh_panel_w5, group_vars = c("wave", "variable", "region"), pw = pw_panel) %>% 
+  mutate(wave = "Wave 5")
+
 
 regions_hh_panel <- hh_level_panel %>% 
   group_by(wave, region, variable, label) %>% 

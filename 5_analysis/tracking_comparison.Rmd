@@ -29,10 +29,10 @@ library(labelled)
 
 # tracking table
 
-track_hh_raw <- read_dta("../track_hh_w5.dta") %>% 
+track_hh_raw <- read_dta("../tmp/track_hh_w5.dta") %>% 
   clean_names() 
 
-track_ea_raw <- read_dta("../track_ea_w5.dta") %>% 
+track_ea_raw <- read_dta("../tmp/track_ea_w5.dta") %>% 
   clean_names()
 
 
@@ -104,6 +104,7 @@ kbl(
   track_hh_tbl,
   caption = "Number of rural households in ESPS4 and ESPS5 by region",
   booktabs = TRUE,
+  linesep = "",
   align = c("l", "c", "c", "c", "c", "c", "c"),
   col.names = c("Region", "Matched", "Dropped in ESPS5 (only in ESPS4)", "Newly added in ESPS5", "No. of hhs in ESPS4 (col. 1 + col. 2)", "No. of hhs in ESPS5 (col. 1 + col. 3)", "Attrition Rate (col. 2 / col. 4)")
 ) %>% 
@@ -120,6 +121,7 @@ kbl(
   track_ea_tbl,
   caption = "Number of rural EAs in ESPS4 and ESPS5 by region",
   booktabs = TRUE,
+  linesep = "",
   align = c("l", "c", "c", "c", "c", "c", "c"),
   col.names = c("Region", "Matched", "Dropped in ESPS5 (only in ESPS4)", "Newly added in ESPS5", "No. of EAs in ESPS4 (col. 1 + col. 2)", "No. of EAs in ESPS5 (col. 1 + col. 3)", "Attrition Rate (col. 2 / col. 4)")
   
@@ -133,7 +135,7 @@ kbl(
 ```{r}
 
 # Table of ESPS4 hhs with missing EAs in ESPS5
-track_ea_dropped <- read_dta("../track_ea_dropped.dta") %>% 
+track_ea_dropped <- read_dta("../tmp/track_ea_dropped.dta") %>% 
   mutate(
     region_w4 = recode(region_w4,
                     `1` = "Tigray",
@@ -180,6 +182,7 @@ kbl(
   ea_dropped_tbl,
   caption = "Number of households in ESPS4 with missing and non-missing EAs in ESPS5",
   booktabs = TRUE,
+  linesep = "",
   align = c("l", "c", "c", "c", "c", "c"),
   col.names = c("Region", "Matched", "Not-matched", "Total (col. 1 + col . 2)", "EA missing in ESPS5", "Total dropped in ESPS5 (col. 2 + col. 4)")
 ) %>% 
@@ -193,83 +196,83 @@ kbl(
 
 
 
-# Comparing adoption of innovations across waves
+<!-- # Comparing adoption of innovations across waves -->
 
-## Comparing adoption of Chickpea Kabuli variety b/n waves 3 and 5
+<!-- ## Comparing adoption of Chickpea Kabuli variety b/n waves 3 and 5 -->
 
-![](../figures/kabuli_plot.pdf)
+<!-- ![](../figures/kabuli_plot.pdf) -->
 
-<!-- ## Comparing adoption of maize varieties across waves, household level -->
+<!-- <!-- ## Comparing adoption of maize varieties across waves, household level --> -->
 
-<!-- ![](../figures/maize_dna_plot.pdf) -->
+<!-- <!-- ![](../figures/maize_dna_plot.pdf) --> -->
 
-## All houehods surveyed
+<!-- ## All houehods surveyed -->
 
-![](../figures/nat_hh.pdf)
+<!-- ![](../figures/nat_hh.pdf) -->
 
-## Only for panel househods
+<!-- ## Only for panel househods -->
 
-![](../figures/nat_panel.pdf)
-
-
-## New innovations incorporated in ESPS5
-
-![](../figures/new_innov.pdf)
+<!-- ![](../figures/nat_panel.pdf) -->
 
 
-## Comparison: EA level
+<!-- ## New innovations incorporated in ESPS5 -->
 
-![](../figures/nat_ea.pdf)
-
-### New innovations incorporated in ESPS5 - EA level
-
-![](../figures/new_innov_ea_1.pdf)
-
-![](../figures/new_innov_ea_2.pdf)
+<!-- ![](../figures/new_innov.pdf) -->
 
 
-# Appendix: Comparison by region
+<!-- ## Comparison: EA level -->
 
-## Household level
+<!-- ![](../figures/nat_ea.pdf) -->
 
-### All houehods surveyed
+<!-- ### New innovations incorporated in ESPS5 - EA level -->
 
-![](../figures/amhara_hh.pdf)
+<!-- ![](../figures/new_innov_ea_1.pdf) -->
 
-![](../figures/oromia_hh.pdf)
+<!-- ![](../figures/new_innov_ea_2.pdf) -->
 
-![](../figures/snnp_hh.pdf)
 
-![](../figures/other_hh.pdf)
+<!-- # Appendix: Comparison by region -->
 
-### Only for panel households
+<!-- ## Household level -->
 
-![](../figures/amhara_panel.pdf)
+<!-- ### All houehods surveyed -->
 
-![](../figures/oromia_panel.pdf)
+<!-- ![](../figures/amhara_hh.pdf) -->
 
-![](../figures/snnp_panel.pdf)
+<!-- ![](../figures/oromia_hh.pdf) -->
 
-![](../figures/other_panel.pdf)
+<!-- ![](../figures/snnp_hh.pdf) -->
 
-## EA level
+<!-- ![](../figures/other_hh.pdf) -->
 
-![](../figures/amhara_ea.pdf)
+<!-- ### Only for panel households -->
 
-![](../figures/oromia_ea.pdf)
+<!-- ![](../figures/amhara_panel.pdf) -->
 
-![](../figures/snnp_ea.pdf)
+<!-- ![](../figures/oromia_panel.pdf) -->
 
-![](../figures/other_ea.pdf)
+<!-- ![](../figures/snnp_panel.pdf) -->
 
-## PSNP 
+<!-- ![](../figures/other_panel.pdf) -->
 
-![](../figures/psnp_all.pdf)
+<!-- ## EA level -->
 
-![](../figures/psnp_all_panel.pdf)
+<!-- ![](../figures/amhara_ea.pdf) -->
 
-![](../figures/psnp_all_local.pdf)
+<!-- ![](../figures/oromia_ea.pdf) -->
 
-![](../figures/psnp_local_panel.pdf)
+<!-- ![](../figures/snnp_ea.pdf) -->
+
+<!-- ![](../figures/other_ea.pdf) -->
+
+<!-- ## PSNP  -->
+
+<!-- ![](../figures/psnp_all.pdf) -->
+
+<!-- ![](../figures/psnp_all_panel.pdf) -->
+
+<!-- ![](../figures/psnp_all_local.pdf) -->
+
+<!-- ![](../figures/psnp_local_panel.pdf) -->
 
 

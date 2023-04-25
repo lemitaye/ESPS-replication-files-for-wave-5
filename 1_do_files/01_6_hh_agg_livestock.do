@@ -168,5 +168,23 @@ lab var hhd_cross_smallrum    "Crossbred SMALL RUMINANTS"
 lab var hhd_cross_poultry     "Crossbred POULTRY"
 
 
+* Merge with household cover for panel weights ---------------------------------
+merge 1:1 household_id using "${rawdata}/HH/ESS5_weights_hh.dta", keepusing(pw_panel)
+/*
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                         4,798
+        from master                         0  (_merge==1)
+        from using                      4,798  (_merge==2)
+
+    Matched                               201  (_merge==3)
+    -----------------------------------------
+*/
+keep if _merge==1 | _merge==3
+drop _merge
+
+order pw_panel, after(saq01)
+
 * save - hh level --------------------------------------------------------------
 save "${data}/01_6_hh_livestock.dta", replace
+
