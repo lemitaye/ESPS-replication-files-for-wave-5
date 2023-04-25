@@ -32,14 +32,7 @@ wave5_hh_new <- wave5_hh %>%
   mutate(hhd_grass = case_when(
     hhd_elepgrass==1 | hhd_sesbaniya==1 | hhd_alfalfa==1 ~ 1,
     hhd_elepgrass==0 & hhd_sesbaniya==0 & hhd_alfalfa==0 ~ 0 
-  )) #%>% 
-  # bind_rows(
-  #   hh_livestock %>% 
-  #     select(household_id:pw_panel, contains("hhd_cross")) %>% 
-  #     # b/c of duplicates:
-  #     anti_join(wave5_hh, by = "household_id") %>% 
-  #     mutate(wave = 5)
-  # )
+  )) 
 
 
 vars_all <- c(
@@ -47,8 +40,7 @@ vars_all <- c(
   "hhd_swc", "hhd_consag1", "hhd_consag2", "hhd_affor", "hhd_mango", 
   "hhd_papaya", "hhd_avocado", "hotline", "hhd_malt", "hhd_durum", 
   "hhd_seedv1", "hhd_seedv2", "hhd_livIA", "hhd_livIA_publ", 
-  "hhd_livIA_priv", "hhd_cross_largerum", "hhd_cross_smallrum", 
-  "hhd_cross_poultry", "hhd_grass", "hhd_mintillage", "hhd_zerotill", 
+  "hhd_livIA_priv", "hhd_grass", "hhd_mintillage", "hhd_zerotill", 
   "hhd_cresidue2", "hhd_rotlegume", "hhd_psnp", "hhd_impcr1", "hhd_impcr2", 
   "hhd_impcr6", "hhd_impcr8"
   )
@@ -59,6 +51,8 @@ vars_both <- wave4_hh_new %>%
   colnames()
 
 vars_w5 <- setdiff(vars_all, vars_both)
+
+vars_urban_hhs <- c("hhd_cross_largerum", "hhd_cross_smallrum", "hhd_cross_poultry")
 
 
 
@@ -86,6 +80,8 @@ recode_region <- function(tbl) {
 }
 
 
+# ALL HOUSEHOLDS ----
+
 hh_level_w4 <- wave4_hh_new %>% 
   select(household_id, ea_id, wave, region = saq01, pw_w4, all_of(vars_both)) %>% 
   mutate(
@@ -97,6 +93,26 @@ hh_level_w4 <- wave4_hh_new %>%
 hh_level_w5 <- wave5_hh_new %>% 
   select(household_id, ea_id, wave, region = saq01, pw_w5, pw_panel, all_of(vars_both)) %>% 
   recode_region()
+
+
+hh_level_w4_urb_hh <- wave4_hh_new %>% 
+  select(household_id, ea_id, wave, region = saq01, pw_w4, all_of(vars_urban_hhs)) %>% 
+  mutate(
+    across(
+      c(all_of(vars_urban_hhs)), ~recode(., `100` = 1))  # since w4 vars are mult. by 100
+  ) %>% 
+  recode_region()
+
+hh_level_w5_urb_hh <- wave5_hh_new %>% 
+  bind_rows(
+    hh_livestock %>%
+      # b/c of duplicates:
+      anti_join(wave5_hh, by = "household_id") %>%
+      mutate(wave = 5)
+  ) %>% 
+  select(household_id, ea_id, wave, region = saq01, pw_w5, pw_panel, all_of(vars_urban_hhs)) %>% 
+  recode_region() 
+  
 
 
 mean_tbl <- function(tbl, vars = vars_both, group_vars, pw) {
@@ -128,21 +144,26 @@ labels <- wave5_hh %>%
     ) 
 
 national_hh_level <- bind_rows(
-  mean_tbl(hh_level_w4, group_vars = c("wave", "variable"), pw = pw_w4) %>% 
-    mutate(wave = "Wave 4"),
-  mean_tbl(hh_level_w5, group_vars = c("wave", "variable"), pw = pw_w5) %>% 
-    mutate(wave = "Wave 5")
+  mean_tbl(hh_level_w4, group_vars = c("wave", "variable"), pw = pw_w4),
+  mean_tbl(hh_level_w4_urb_hh, vars = vars_urban_hhs, 
+           group_vars = c("wave", "variable"), pw = pw_w4) ,
+  mean_tbl(hh_level_w5, group_vars = c("wave", "variable"), pw = pw_w5),
+  mean_tbl(hh_level_w5_urb_hh, vars = vars_urban_hhs, 
+           group_vars = c("wave", "variable"), pw = pw_w5) 
 ) %>% 
-  mutate(wave = fct_relevel(wave, "Wave 5", "Wave 4")) %>% 
+  mutate(wave = paste("Wave", wave)) %>% 
   left_join(labels, by = "variable") %>% 
   select(wave, variable, label, mean, nobs)  
 
 regions_hh_level <- bind_rows(
   mean_tbl(hh_level_w4, group_vars = c("wave", "variable", "region"), pw = pw_w4),
-  mean_tbl(hh_level_w5, group_vars = c("wave", "variable", "region"), pw = pw_w5)
-  ) %>% 
-  mutate(wave = paste("Wave", wave) %>% 
-           fct_relevel("Wave 5", "Wave 4")) %>% 
+  mean_tbl(hh_level_w4_urb_hh, vars = vars_urban_hhs, 
+           group_vars = c("wave", "variable", "region"), pw = pw_w4),
+  mean_tbl(hh_level_w5, group_vars = c("wave", "variable", "region"), pw = pw_w5),
+  mean_tbl(hh_level_w5_urb_hh, vars = vars_urban_hhs, 
+           group_vars = c("wave", "variable", "region"), pw = pw_w5)
+) %>% 
+  mutate(wave = paste("Wave", wave)) %>% 
   left_join(labels, by = "variable") %>% 
   select(wave, region, variable, label, mean, nobs)
 
@@ -158,58 +179,52 @@ write_csv(adopt_rates_all_hh, file = "dynamics_presentation/data/adopt_rates_all
 
 # ONLY FOR PANEL HOUSEHOLDS: ####
 
-hh_level_panel <- inner_join(
-  x = hh_level_w4 %>% select(-wave, -region),
-  y = hh_level_w5 %>% select(-wave), 
-  by = c("household_id", "ea_id"),
-  suffix = c(".w4", ".w5")
-) %>% 
-  select(household_id, ea_id, region, pw_w4, pw_w5, pw_panel, everything()) %>% 
-  pivot_longer(-c("household_id", "ea_id", "region", "pw_w4", "pw_w5", "pw_panel"), 
-               names_to = "variable",
-               values_to = "value") %>% 
-  separate(variable, into = c("variable", "wave"), sep = "\\.") %>% 
-  mutate(wave = recode(wave, "w4" = "Wave 4", "w5" = "Wave 5")) %>% 
-  left_join(labels, by = "variable")  
-
 hh_panel_w4 <- hh_level_w4 %>% 
-  semi_join(hh_level_w5,
-            by = "household_id") %>% 
+  semi_join(hh_level_w5, by = "household_id") %>% 
   inner_join(select(hh_level_w5, household_id, pw_panel),
             by = "household_id")
 
 hh_panel_w5 <- hh_level_w5 %>% 
-  semi_join(hh_level_w4,
-            by = "household_id") 
+  semi_join(hh_level_w4, by = "household_id") 
 
-mean_tbl(hh_panel_w4, group_vars = c("wave", "variable"), pw = pw_panel) %>% 
-  mutate(wave = "Wave 4")
+hh_panel_w4_urb_hh <- hh_level_w4_urb_hh %>% 
+  semi_join(hh_level_w5_urb_hh, by = "household_id") %>% 
+  inner_join(select(hh_level_w5_urb_hh, household_id, pw_panel),
+             by = "household_id")
 
-mean_tbl(hh_panel_w5, group_vars = c("wave", "variable"), pw = pw_panel) %>% 
-  mutate(wave = "Wave 5")
+hh_panel_w5_urb_hh <- hh_level_w5_urb_hh %>% 
+  semi_join(hh_level_w4_urb_hh, by = "household_id") 
 
-mean_tbl(hh_panel_w4, group_vars = c("wave", "variable", "region"), pw = pw_panel) %>% 
-  mutate(wave = "Wave 4")
+national_hh_panel <- bind_rows(
+  mean_tbl(hh_panel_w4, group_vars = c("wave", "variable"), pw = pw_panel), 
+  
+  mean_tbl(hh_panel_w4_urb_hh, vars = vars_urban_hhs, 
+           group_vars = c("wave", "variable"), pw = pw_panel), 
+  
+  mean_tbl(hh_panel_w5, group_vars = c("wave", "variable"), pw = pw_panel), 
+  
+  mean_tbl(hh_panel_w5_urb_hh, vars = vars_urban_hhs, 
+           group_vars = c("wave", "variable"), pw = pw_panel) 
+) %>% 
+  mutate(wave = paste("Wave", wave)) %>% 
+  left_join(labels, by = "variable") %>% 
+  select(wave, variable, label, mean, nobs) 
 
-mean_tbl(hh_panel_w5, group_vars = c("wave", "variable", "region"), pw = pw_panel) %>% 
-  mutate(wave = "Wave 5")
 
-
-regions_hh_panel <- hh_level_panel %>% 
-  group_by(wave, region, variable, label) %>% 
-  summarise(
-    mean = weighted.mean(value, w = pw_panel, na.rm = TRUE),
-    nobs = sum(!is.na(value)),
-    .groups = "drop"
-  ) 
-
-national_hh_panel <- hh_level_panel %>% 
-  group_by(wave, variable, label) %>% 
-  summarise(
-    mean = weighted.mean(value, w = pw_panel, na.rm = TRUE),
-    nobs = sum(!is.na(value)),
-    .groups = "drop"
-  ) 
+regions_hh_panel <- bind_rows(
+  mean_tbl(hh_panel_w4, group_vars = c("wave", "variable", "region"), pw = pw_panel), 
+  
+  mean_tbl(hh_panel_w4_urb_hh, vars = vars_urban_hhs, 
+           group_vars = c("wave", "variable", "region"), pw = pw_panel), 
+  
+  mean_tbl(hh_panel_w5, group_vars = c("wave", "variable", "region"), pw = pw_panel), 
+  
+  mean_tbl(hh_panel_w5_urb_hh, vars = vars_urban_hhs, 
+           group_vars = c("wave", "variable", "region"), pw = pw_panel) 
+) %>% 
+  mutate(wave = paste("Wave", wave)) %>% 
+  left_join(labels, by = "variable") %>% 
+  select(wave, region, variable, label, mean, nobs)
 
 
 adopt_rates_panel_hh <- bind_rows(
