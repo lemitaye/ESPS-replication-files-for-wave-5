@@ -491,6 +491,34 @@ inner_join(
 )
 
 
+# Community psnp:
+
+sect09_com_w4 <- read_dta(file.path(
+  root, 
+  "supplemental/replication_files/2_raw_data/ESS4_2018-19/Data/sect09_com_w4.dta"
+)) 
+
+ess5_community_new <- read_dta(file.path(root, w5_dir, "ess5_community_new.dta")) 
+
+ess5_comm_psnp <- ess5_community_new %>% 
+  mutate_if(is.labelled, as_factor) %>% 
+  mutate(
+    across(c(saq01, saq14), ~ str_trim(str_to_title(str_remove(., "\\d+\\."))) )
+) %>% 
+  select(ea_id, region = saq01, locality = saq14, comm_psnp) 
+
+
+ess4_comm_psnp <- sect09_com_w4 %>% 
+  mutate(comm_psnp = case_when(
+    cs9q01==1 ~ 1,
+    cs9q01==2 ~ 0
+  )) %>% 
+  mutate_if(is.labelled, as_factor) %>% 
+  mutate(
+    across(c(saq01, saq14), ~ str_trim( str_to_title(str_remove(., "\\d+\\.")) ) )
+  ) %>% 
+  select(ea_id, region = saq01, locality = saq14, comm_psnp) 
+
 
 # Synergies: comparing joint adoption rates
 

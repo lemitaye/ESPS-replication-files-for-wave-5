@@ -2,9 +2,9 @@
 
 *Community Irrigation Scheme (only for rural EAs): ESS5
 
-use "${rawdata}\Community\sect06_com_w5", clear
+use "${rawdata}/Community/sect06_com_w5", clear
 
-merge 1:1 ea_id using "${rawdata}\Community\sect03_com_w5"
+merge 1:1 ea_id using "${rawdata}/Community/sect03_com_w5"
 drop _m
 
 generate commirr=.
@@ -21,14 +21,14 @@ replace  shhh_commirr=1 if cs6q11!=. & cs6q11>cs3q04b
 replace  shhh_commirr=0 if cs6q11==. & commirr==0
 lab var shhh_commirr "Share of farmers that farm in the irrigation scheme (out of tot. no. of hh in community)"
 
-keep ea_id commirr shhh_commirr  
+keep ea_id saq01 saq14 commirr shhh_commirr  
 
 tempfile commirr
 save `commirr'
 
 
 * Digital green: video-based extension
-use "${rawdata}\Community\sect12_com_w5", clear
+use "${rawdata}/Community/sect12_com_w5", clear
 
 generate comm_video=.
 replace comm_video=1 if s12q01==1 & (s12q02_1==1 | s12q02_1==3 | s12q02_2==1 | s12q02_2==3 | s12q02_os=="back yard Vegitable production")
@@ -48,7 +48,7 @@ save `comm_video'
 
 
 * 2WT based tech.
-use "${rawdata}\Community\sect11_com_w5", clear
+use "${rawdata}/Community/sect11_com_w5", clear
 
 generate comm_2wt_own=.
 replace comm_2wt_own=1 if s11q01==1 & (cs11q00==1 | cs11q00==2 | cs11q00==3 | cs11q00==4 | cs11q00==5)
@@ -68,7 +68,7 @@ save `comm_2wt'
 
 
 * community psnp
-use "${rawdata}\Community\sect09_com_w5", clear
+use "${rawdata}/Community/sect09_com_w5", clear
 
 generate comm_psnp=.
 replace comm_psnp=1 if cs9q01==1
@@ -93,5 +93,5 @@ drop _m
 merge 1:1 ea_id using `comm_psnp'
 drop _m
 
-save "${data}\ess5_community_new", replace 
+save "${data}/ess5_community_new.dta", replace 
 
