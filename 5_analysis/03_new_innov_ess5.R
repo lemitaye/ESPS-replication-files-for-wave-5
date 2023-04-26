@@ -491,35 +491,6 @@ inner_join(
 )
 
 
-# Community psnp:
-
-sect09_com_w4 <- read_dta(file.path(
-  root, 
-  "supplemental/replication_files/2_raw_data/ESS4_2018-19/Data/sect09_com_w4.dta"
-)) 
-
-ess5_community_new <- read_dta(file.path(root, w5_dir, "ess5_community_new.dta")) 
-
-ess5_comm_psnp <- ess5_community_new %>% 
-  mutate_if(is.labelled, as_factor) %>% 
-  mutate(
-    across(c(saq01, saq14), ~ str_trim(str_to_title(str_remove(., "\\d+\\."))) )
-) %>% 
-  select(ea_id, region = saq01, locality = saq14, comm_psnp) 
-
-
-ess4_comm_psnp <- sect09_com_w4 %>% 
-  mutate(comm_psnp = case_when(
-    cs9q01==1 ~ 1,
-    cs9q01==2 ~ 0
-  )) %>% 
-  mutate_if(is.labelled, as_factor) %>% 
-  mutate(
-    across(c(saq01, saq14), ~ str_trim( str_to_title(str_remove(., "\\d+\\.")) ) )
-  ) %>% 
-  select(ea_id, region = saq01, locality = saq14, comm_psnp) 
-
-
 # Synergies: comparing joint adoption rates
 
 synergies_hh_ess5_new <- read_dta(file.path(root, w5_dir, "synergies_hh_ess5_new.dta"))
@@ -906,6 +877,170 @@ ggsave(
   height = 200,
   units = "mm"
 )  
+
+
+
+## Community psnp ----
+
+sect09_com_w4 <- read_dta(file.path(
+  root, 
+  "supplemental/replication_files/2_raw_data/ESS4_2018-19/Data/sect09_com_w4.dta"
+)) 
+
+ess5_community_new <- read_dta(file.path(root, w5_dir, "ess5_community_new.dta")) 
+
+ess5_comm_psnp <- ess5_community_new %>% 
+  mutate_if(is.labelled, as_factor) %>% 
+  mutate(
+    across(c(saq01, saq14), ~ str_trim(str_to_title(str_remove(., "\\d+\\."))) ),
+    wave = "Wave 5",
+    region = recode(saq01, "Snnp" = "SNNP")
+  ) %>% 
+  select(ea_id, wave, region, locality = saq14, comm_psnp) 
+
+
+ess4_comm_psnp <- sect09_com_w4 %>% 
+  mutate(comm_psnp = case_when(
+    cs9q01==1 ~ 1,
+    cs9q01==2 ~ 0
+  )) %>% 
+  mutate_if(is.labelled, as_factor) %>% 
+  mutate(
+    across(c(saq01, saq14), ~ str_trim( str_to_title(str_remove(., "\\d+\\.")) ) ),
+    wave = "Wave 4",
+    region = recode(saq01, "Snnp" = "SNNP")
+  ) %>% 
+  select(ea_id, wave, region, locality = saq14, comm_psnp)
+
+mean_tbl_nowt <- function(tbl, vars = vars_both, group_vars) {
+  
+  tbl %>% 
+    pivot_longer(all_of(vars), 
+                 names_to = "variable",
+                 values_to = "value") %>% 
+    group_by(pick(group_vars)) %>% 
+    summarise(
+      mean = mean(value, na.rm = TRUE),
+      nobs = sum(!is.na(value)),
+      .groups = "drop"
+    )
+  
+}
+
+
+comm_psnp_all <- bind_rows(
+  mean_tbl_nowt(ess4_comm_psnp, "comm_psnp", group_vars = c("wave", "region")),
+  mean_tbl_nowt(ess4_comm_psnp, "comm_psnp", group_vars = c("wave")) %>% 
+    mutate(region = "National"),
+  
+  mean_tbl_nowt(ess5_comm_psnp, "comm_psnp", group_vars = c("wave", "region")),
+  mean_tbl_nowt(ess5_comm_psnp, "comm_psnp", group_vars = c("wave")) %>% 
+    mutate(region = "National")
+) %>% 
+  mutate(
+    region = fct_relevel(
+      region,
+      "Tigray", "Afar", "Amhara", "Oromia", "Somali", "Benishangul Gumuz",
+      "SNNP", "Gambela", "Harar", "Addis Ababa", "Dire Dawa", "National")
+  )
+
+
+comm_psnp_local <- bind_rows(
+  mean_tbl_nowt(ess4_comm_psnp, "comm_psnp", group_vars = c("wave", "region", "locality")),
+  mean_tbl_nowt(ess4_comm_psnp, "comm_psnp", group_vars = c("wave", "locality")) %>% 
+    mutate(region = "National"),
+  
+  mean_tbl_nowt(ess5_comm_psnp, "comm_psnp", group_vars = c("wave", "region", "locality")),
+  mean_tbl_nowt(ess5_comm_psnp, "comm_psnp", group_vars = c("wave", "locality")) %>% 
+    mutate(region = "National")
+) %>% 
+  mutate(
+    region = fct_relevel(
+      region, 
+      "Tigray", "Afar", "Amhara", "Oromia", "Somali", "Benishangul Gumuz", 
+      "SNNP", "Gambela", "Harar", "Addis Ababa", "Dire Dawa", "National")
+  )
+
+
+comm_psnp_all %>% 
+  filter(region != "Tigray") %>% 
+  ggplot(aes(region, mean, fill = wave)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = paste0( round(mean*100, 1), "%", "\n(", nobs, ")" ) ),
+            position = position_dodge(width = 1),
+            vjust = -.35, size = 2.5) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+  scale_y_continuous(labels = percent_format()) +
+  expand_limits(y = .35) +
+  theme(
+    legend.position = "top"#,
+    # legend.margin = margin(t = -0.4, unit = "cm"),
+    # axis.title = element_text(size = 12.5),
+    # plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
+  ) +
+  labs(x = "", y = "Percent", fill = "",
+       title = "Community PSNP - all EAs (Urban and Rural)")
+
+
+ggsave(
+  filename = file.path(root, "tmp/figures/comm_psnp_all.pdf"),
+  device = cairo_pdf,
+  width = 180,
+  height = 127,
+  units = "mm"
+)  
+
+
+
+comm_psnp_local %>% 
+  filter(region != "Tigray") %>% 
+  ggplot(aes(region, mean, fill = wave)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = paste0( round(mean*100, 1), "%", "\n(", nobs, ")" ) ),
+            position = position_dodge(width = 1),
+            vjust = -.35, size = 2.5) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+  scale_y_continuous(labels = percent_format()) +
+  expand_limits(y = .4) +
+  facet_wrap(~ locality, nrow = 2, scales = "free_y") +
+  theme(
+    legend.position = "top"#,
+    # legend.margin = margin(t = -0.4, unit = "cm"),
+    # axis.title = element_text(size = 12.5),
+    # plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
+  ) +
+  labs(x = "", y = "Percent", fill = "",
+       title = "Community PSNP by locality")
+
+
+ggsave(
+  filename = file.path(root, "tmp/figures/comm_psnp_local.pdf"),
+  device = cairo_pdf,
+  width = 180,
+  height = 200,
+  units = "mm"
+)  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

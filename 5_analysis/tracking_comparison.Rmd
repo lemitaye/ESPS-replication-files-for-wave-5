@@ -196,11 +196,11 @@ kbl(
 
 
 
-<!-- # Comparing adoption of innovations across waves -->
+# Comparing adoption of innovations across waves
 
-<!-- ## Comparing adoption of Chickpea Kabuli variety b/n waves 3 and 5 -->
+## Comparing adoption of Chickpea Kabuli variety b/n waves 3 and 5
 
-<!-- ![](../figures/kabuli_plot.pdf) -->
+![](../tmp/figures/kabuli_plot.pdf)
 
 <!-- <!-- ## Comparing adoption of maize varieties across waves, household level --> -->
 
@@ -215,9 +215,9 @@ kbl(
 <!-- ![](../figures/nat_panel.pdf) -->
 
 
-<!-- ## New innovations incorporated in ESPS5 -->
+## New innovations incorporated in ESPS5
 
-<!-- ![](../figures/new_innov.pdf) -->
+![](../tmp/figures/new_innov.pdf)
 
 
 <!-- ## Comparison: EA level -->
@@ -265,14 +265,19 @@ kbl(
 
 <!-- ![](../figures/other_ea.pdf) -->
 
-<!-- ## PSNP  -->
+## PSNP
 
-<!-- ![](../figures/psnp_all.pdf) -->
+![](../tmp/figures/psnp_all.pdf)
 
-<!-- ![](../figures/psnp_all_panel.pdf) -->
+![](../tmp/figures/psnp_all_panel.pdf)
 
-<!-- ![](../figures/psnp_all_local.pdf) -->
+![](../tmp/figures/psnp_all_local.pdf)
 
-<!-- ![](../figures/psnp_local_panel.pdf) -->
+![](../tmp/figures/psnp_local_panel.pdf)
+
+![](../tmp/figures/comm_psnp_all.pdf)
+
+![](../tmp/figures/comm_psnp_local.pdf)
+
 
 
