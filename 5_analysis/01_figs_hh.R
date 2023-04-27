@@ -22,9 +22,10 @@ ess4_hh_psnp <- read_dta(file.path(root, w4_dir, "ess4_hh_psnp.dta"))
 hh_livestock <- read_dta(file.path(root, w5_dir, "01_6_hh_livestock.dta"))
 
 wave4_hh_new <- wave4_hh %>% 
+  rename(hhd_sesbaniya = hhd_sasbaniya, hhd_alfalfa = hhd_alfa) %>% 
   mutate(hhd_grass = case_when(
-    hhd_elepgrass==100 | hhd_sasbaniya==100 | hhd_alfa==100 ~ 1,
-    hhd_elepgrass==0 & hhd_sasbaniya==0 & hhd_alfa==0 ~ 0 
+    hhd_elepgrass==100 | hhd_sesbaniya==100 | hhd_alfalfa==100 ~ 1,
+    hhd_elepgrass==0 & hhd_sesbaniya==0 & hhd_alfalfa==0 ~ 0 
   )) %>% 
   left_join(select(ess4_hh_psnp, household_id, hhd_psnp), by = "household_id")
 
@@ -40,9 +41,9 @@ vars_all <- c(
   "hhd_swc", "hhd_consag1", "hhd_consag2", "hhd_affor", "hhd_mango", 
   "hhd_papaya", "hhd_avocado", "hotline", "hhd_malt", "hhd_durum", 
   "hhd_seedv1", "hhd_seedv2", "hhd_livIA", "hhd_livIA_publ", 
-  "hhd_livIA_priv", "hhd_grass", "hhd_mintillage", "hhd_zerotill", 
-  "hhd_cresidue2", "hhd_rotlegume", "hhd_psnp", "hhd_impcr1", "hhd_impcr2", 
-  "hhd_impcr6", "hhd_impcr8"
+  "hhd_livIA_priv", "hhd_grass", "hhd_elepgrass", "hhd_sesbaniya", "hhd_alfalfa",
+  "hhd_mintillage", "hhd_zerotill", "hhd_cresidue2", "hhd_rotlegume", "hhd_psnp", 
+  "hhd_impcr1", "hhd_impcr2", "hhd_impcr6", "hhd_impcr8"
   )
 
 
@@ -140,7 +141,8 @@ labels <- wave5_hh %>%
     cols = everything(), 
     names_to = "variable", 
     values_to = "label"
-    ) 
+    ) %>% 
+  mutate(label = str_to_title(label))
 
 national_hh_level <- bind_rows(
   mean_tbl(hh_level_w4, group_vars = c("wave", "variable"), pw = pw_w4),
@@ -265,54 +267,38 @@ collapse_ea <- function(tbl, group_vars = c("variable", "region")) {
   
 }
 
+# to use the map2 function:
+hh_level_all <- list(
+  hh_level_w4, hh_level_w4_urb_hh, hh_level_w5, hh_level_w5_urb_hh
+)
+
+my_names <- c("Wave 4", "Wave 4", "Wave 5", "Wave 5")
 
 
+summ_by_ea <- function(tbl, name) {
+  
+  bind_rows(
+    
+    tbl %>% 
+      group_by(ea_id) %>% 
+      collapse_ea(group_vars = "variable") %>% 
+      mutate(region = "National", wave = name),
+    
+    tbl %>% 
+      group_by(ea_id, region) %>% 
+      collapse_ea() %>% 
+      mutate(wave = name)
+    
+  )
+}
 
-innov_ea_all <- bind_rows(
-  hh_level_w4 %>% 
-    group_by(ea_id) %>% 
-    collapse_ea(group_vars = "variable") %>% 
-    mutate(region = "National", wave = "Wave 4"),
-  
-  hh_level_w4_urb_hh %>% 
-    group_by(ea_id) %>% 
-    collapse_ea(group_vars = "variable") %>% 
-    mutate(region = "National", wave = "Wave 4"),
-  
-  hh_level_w4 %>% 
-    group_by(ea_id, region) %>% 
-    collapse_ea() %>% 
-    mutate(wave = "Wave 4"),
-  
-  hh_level_w4_urb_hh %>% 
-    group_by(ea_id, region) %>% 
-    collapse_ea() %>% 
-    mutate(wave = "Wave 4"),
-  
-  hh_level_w5 %>% 
-    group_by(ea_id) %>% 
-    collapse_ea(group_vars = "variable") %>% 
-    mutate(region = "National", wave = "Wave 5"),
-  
-  hh_level_w5_urb_hh %>% 
-    group_by(ea_id) %>% 
-    collapse_ea(group_vars = "variable") %>% 
-    mutate(region = "National", wave = "Wave 5"),
-  
-  hh_level_w5 %>% 
-    group_by(ea_id, region) %>% 
-    collapse_ea() %>% 
-    mutate(wave = "Wave 5"),
-  
-  hh_level_w5_urb_hh %>% 
-    group_by(ea_id, region) %>% 
-    collapse_ea() %>% 
-    mutate(wave = "Wave 5")
-) %>% 
+
+innov_ea_all <- map2(hh_level_all, my_names, summ_by_ea) %>% 
+  bind_rows() %>% 
   left_join(
-    labels %>% 
-      mutate( variable = str_replace(variable, "hhd_", "ead_") ), 
-    by = "variable") 
+    labels %>%
+      mutate( variable = str_replace(variable, "hhd_", "ead_") ),
+    by = "variable")
 
 write_csv(innov_ea_all, "adoption_rates_ESS/data/innov_ea_all.csv")
 write_csv(innov_ea_all, "dynamics_presentation/data/innov_ea_all.csv")
@@ -320,47 +306,12 @@ write_csv(innov_ea_all, "dynamics_presentation/data/innov_ea_all.csv")
 
 ## Panel hhs ----
 
-innov_ea_panel <- bind_rows(
-  hh_panel_w4 %>% 
-    group_by(ea_id) %>% 
-    collapse_ea(group_vars = "variable") %>% 
-    mutate(region = "National", wave = "Wave 4"),
-  
-  hh_panel_w4_urb_hh %>% 
-    group_by(ea_id) %>% 
-    collapse_ea(group_vars = "variable") %>% 
-    mutate(region = "National", wave = "Wave 4"),
-  
-  hh_panel_w4 %>% 
-    group_by(ea_id, region) %>% 
-    collapse_ea() %>% 
-    mutate(wave = "Wave 4"),
-  
-  hh_panel_w4_urb_hh %>% 
-    group_by(ea_id, region) %>% 
-    collapse_ea() %>% 
-    mutate(wave = "Wave 4"),
-  
-  hh_panel_w5 %>% 
-    group_by(ea_id) %>% 
-    collapse_ea(group_vars = "variable") %>% 
-    mutate(region = "National", wave = "Wave 5"),
-  
-  hh_panel_w5_urb_hh %>% 
-    group_by(ea_id) %>% 
-    collapse_ea(group_vars = "variable") %>% 
-    mutate(region = "National", wave = "Wave 5"),
-  
-  hh_panel_w5 %>% 
-    group_by(ea_id, region) %>% 
-    collapse_ea() %>% 
-    mutate(wave = "Wave 5"),
-  
-  hh_panel_w5_urb_hh %>% 
-    group_by(ea_id, region) %>% 
-    collapse_ea() %>% 
-    mutate(wave = "Wave 5")
-) %>% 
+hh_level_panel <- list(
+  hh_panel_w4, hh_panel_w4_urb_hh, hh_panel_w5, hh_panel_w5_urb_hh
+)
+
+innov_ea_panel <- map2(hh_level_panel, my_names, summ_by_ea) %>% 
+  bind_rows() %>% 
   left_join(
     labels %>% 
       mutate( variable = str_replace(variable, "hhd_", "ead_") ), 
@@ -369,117 +320,5 @@ innov_ea_panel <- bind_rows(
 
 write_csv(innov_ea_panel, "adoption_rates_ESS/data/innov_ea_panel.csv")
 write_csv(innov_ea_panel, "dynamics_presentation/data/innov_ea_panel.csv")
-
-
-
-
-# Plots ----
-
-plot_compar <- function(tbl, title, xlim = .8) {
-  
-  tbl %>% 
-    mutate(
-      improv = case_when(
-        str_detect(label, "Improved") ~ 1,
-        TRUE ~ 0
-      ),
-      wave = fct_relevel(wave, "Wave 5", "Wave 4"),
-      label = fct_reorder(label, -improv)
-    ) %>%
-    ggplot(aes(mean, label, fill = wave)) +
-    geom_col(position = "dodge") +
-    geom_text(aes(label = paste0( round(mean*100, 2), "%", " (", nobs, ")" ) ),
-              position = position_dodge(width = 1),
-              hjust = -.15, size = 2.5) +
-    scale_y_discrete(labels = function(x) str_wrap(x, width = 35)) +
-    scale_x_continuous(labels = percent_format()) +
-    expand_limits(x = xlim) +
-    theme(legend.position = "top") +
-    labs(x = "Percent of households", 
-         y = "", 
-         fill = "",
-         title = paste0("Percent of Rural Households Adopting Innovations - ", title),
-         caption = "Percent are weighted sample means using panel weights.
-         Number of households responding in parenthesis")
-  
-}
-
-
-nat_hh <- national_hh_level %>% 
-  plot_compar("National", xlim = .85) +
-  labs(caption = "Percent are weighted sample means using each wave's respective weights.
-         Number of households responding in parenthesis")
-
-amhara_hh <- regions_hh_level %>% 
-  filter(region == "Amhara") %>% 
-  plot_compar("Amhara", xlim = 1.05) +
-  labs(caption = "Percent are weighted sample means using each wave's respective weights.
-         Number of households responding in parenthesis")
-
-oromia_hh <- regions_hh_level %>% 
-  filter(region == "Oromia") %>% 
-  plot_compar("Oromia") +
-  labs(caption = "Percent are weighted sample means using each wave's respective weights.
-         Number of households responding in parenthesis")
-
-snnp_hh <- regions_hh_level %>% 
-  filter(region == "SNNP") %>% 
-  plot_compar("SNNP") +
-  labs(caption = "Percent are weighted sample means using each wave's respective weights.
-         Number of households responding in parenthesis")
-
-other_hh <- regions_hh_level %>% 
-  filter(region == "Other regions") %>% 
-  plot_compar("Other regions") +
-  labs(caption = "Percent are weighted sample means using each wave's respective weights.
-         Number of households responding in parenthesis")
-
-
-
-nat_panel <- national_hh_panel %>% 
-  plot_compar("National") +
-  labs(subtitle = "Only panel households included")
-  
-amhara_panel <- regions_hh_panel %>% 
-  filter(region == "Amhara") %>% 
-  plot_compar("Amhara", xlim = 1) +
-  labs(subtitle = "Only panel households included")
-
-oromia_panel <- regions_hh_panel %>% 
-  filter(region == "Oromia") %>% 
-  plot_compar("Oromia") +
-  labs(subtitle = "Only panel households included")
-
-snnp_panel <- regions_hh_panel %>% 
-  filter(region == "SNNP") %>% 
-  plot_compar("SNNP", xlim = .75) +
-  labs(subtitle = "Only panel households included")
-
-other_panel <- regions_hh_panel %>% 
-  filter(region == "Other regions") %>% 
-  plot_compar("Other Regions") +
-  labs(subtitle = "Only panel households included")
-
-plots <- list(nat_hh, amhara_hh, oromia_hh, snnp_hh, other_hh,
-              nat_panel, amhara_panel, oromia_panel, snnp_panel, other_panel)
-
-names(plots) <- c("nat_hh", "amhara_hh", "oromia_hh", "snnp_hh", "other_hh", "nat_panel", 
-                  "amhara_panel", "oromia_panel", "snnp_panel", "other_panel")
-
-for (i in seq_along(plots)) {
-  
-  file <- paste0(root, "/LSMS_W5/tmp/figures/", names(plots)[[i]], ".pdf")
-  
-  print(paste("saving to", file))
-  
-  ggsave(
-    filename = file,
-    plot = plots[[i]],
-    device = cairo_pdf,
-    width = 200,
-    height = 285,
-    units = "mm"
-  )
-}
 
 
