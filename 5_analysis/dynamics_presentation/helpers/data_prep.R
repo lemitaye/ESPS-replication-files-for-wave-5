@@ -56,7 +56,5 @@ adoption_rates <- bind_rows(
 
 labels_vec <- unique(adoption_rates$label)
 
-labels_choices <- labels_vec[! labels_vec %in% c(
-  "Feed and Forage: Elephant Grass", "Community Irrigation Scheme"
-  )]
+labels_choices <- sort(labels_vec)
 

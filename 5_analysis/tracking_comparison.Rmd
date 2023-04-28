@@ -267,6 +267,8 @@ kbl(
 
 ## PSNP
 
+### Household PSNP
+
 ![](../tmp/figures/psnp_all.pdf)
 
 ![](../tmp/figures/psnp_all_panel.pdf)
@@ -275,9 +277,16 @@ kbl(
 
 ![](../tmp/figures/psnp_local_panel.pdf)
 
+### Community PSNP
+
 ![](../tmp/figures/comm_psnp_all.pdf)
 
-![](../tmp/figures/comm_psnp_local.pdf)
+![](../tmp/figures/comm_psnp_local_panel.pdf)
+
+![](../tmp/figures/comm_psnp_all_panel.pdf)
+
+![](../tmp/figures/comm_psnp_local_panel.pdf)
+
 
 
 
