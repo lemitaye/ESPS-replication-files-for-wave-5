@@ -43,12 +43,22 @@ ui <- fluidPage(
      
     ),
     
-    mainPanel(plotOutput("plot"))
+    mainPanel(
+      textOutput("selected_var"),
+      plotOutput("plot")
+      )
   )
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
+  
+  
+  output$selected_var <- renderText({ 
+    switch(input$var, 
+           "Afforestation" = "Blah, Blah",
+           "Avocado Tree" = "Blah, Blah, 2")
+  })
   
   filteredData <- reactive({
     adoption_rates %>% 
@@ -62,16 +72,6 @@ server <- function(input, output) {
     filteredData() %>% slice_max(mean) %>% pull(mean)
   })
   
-  facetLabs <- reactive({ 
-    if_else(
-    input$type == "All households/EA",
-    c("Household" = "All households", 
-                  "EA" = "All EA"),
-    c("Household" = "Household - panel sample", 
-                  "EA" = "EA - panel sample")
-    ) 
-  })
-    
   
 
     output$plot <- renderPlot({
