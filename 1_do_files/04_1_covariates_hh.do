@@ -174,39 +174,7 @@ replace yrseduc=0 if yrseduc==.
 save "${tmp}/covariates/hh_educ_head.dta", replace
 
 
-
-* Houssing - secttion 10a ------------------------------------------------------
-/*
-use "${rawdata}/HH/sect10a_hh_w5.dta", clear  // no data
-
-order s10aq08 s10aq09 s10aq10 s10aq12  s10aq27 s10aq21 s10aq20 s10aq06 s10aq07, after(s10aq38)
-order s10aq34 s10aq38, after(s10aq07)
-for var s10aq08- s10aq38:replace X=. if X==.a
-for var s10aq08 - s10aq38 : tabulate X, gen(X)
-save "${tmp}/sect10a_hh_w4_houseing", replace
-
-*merge 1:1 household_id using "C:\Users\SAlemu\Desktop\ESS_4_2018_May\ESS4_Analysis\sect11_hh_w4_asset.dta"
-merge 1:1 household_id using "${tmp}/sect11_hh_w4_asset.dta"
-*edit if _merge==1
-keep if _merge==3
-drop  s10aq271 - s10aq2716
-save "${tmp}/asset_houseing", replace
-
-drop s10aq081-s10aq3813
-winsor2 s10aq06, replace cuts(1 99)
-drop _merge
-order s10aq06, after(HHown_item35)
-pca HHown_item1- s10aq06, comp(1)
-predict asset
-sum asset
-xtile asset_index=asset, nq(5)
-table asset_index, c(mean asset)
-keep household_id asset asset_index
-compress
-save "${tmp}/asset_index", replace
-*/
-
-* Productive asset - section 11 ------------------------------------------------
+* Asset & Productive asset indices - sections 10a & 11 -------------------------
 
 use "${rawdata}/HH/sect11_hh_w5.dta", clear 
 
@@ -216,26 +184,54 @@ label define Yes_no 1 "Yes" 0 "No", replace
 recode HHown_item (2=0)
 label values HHown_item  Yes_no
 
-keep if asset_cd>=29
-
 keep household_id asset_cd HHown_item
 replace HHown_item=0 if HHown_item==.
 reshape wide HHown_item, i(household_id) j(asset_cd)
 
-// employ principal component analysis (PCA)
-pca HHown_item29-HHown_item35, comp(1)
-predict pssetindex
-sum pssetindex
+preserve
+    use "${rawdata}/HH/sect10a_hh_w5.dta", clear 
 
+    winsor2 s10aq06, replace cuts(1 99)
+    keep household_id s10aq06
+
+    tempfile no_rooms
+    save `no_rooms'
+restore
+
+merge 1:1 household_id using `no_rooms', nogenerate
+
+/* 
+note: two productive assets added in wave 5:- 
+      (i) 36. Bajaj, and (ii) 37. Personal Computer/Laptop 
+*/
+
+// Employ principal component analysis (PCA)
+
+// 1. Asset index:
+pca HHown_item1-s10aq06, comp(1)  // all assets + no. of rooms
+predict asset_index
+
+// compute quintiles:
+xtile asset_quint=asset_index, nq(5)
+
+
+// 2. Productive asset index:
+pca HHown_item29-HHown_item37, comp(1)   // 29-37 productive assests (see `tab asset_cd')
+predict pssetindex
+
+// compute quintiles:
 xtile prodasset_quint=pssetindex, nq(5)
-table prodasset_quint, stat(mean pssetindex)
+
+lab var asset_index   "Asset index"
+lab var asset_quint   "Asset index - quintiles"
 
 lab var pssetindex      "Productive asset index"
 lab var prodasset_quint "Productive asset index - quintiles"
 
-keep household_id pssetindex prodasset_quint
+keep household_id asset_index asset_quint pssetindex prodasset_quint
 
-save "${tmp}/covariates/hh_prod_asset_index.dta", replace
+* save ----
+save "${tmp}/covariates/hh_asset_indices.dta", replace
 
 
 * Non-farm enterprise and Other income- sections 12 & 13 -----------------------
@@ -258,30 +254,25 @@ label variable income_offfarm_wiz "Annual Off-farm income in BIRR - winsorized"
 
 save "${tmp}/covariates/hh_income_off.dta", replace
 
-/*
-merge 1:1 household_id using "${data}\ess4_hh_psnp"
-keep if _m==3
-drop _m
 
+* Add consumption aggregates ---------------
 
-*Add consumption aggregates *
-merge 1:1 household_id using "${raw4}\HH\cons_agg_w4"
+use "${rawdata}/HH/cons_agg_w5.dta", clear
 
-drop _merge
-
-
-merge 1:1 household_id using "${data}\ess4_pp_hhlevel_parcel_new"
-drop if _m==2
-drop _m
-
-g consq1=0 if cons_quint>1
+gen consq1=0 if cons_quint>1
 replace consq1=1 if cons_quint==1
 
-g consq2=0 if cons_quint>2
+gen consq2=0 if cons_quint>2
 replace consq2=1 if cons_quint==1 | cons_quint==2
 lab var consq1 "Bottom 1 consumption quintile" 
 lab var consq2 "Bottom 1-2 (<40%) consumption quintiles"
 
+save "${tmp}/covariates/cons_agg.dta", replace
+
+/*
+merge 1:1 household_id using "${data}\ess4_pp_hhlevel_parcel_new"
+drop if _m==2
+drop _m
 */
 
 
@@ -299,15 +290,15 @@ drop _merge
 merge 1:1 household_id using "${tmp}/covariates/hh_adulteq.dta"
 drop _merge
 
-*merge 1:1 household_id using `asset_index'
-*drop _merge 
-
-merge 1:1 household_id using "${tmp}/covariates/hh_prod_asset_index.dta"
-drop _merge
+merge 1:1 household_id using "${tmp}/covariates/hh_asset_indices.dta"
+drop _merge 
 
 merge 1:1 household_id using "${tmp}/covariates/hh_income_off.dta"
 drop _merge
 
+merge 1:1 household_id using "${tmp}/covariates/cons_agg.dta"
+drop _merge
 
-* save -------------------------------------------------------------------------
+
+* save -----------
 save "${tmp}/covariates/04_1_covars_hh.dta", replace
