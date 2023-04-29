@@ -2,7 +2,9 @@
 title: "Dynamics in the adoption of CGIAR related innovations in the ESPS with a focus on regional comparison"
 author: "Lemi Daba (tayelemi@gmail.com) - SPIA CGIAR"
 date: "`r Sys.Date()`"
-output: html_document
+output: 
+  html_document:
+    toc: true
 runtime: shiny
 ---
 
@@ -29,230 +31,226 @@ source("helpers/ggplot_theme_Publication-2.R")
 
 ```
 
+```{css, echo = FALSE}
+
+.shiny-frame{width: 1100px;height: 550px;}
+
+```  
+
 ```{r}
 
-InputPanel <- function(name) {
-  inputPanel(
-    radioButtons(name,
-                 label = "Choose sample type to display",
-                 choices = list(
-                   "All households/EA", 
-                   "Panel households/EA"),
-                 selected = "All households/EA")
+plotShiny <- function(tbl, title = "Add Title") {
+  
+  require(shiny)
+  
+  shinyApp(
+    ui <- fluidPage(
+      
+      sidebarLayout(
+        sidebarPanel(
+          # helpText("Create bar graphs comparing adoption rates from the Ethiopian 
+          #      Socio-economic Panle Survey (ESPS)."),
+          # 
+          # # selectInput("var", 
+          # #             label = "Choose a variable to display",
+          # #             choices = labels_choices,
+          # #             multiple = FALSE,
+          # #             selected = NULL),
+          
+          radioButtons("type",
+                       label = "Choose sample type to display",
+                       choices = list(
+                         "All" = "All households/EA", 
+                         "Panel" = "Panel households/EA"
+                         ),
+                       selected = "All households/EA"),
+          
+          width = 2
+          
+        ),
+        
+        mainPanel(
+          tabsetPanel(
+            type = "tabs",
+            tabPanel("Household", plotOutput("plothh")),
+            tabPanel("EA", plotOutput("plotea"))
+          )
+          
+        )
+      )
+    ),
+    
+    # Define server logic required to draw a histogram
+    server <- function(input, output) {
+      
+      filteredDatahh <- reactive({
+        tbl %>%
+          filter(
+            sample == input$type, level == "Household"
+          )
+      })
+      
+      filteredDataEA <- reactive({
+        tbl %>%
+          filter(
+            sample == input$type, level == "EA"
+          )
+      })
+      
+      maxGridhh <- reactive({
+        filteredDatahh() %>% 
+          slice_max(mean) %>% 
+          pull(mean)
+      })
+      
+      maxGridEA <- reactive({
+        filteredDataEA() %>% 
+          slice_max(mean) %>% 
+          pull(mean)
+      })
+      
+      output$plothh <- renderPlot({
+        
+        filteredDatahh() %>% 
+          plot_waves() +
+          expand_limits(y = maxGridhh() + .15) +
+          labs(title = title)
+        
+        
+      }, height = 450)
+      
+      output$plotea <- renderPlot({
+        
+        filteredDataEA() %>% 
+          plot_waves() +
+          expand_limits(y = maxGridEA() + .15) +
+          labs(title = title)
+        
+        
+      }, height = 450)
+    }
+    
+
   )
-   
-}
-
-
-plot_waves <- function(tbl, var) {
   
-  maxGrid <- tbl %>% 
-    slice_max(mean) %>% 
-    pull(mean)
-  
-  tbl %>% 
-    ggplot(aes(region, mean, fill = wave)) +
-    geom_col(position = "dodge") +
-    geom_text(aes(label = paste0( round(mean*100, 1), "%", "\n(", nobs, ")" ) ),
-              position = position_dodge(width = 1),
-              vjust = -.35, size = 3) +
-    scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
-    scale_y_continuous(labels = percent_format()) +
-    expand_limits(y = maxGrid + .15) +
-    facet_wrap(~ level, nrow=2, scales = "free") +
-    scale_fill_Publication() + 
-    theme_Publication() +
-    theme(
-      legend.position = "top",
-      legend.margin = margin(t = -0.4, unit = "cm"),
-      axis.title = element_text(size = 12.5),
-      plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
-    ) +
-    labs(x = "", y = "Percent",
-         title = var,
-         fill = "",
-         caption = "Percent at the household level are weighted sample means.
-             Number of observations in parenthesis.")
 }
-
-fig_height <- 650        
 
 ```
 
+
+# Animal Agriculture
 
 ## Crossbred Poultry
 
 Adoption of crossbred poultry has increased across all regions at the household level, with the largest increases in Amhara (15.7% to 19.4%), Oromia (11.3% to 19.5%), and other regions (4.9% to 8.6%). There has also been significant increases at the EA level in Amhara (58.3% to 80.6%) and Oromia (48.6% to 64.9%), whereas it stayed flat in the SNNP and other regions. Nationally, adoption of crossbred poultry has risen both at the household (12.2% to 17.8%) and EA (45.7% to 53.2%) levels. 
 
-```{r poultry, echo=FALSE}
+```{r poultry, echo=FALSE, fig.height=8}
 
-InputPanel("type1")
+# InputPanel("type1")
+# 
+# 
+# renderPlot({
+#   
+#   filteredData <- adoption_rates %>% 
+#     filter(
+#       label %in% "Crossbred Poultry", 
+#       sample == input$type1
+#     )
+#   
+#   plot_waves(filteredData, "Crossbred Poultry")
+# }, 
+# height = fig_height
+# )
 
+adoption_rates %>% 
+  filter(label=="Crossbred Poultry") %>% 
+  plotShiny(title = "Crossbred Poultry")
+```
 
-renderPlot({
-  
-  filteredData <- adoption_rates %>% 
-    filter(
-      label %in% "Crossbred Poultry", 
-      sample == input$type1
-    )
-  
-  plot_waves(filteredData, "Crossbred Poultry")
-}, 
-height = fig_height
-)
-
+```{r}
+gotop::use_gotop()
 ```
 
 
-## Feed and forages
+## Forages
 
 Adoption of improved forages has shown an increase both at the household level (2.5% to 5.3%) and EA level (4.3% to 20.2%). A large part of this increase can be attributed to significant increases in adoption rates in “Other regions” and Amhara, where in each case, no adoption was observed at the household level in ESS4. In particular, adoption rates in “Other regions” jumped to 13.3% at the household level and 32% at the EA level starting from almost no adoption in ESS4. Most households in some of these regions, like Afar and Somali, are engaged in livestock rearing. A notable increase in adoption was also observed in SNNP at the EA level (12.5% to 22.5%).
 
 
 ```{r forages, echo=FALSE}
 
-InputPanel("type2")
+adoption_rates %>% 
+  filter(variable %in% c("hhd_grass", "ead_grass")) %>% 
+  plotShiny("Feed and Forages: Elephant Grass, Sesbaniya, & Alfalfa
+")
 
 
-renderPlot({
-  
-  filteredData <- adoption_rates %>%
-    filter(
-      label %in% "Feed and forages: Elephant grass, Sesbaniya, & Alfalfa",
-      sample == input$type2
-    )
-  
-  plot_waves(filteredData, "Feed and forages: Elephant grass, Sesbaniya, & Alfalfa")
-}, height = fig_height)
 ```
 
+# Natural Resource Management
 
-## Soil and water conservation (SWC) practices
+## Soil and Water Conservation (SWC) practices
 
 In the national aggregate, we observe virtually no change in the adoption of SWC practices at the household level, but a slight decline at the EA level. Adoption declined slightly in all regions, except Oromia, where it slightly increased. The largest decline at the household level is observed in “Other regions” (65.7% to 51.1%), whereas the larges decline at the EA level is in Amhara (100% to 75%).
 
 
 ```{r swc, echo=FALSE}
 
-InputPanel("type3")
+adoption_rates %>% 
+  filter(variable %in% c("ead_swc", "hhd_swc")) %>% 
+  plotShiny("Soil and Water Conservation (SWC) practices")
 
-renderPlot({
-  
-  filteredData <- adoption_rates %>%
-    filter(
-      label %in% "Soil Water Conservation practices",
-      sample == input$type3
-    )
-  
-  plot_waves(filteredData, "Soil Water Conservation practices")
-}, height = fig_height)
 ```
 
 
-## Conservation Agriculture - using Minimum tillage
+## Conservation Agriculture - using Minimum Tillage
 
-Nationally, adoption has increased both at the household (4.1% to 6.7%) and EA (17.6% to 19.1%) levels. Adoption of CA-MT increased across all regions at the household level. The largest increase is observed in Oromia (2.5% to 6.2%), followed by “Other regions” (11.7% to 15.3%) and Amhara (5% to 7.1%). The picture is mixed at the EA level, with a significant uptake in Oromia (16.2% to 27%) and SNNP (20% to 27.5%), no change in Amhara, and a decline in “Other regions” (17.3% to 12%). 
+Nationally, adoption has increased both at the household (4.1% to 6.7%) and EA (17.6% to 19.1%) levels. Adoption of CA-MT increased across all regions at the household level. The largest increase is observed in Oromia (2.5% to 6.2%), followed by “Other regions” (11.7% to 15.3%) and Amhara (5% to 7.1%). The picture is mixed at the EA level, with a significant uptake in Oromia (16.2% to 27%) and SNNP (20% to 27.5%), no change in Amhara, and a decline in “Other regions” (17.3% to 12%).
 
 ```{r ca_mt, echo=FALSE}
 
-InputPanel("type4")
+adoption_rates %>% 
+  filter(label=="Conservation Agriculture - Using Minimum Tillage") %>% 
+  plotShiny("Conservation Agriculture - using Minimum Tillage")
 
-renderPlot({
-  
-  filteredData <- adoption_rates %>%
-    filter(
-      label %in% "Conservation Agriculture - using Minimum tillage",
-      sample == input$type4
-    )
-  
-  plot_waves(filteredData, "Conservation Agriculture - using Minimum tillage")
-}, height = fig_height)
 ```
-
-
-## Productive safety net program (PSNP)
-
-Our results show that the proportion of rural households benefitting from PSNP declined across all regions. Nationally, it declined from 9.7% in ESS4 to 7% in ESS5, when only panel households are considered. The biggest fall is observed in Amhara (18.7% to 14.3%) followed by Oromia (4.3% to 1.7%) and “Other regions” (13.4% to 10.3%), while the decline was slight in SNNP (8.2% to 7.3%). Rural households in Oromia seem to be benefit the least from PSNP in both waves. The picture at the EA level is more mixed. While the proportion of EAs with at least one household benefitting from PSNP increased in Amhara and SNNP, it shows a marked decline in Oromia and a moderate decline in “Other regions”. But, overall there is a fall in the percentage of EAs with PSNP nationally.
-
-
-```{r psnp, echo=FALSE}
-
-InputPanel("type5")
-
-renderPlot({
-  
-  filteredData <- adoption_rates %>%
-    filter(
-      label %in% "At least 1 member benefitting from PSNP",
-      sample == input$type5
-    )
-  
-  plot_waves(filteredData, "At least 1 member benefitting from PSNP")
-}, height = fig_height)
-```
-
 
 ## Afforestation
 
-Adoption of afforestation as a soil erosion control mechanism increased across all regions and nationally at the household level. A more mixed picture appears at the EA level, with a decline in Amhara and SNNP and an increase in Oromia and “Other regions”. Overall, it increases nationally at the EA level also. 
+Adoption of afforestation as a soil erosion control mechanism increased across all regions and nationally at the household level. A more mixed picture appears at the EA level, with a decline in Amhara and SNNP and an increase in Oromia and “Other regions”. Overall, it increases nationally at the EA level also.
 
 
 ```{r affor, echo=FALSE}
 
-InputPanel("type6")
+adoption_rates %>% 
+  filter(label=="Afforestation") %>% 
+  plotShiny("Afforestation")
 
-renderPlot({
-  
-  filteredData <- adoption_rates %>%
-    filter(
-      label %in% "Afforestation",
-      sample == input$type6
-    )
-  
-  plot_waves(filteredData, "Afforestation")
-}, height = fig_height)
 ```
 
 
 ## Avocado trees
 
-The proportion of rural households growing avocado trees increased across all regions, except in Amhara, where it is non-existent. The biggest gains are observed in Oromia (9.9% to 15.6%), followed by SNNP (27.7% to 32.5%). Almost the same pattern appears at the EA level, except that it stays flat in “Other regions”. Nationally, it increased from 11.4% in ESS4 to 16.5% in ESS5 at the household level and 27.7% in ESS4 to 29.3% in ESS5, when only panel households and EAs are considered. 
+The proportion of rural households growing avocado trees increased across all regions, except in Amhara, where it is non-existent. The biggest gains are observed in Oromia (9.9% to 15.6%), followed by SNNP (27.7% to 32.5%). Almost the same pattern appears at the EA level, except that it stays flat in “Other regions”. Nationally, it increased from 11.4% in ESS4 to 16.5% in ESS5 at the household level and 27.7% in ESS4 to 29.3% in ESS5, when only panel households and EAs are considered.
 
 ```{r avocado, echo=FALSE}
 
-InputPanel("type7")
+adoption_rates %>% 
+  filter(label=="Avocado Tree") %>% 
+  plotShiny("Avocado Tree")
 
-renderPlot({
-  
-  filteredData <- adoption_rates %>%
-    filter(
-      label %in% "Avocado tree",
-      sample == input$type7
-    )
-  
-  plot_waves(filteredData, "Avocado tree")
-}, height = fig_height)
 ```
 
 ## Mango trees
 
-We observe virtually no change in the proportion of farmers planting Mango trees across the two waves. However, when comparing levels across regions in each wave, it is interesting to note that the proportion is much higher in “Other regions”. 
+We observe virtually no change in the proportion of farmers planting Mango trees across the two waves. However, when comparing levels across regions in each wave, it is interesting to note that the proportion is much higher in “Other regions”.
 
 ```{r mango, echo=FALSE}
 
-InputPanel("type8")
+adoption_rates %>% 
+  filter(label=="Mango Tree") %>% 
+  plotShiny("Mango Tree")
 
-renderPlot({
-  
-  filteredData <- adoption_rates %>%
-    filter(
-      label %in% "Mango tree",
-      sample == input$type8
-    )
-  
-  plot_waves(filteredData, "Mango tree")
-}, height = fig_height)
 ```
 
 ## Papaya trees
@@ -261,102 +259,126 @@ Here also, there seems to be virtually no change in adoption rates across the tw
 
 ```{r papaya, echo=FALSE}
 
-InputPanel("type9")
+adoption_rates %>% 
+  filter(label=="Papaya Tree") %>% 
+  plotShiny("Papaya Tree")
 
-renderPlot({
-  
-  filteredData <- adoption_rates %>%
-    filter(
-      label %in% "Papaya tree",
-      sample == input$type9
-    )
-  
-  plot_waves(filteredData, "Papaya tree")
-}, height = fig_height)
 ```
 
 
-## Improved maize – self reported
+# Crop Germplasm Improvement
 
-Adoption of improved maize shows a consistent increase across all regions and at the national level. 
+## Improved Maize – Self Reported
+
+Adoption of improved maize shows a consistent increase across all regions and at the national level.
 
 ```{r maize_sr, echo=FALSE}
 
-InputPanel("type10")
+adoption_rates %>% 
+  filter(variable %in% c("hhd_impcr2", "ead_impcr2")) %>% 
+  plotShiny("Improved Maize – Self Reported")
 
-renderPlot({
-  
-  filteredData <- adoption_rates %>%
-    filter(
-      label %in% "Improved   MAIZE-SR",
-      sample == input$type10
-    )
-  
-  plot_waves(filteredData, "Improved   MAIZE-SR")
-}, height = fig_height)
 ```
 
 
-## Improved wheat – self reported
+## Improved Wheat – Self Reported
 
 On the other hand, adoption of self-reported improved wheat varieties declined across all regions and in the aggregate. But the number of observations in some of these regions is too small to make any meaningful comparison.
 
 ```{r wheat_sr, echo=FALSE}
 
-InputPanel("type11")
+adoption_rates %>% 
+  filter(variable %in% c("hhd_impcr8", "ead_impcr8")) %>% 
+  plotShiny("Improved Wheat – Self Reported")
 
-renderPlot({
-  
-  filteredData <- adoption_rates %>%
-    filter(
-      label %in% "Improved   WHEAT-SR",
-      sample == input$type11
-    )
-  
-  plot_waves(filteredData, "Improved   WHEAT-SR")
-}, height = fig_height)
 ```
 
 
-## CG germplasm maize (DNA data)
+## CG Germplasm Maize (DNA data)
 
-Adoption of maize varieties with CG germplasm increased from 62.2% in ESS4 to 75.1% in ESS5 among panel households. Disaggregating by region, most of the increase took place in Amhara (45.7% to 68.3%), Oromia (70.3% to 84.9%), and Harar (81.1% to 97.2%) with SNNP staying flat. The same dynamics is observed at the EA level, with the percentage of EAs with at least 1 household adoption maize with CG-germplasm increasing from 75.7% to 87.8%. A similar pattern appears when all households and EAs are observed in both waves. 
+Adoption of maize varieties with CG germplasm increased from 62.2% in ESS4 to 75.1% in ESS5 among panel households. Disaggregating by region, most of the increase took place in Amhara (45.7% to 68.3%), Oromia (70.3% to 84.9%), and Harar (81.1% to 97.2%) with SNNP staying flat. The same dynamics is observed at the EA level, with the percentage of EAs with at least 1 household adoption maize with CG-germplasm increasing from 75.7% to 87.8%. A similar pattern appears when all households and EAs are observed in both waves.
 
 ```{r maize_cg, echo=FALSE}
 
-InputPanel("type12")
+adoption_rates %>% 
+  filter(variable %in% c("hhd_maize_cg", "ead_maize_cg")) %>% 
+  plotShiny("CG Germplasm Maize (DNA data)")
 
-renderPlot({
-  
-  filteredData <- adoption_rates %>%
-    filter(
-      label %in% "Maize - CG germplasm (DNA data)",
-      sample == input$type12
-    )
-  
-  plot_waves(filteredData, "Maize - CG germplasm (DNA data)" )
-}, height = fig_height)
 ```
 
 
-## Drought tolerant maize (DNA data)
+## Drought Tolerant Maize (DNA data)
 
-Similarly, adoption of drought tolerant maize, as identified using DNA fingerprinting, increased both at the household and EA levels. Looking at only the panel sample, the proportion rose from 23.7% in ESS4 to 39.6% in ESS5 at the household level, and 32.4% in ESS4 to 47.3% at the EA level. Looking at the dynamics across regions, the largest increase (at the household level) took place in Oromia (30.5% to 57.9%) followed by Harar (15.2% to 36%). 
+Similarly, adoption of drought tolerant maize, as identified using DNA fingerprinting, increased both at the household and EA levels. Looking at only the panel sample, the proportion rose from 23.7% in ESS4 to 39.6% in ESS5 at the household level, and 32.4% in ESS4 to 47.3% at the EA level. Looking at the dynamics across regions, the largest increase (at the household level) took place in Oromia (30.5% to 57.9%) followed by Harar (15.2% to 36%).
 
 ```{r dtmz, echo=FALSE}
 
-InputPanel("type13")
+adoption_rates %>% 
+  filter(variable %in% c("hhd_dtmz", "ead_dtmz")) %>% 
+  plotShiny("Drought Tolerant Maize (DNA data)")
 
-renderPlot({
-  
-  filteredData <- adoption_rates %>%
-    filter(
-      label %in% "Drought tolerant maize (DNA data)",
-      sample == input$type13
-    )
-  
-  plot_waves(filteredData, "Drought tolerant maize (DNA data)")
-}, height = fig_height)
 ```
+
+# Policy Influences 
+
+## Productive Safety-net Program (PSNP)
+
+Our results show that the proportion of rural households benefitting from PSNP declined across all regions. Nationally, it declined from 9.7% in ESS4 to 7% in ESS5, when only panel households are considered. The biggest fall is observed in Amhara (18.7% to 14.3%) followed by Oromia (4.3% to 1.7%) and “Other regions” (13.4% to 10.3%), while the decline was slight in SNNP (8.2% to 7.3%). Rural households in Oromia seem to be benefit the least from PSNP in both waves. The picture at the EA level is more mixed. While the proportion of EAs with at least one household benefitting from PSNP increased in Amhara and SNNP, it shows a marked decline in Oromia and a moderate decline in “Other regions”. But, overall there is a fall in the percentage of EAs with PSNP nationally.
+
+
+```{r psnp, echo=FALSE}
+
+adoption_rates %>% 
+  filter(label=="At Least 1 Member Benefitting From Psnp") %>% 
+  plotShiny("Productive Safety-net Program (PSNP)")
+
+```
+
+## Community PSNP
+
+
+
+# All other innovations
+
+The following interactive bar graph contains all the major innovations we tracked across the two waves, including the ones discussed above. 
+
+```{r tabsets, echo=FALSE}
+shinyAppDir(
+  appDir = "adoption_rates_ESS/",
+  options = list(
+    # width = "100%", 
+    height = 650
+  )
+)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 

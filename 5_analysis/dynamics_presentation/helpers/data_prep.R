@@ -58,3 +58,56 @@ labels_vec <- unique(adoption_rates$label)
 
 labels_choices <- sort(labels_vec)
 
+
+# Define a plot function:
+
+plot_waves <- function(tbl) {
+  
+  tbl %>% 
+    ggplot(aes(region, mean, fill = wave)) +
+    geom_col(position = "dodge") +
+    geom_text(aes(label = paste0( round(mean*100, 1), "%", "\n(", nobs, ")" ) ),
+              position = position_dodge(width = 1),
+              vjust = -.35, size = 3) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+    scale_y_continuous(labels = percent_format()) +
+    # expand_limits(y = maxGrid + .15) +
+    # facet_wrap(~ level, nrow=2, scales = "free") +
+    scale_fill_Publication() + 
+    theme_Publication() +
+    theme(
+      legend.position = "top",
+      legend.margin = margin(t = -0.4, unit = "cm"),
+      axis.title = element_text(size = 12.5),
+      plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
+    ) +
+    labs(
+      x = "", y = "Percent",
+      # title = input$var,
+      fill = "",
+      caption = "Percent at the household level are weighted sample means.
+             Number of observations in parenthesis."
+    )
+  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
