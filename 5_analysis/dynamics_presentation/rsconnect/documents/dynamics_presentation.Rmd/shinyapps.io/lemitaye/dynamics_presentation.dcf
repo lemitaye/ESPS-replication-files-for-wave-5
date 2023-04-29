@@ -5,9 +5,9 @@ account: lemitaye
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 8892769
-bundleId: 7108487
+bundleId: 7137016
 url: https://lemitaye.shinyapps.io/dynamics_presentation/
-when: 1681897869.98865
-lastSyncTime: 1681897869.98868
+when: 1682489302.74633
+lastSyncTime: 1682489302.74634
 asMultiple: FALSE
 asStatic: FALSE
