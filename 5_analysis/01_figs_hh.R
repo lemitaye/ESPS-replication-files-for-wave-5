@@ -174,7 +174,6 @@ adopt_rates_all_hh <- bind_rows(
     mutate(region = "National")
 )
 
-write_csv(adopt_rates_all_hh, file = "adoption_rates_ESS/data/adopt_rates_all_hh.csv")
 write_csv(adopt_rates_all_hh, file = "dynamics_presentation/data/adopt_rates_all_hh.csv")
 
 
@@ -234,7 +233,6 @@ adopt_rates_panel_hh <- bind_rows(
     mutate(region = "National")
 )
 
-write_csv(adopt_rates_panel_hh, file = "adoption_rates_ESS/data/adopt_rates_panel_hh.csv")
 write_csv(adopt_rates_panel_hh, file = "dynamics_presentation/data/adopt_rates_panel_hh.csv")
 
 
@@ -300,7 +298,6 @@ innov_ea_all <- map2(hh_level_all, my_names, summ_by_ea) %>%
       mutate( variable = str_replace(variable, "hhd_", "ead_") ),
     by = "variable")
 
-write_csv(innov_ea_all, "adoption_rates_ESS/data/innov_ea_all.csv")
 write_csv(innov_ea_all, "dynamics_presentation/data/innov_ea_all.csv")
 
 
@@ -318,7 +315,6 @@ innov_ea_panel <- map2(hh_level_panel, my_names, summ_by_ea) %>%
     by = "variable") 
 
 
-write_csv(innov_ea_panel, "adoption_rates_ESS/data/innov_ea_panel.csv")
 write_csv(innov_ea_panel, "dynamics_presentation/data/innov_ea_panel.csv")
 
 

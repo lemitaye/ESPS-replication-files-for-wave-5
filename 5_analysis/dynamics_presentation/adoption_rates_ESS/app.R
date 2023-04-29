@@ -25,8 +25,9 @@ ui <- fluidPage(
   
   sidebarLayout(
     sidebarPanel(
-      helpText("Create bar graphs comparing adoption rates from the Ethiopian
-               Socio-economic Panel Survey (ESPS)."),
+      helpText("'All' corresponds to all rural households or EAs in each wave; 
+               'Panel' corresponds to only panel rural households or EAs across 
+               the two waves."),
       
       radioButtons("type",
                    label = "Choose sample type to display",
