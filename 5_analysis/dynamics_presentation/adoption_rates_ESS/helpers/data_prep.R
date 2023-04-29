@@ -13,6 +13,10 @@ dna_means_hh <- read_csv("data/dna_means_hh.csv")
 
 dna_means_ea <- read_csv("data/dna_means_ea.csv")
 
+comm_psnp_all <- read_csv("data/comm_psnp_all.csv")
+
+comm_psnp_panel <- read_csv("data/comm_psnp_panel.csv")
+
 
 
 # cleaning ----

@@ -928,7 +928,7 @@ mean_tbl_nowt <- function(tbl, vars = vars_both, group_vars) {
 }
 
 
-comm_psnp_all <- bind_rows(
+comm_psnp_all_agg <- bind_rows(
   mean_tbl_nowt(ess4_comm_psnp, "comm_psnp", group_vars = c("wave", "region")),
   mean_tbl_nowt(ess4_comm_psnp, "comm_psnp", group_vars = c("wave")) %>% 
     mutate(region = "National"),
@@ -945,7 +945,7 @@ comm_psnp_all <- bind_rows(
   )
 
 
-comm_psnp_local <- bind_rows(
+comm_psnp_all_local <- bind_rows(
   mean_tbl_nowt(ess4_comm_psnp, "comm_psnp", group_vars = c("wave", "region", "locality")),
   mean_tbl_nowt(ess4_comm_psnp, "comm_psnp", group_vars = c("wave", "locality")) %>% 
     mutate(region = "National"),
@@ -961,8 +961,16 @@ comm_psnp_local <- bind_rows(
       "SNNP", "Gambela", "Harar", "Addis Ababa", "Dire Dawa", "National")
   )
 
+comm_psnp_all <- bind_rows(
+  comm_psnp_all_agg %>% 
+    mutate(locality = "Aggregate"), 
+  comm_psnp_all_local 
+)
 
-comm_psnp_all %>% 
+write_csv(comm_psnp_all, file = "dynamics_presentation/data/comm_psnp_all.csv")
+
+
+comm_psnp_all_agg %>% 
   filter(region != "Tigray") %>% 
   ggplot(aes(region, mean, fill = wave)) +
   geom_col(position = "dodge") +
@@ -992,7 +1000,7 @@ ggsave(
 
 
 
-comm_psnp_local %>% 
+comm_psnp_all_local %>% 
   filter(region != "Tigray") %>% 
   ggplot(aes(region, mean, fill = wave)) +
   geom_col(position = "dodge") +
@@ -1031,7 +1039,7 @@ ess4_comm_psnp_panel <- ess4_comm_psnp %>%
   semi_join(ess5_comm_psnp, by = "ea_id")
 
 
-comm_psnp_panel <- bind_rows(
+comm_psnp_panel_agg <- bind_rows(
   mean_tbl_nowt(ess4_comm_psnp_panel, "comm_psnp", group_vars = c("wave", "region")),
   mean_tbl_nowt(ess4_comm_psnp_panel, "comm_psnp", group_vars = c("wave")) %>% 
     mutate(region = "National"),
@@ -1048,7 +1056,7 @@ comm_psnp_panel <- bind_rows(
   )
 
 
-comm_psnp_local_panel <- bind_rows(
+comm_psnp_panel_local <- bind_rows(
   mean_tbl_nowt(ess4_comm_psnp_panel, "comm_psnp", group_vars = c("wave", "region", "locality")),
   mean_tbl_nowt(ess4_comm_psnp_panel, "comm_psnp", group_vars = c("wave", "locality")) %>% 
     mutate(region = "National"),
@@ -1065,8 +1073,18 @@ comm_psnp_local_panel <- bind_rows(
   )
 
 
+comm_psnp_panel <- bind_rows(
+  comm_psnp_panel_agg %>% 
+    mutate(locality = "Aggregate"), 
+  comm_psnp_panel_local 
+)
 
-comm_psnp_panel %>% 
+write_csv(comm_psnp_panel, file = "dynamics_presentation/data/comm_psnp_panel.csv")
+
+
+
+
+comm_psnp_panel_agg %>% 
   filter(region != "Tigray") %>% 
   ggplot(aes(region, mean, fill = wave)) +
   geom_col(position = "dodge") +
@@ -1095,7 +1113,7 @@ ggsave(
 )  
 
 
-comm_psnp_local_panel %>% 
+comm_psnp_panel_local %>% 
   filter(region != "Tigray") %>% 
   ggplot(aes(region, mean, fill = wave)) +
   geom_col(position = "dodge") +
