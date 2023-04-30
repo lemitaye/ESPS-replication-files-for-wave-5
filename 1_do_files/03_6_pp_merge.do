@@ -5,6 +5,19 @@
 
 use "${data}/w5_coverPP_new.dta", clear
 
+merge 1:1 household_id using "${data}/ess5_pp_hhlevel_parcel_new.dta"
+/*
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             6
+        from master                         6  (_merge==1)
+        from using                          0  (_merge==2)
+
+    Matched                             2,073  (_merge==3)
+    -----------------------------------------
+*/
+drop _merge
+
 merge 1:1 household_id using "${tmp}/PP_W5S3"
 /*
     Result                      Number of obs

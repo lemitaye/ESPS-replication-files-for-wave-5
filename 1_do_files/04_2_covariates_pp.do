@@ -203,7 +203,7 @@ drop _merge
 
 bys household_id parcel_id field_id: egen fhhlab1=count(s1q00) if s1q03==2 & s1q02>=15
 
-merge m:1 household_id using "${tmp}/covariates/hh_demo_head.dta", keepusing(hh_size)
+merge m:1 household_id using "${tmp}/covariates/cons_agg.dta", keepusing(hh_size)
 drop if _m==2
 drop _merge
 
