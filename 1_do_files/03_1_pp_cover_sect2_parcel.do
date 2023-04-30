@@ -95,6 +95,7 @@ preserve
     collapse (max) fowner title saq15, by(household_id holder_id parcel_id)  // saq15: holder's farm type (crop, lvstk, etc.)
     label var fowner "At lest 1 female hh-member listed as owner in parcel title"
     label var title "HH has title for the parcel"
+
     tempfile fowner
     save  `fowner'
 restore
@@ -158,6 +159,7 @@ lab var soilt7 "Other parcel use (barn, residential, etc.)" // to be checked?
 
 merge 1:1 household_id parcel_id holder_id using `frsell'
 drop _merge
+
 merge 1:1 household_id parcel_id holder_id using `fowner'
 drop _merge
 

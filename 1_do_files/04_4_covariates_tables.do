@@ -14,11 +14,11 @@ use "${tmp}/covariates/04_2_covars_hh_pp.dta", clear
 
 #delimit;
 global hhlevel   
-parcesizeHA fem_head flivown flivman hhd_flab age_head 
+parcesizeHA fem_head fowner flivman hhd_flab age_head nom_totcons_aeq consq1 
+consq2 asset_index pssetindex income_offfarm
 ;
 #delimit cr
-// The following covariates were excluded from above:
-// nom_totcons_aeq consq1 consq2 asset_index pssetindex income_offfarm
+
 
 * TABLES * Table 13 -Household level variables
 matrix drop _all
@@ -37,7 +37,7 @@ foreach x in 3 4 7 0 {
 			error _rc
 		}
 		else {
-			matrix  `var'meanr`x'=e(b)'*100
+			matrix  `var'meanr`x'=e(b)'
 			matrix define `var'V`x'= e(V)'
 			matrix define `var'VV`x'=(vecdiag(`var'V`x'))'
 			matrix list `var'VV`x'
@@ -81,7 +81,7 @@ foreach var in $hhlevel {
 		error _rc
 					}
 	else {	
-		matrix  `var'meanrN=e(b)'*100
+		matrix  `var'meanrN=e(b)'
 		matrix define `var'VN= e(V)'
 		matrix define `var'VVN=(vecdiag(`var'VN))'
 		matrix list `var'VVN
@@ -146,7 +146,7 @@ Only rural sample included.) //Add your notes here
 
 
 
-* Who are the adopters? --------------------------------------------------------
+/* Who are the adopters? --------------------------------------------------------
 
 use "${data}/ess5_pp_hh_new.dta", clear // INNOVATIONS DATASET 
 
@@ -248,5 +248,6 @@ cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12
 	format((SCLR0) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) 
     (NBCR2) (NBCR2) (NBCR2) (NBCR2))  
 	stars(* 0.1 ** 0.05 *** 0.01)  
-	notes(Each cell is a coefficient estimate from a separate regression of the column variable on the row variable.); 
+	notes(Each cell is a coefficient estimate from a separate regression of the 
+	column variable on the row variable.); 
 # delimit cr
