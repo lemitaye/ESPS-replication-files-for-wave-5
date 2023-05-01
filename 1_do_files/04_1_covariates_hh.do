@@ -200,8 +200,12 @@ replace consq1=1 if cons_quint==1
 
 gen consq2=0 if cons_quint>2
 replace consq2=1 if cons_quint==1 | cons_quint==2
+
 lab var consq1 "Bottom 1 consumption quintile" 
 lab var consq2 "Bottom 1-2 (<40%) consumption quintiles"
+
+winsor2 total_cons_ann nom_totcons_aeq, cuts(0 99) suffix(_win) label
+
 
 save "${tmp}/covariates/cons_agg.dta", replace
 
