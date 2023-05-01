@@ -55,6 +55,32 @@ egen hhea_psnp=sum(hhd_psnp), by(ea_id)
 collapse (max) hhd_psnp  hhm_psnp  hh_dpsnp hh_dpsnppc hh_ipsnp hh_dwpsnp hh_ea ///
     hhea_psnp (firstnm) saq14  ea_id pw_w5  saq01 , by(household_id)
 
+// Add direct assistance PSNP:
+preserve
+    use "${rawdata}/HH/sect14_hh_w5.dta", clear
+
+    keep if assistance_cd==1
+
+    gen hhd_psnp_dir=.
+    replace hhd_psnp_dir=0 if s14q01==2
+    replace hhd_psnp_dir=1 if s14q01==1
+
+    keep household_id hhd_psnp_dir
+
+    tempfile psnp_direct
+    save `psnp_direct'
+restore
+
+merge 1:1 household_id using `psnp_direct'
+/*
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                             4,959  (_merge==3)
+    -----------------------------------------
+*/
+drop _merge
+
 
 label var hhd_psnp    "At least 1 member benefitting from PSNP" 
 label var hhm_psnp    "No. of members per hh benefitting from PSNP"
@@ -64,12 +90,13 @@ label var hh_ipsnp    "Total income per hh per year from PSNP - USD"
 label var hh_dwpsnp   "Avg. daily income per hh-member from PSNP"
 label var ea_id       "ea id"
 label var pw_w5       "Sampling weight - wave 5" 
+label var hhd_psnp_dir "Direct support through PSNP"
 
-
+* save ----
 save "${data}/ess5_hh_psnp.dta", replace
 
 
-* EA - level 
+* EA - level -------------
 
 egen ead_psnp=max(hhd_psnp), by(ea_id)
 gen sh_ea_psnp=hhea_psnp/hh_ea
