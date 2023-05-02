@@ -14,6 +14,10 @@
 
 use "${data}/wave5_hh_new.dta", clear
 
+merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh.dta", keepusing(hh_status)
+keep if _merge==1 | _merge==3
+drop _merge
+
 #delimit ;
 global hhlevel     
 hhd_ofsp hhd_awassa83 hhd_kabuli hhd_rdisp hhd_motorpump hhd_swc hhd_consag1 hhd_consag2 
@@ -25,27 +29,23 @@ hhd_impcr14 hhd_impcr3 hhd_impcr5 hhd_impcr60 hhd_impcr62 hhd_psnp
 ;
 #delimit cr
 
-// construct matrix:
-descr_tab "$hhlevel" "3 4 7 0" pw_w5
-
+// prep:
 local rname ""
 foreach var in $hhlevel {
 	local lbl : variable label `var'
 	local rname `"  `rname'   "`lbl'" "'		
-}	
+}
 
-// export:
-#delimit;
-xml_tab C,  save("$table/09_1_adoption_rates.xml") replace sheet("HH_w5", nogridlines)  
+#delimit ;
+global options1 
 rnames(`rname' "Total No. of obs. per region") cnames(`cnames') 
 ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia" 
 "Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Other regions" 
 "Other regions" "Other regions" "Other regions" "Other regions" "National" 
-"National" "National" "National" "National" ) 
-showeq 
-rblanks(COL_NAMES "Proportion of hh that adopt on at least one plot :" S2149, 
+"National" "National" "National" "National" ) showeq 
+rblanks(COL_NAMES "Proportion of hh that adopt on at least one plot:" S2149, 
 hhd_impccr  "Share of plots per household" S2149)	 
-title(Table 1: ESS5 - Rural Household level - Section 6)  font("Times New Roman" 10) 
+font("Times New Roman" 10) 
 cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
 6 55, 7 55, 8 30, 9 30, 10 40,
 11 55, 12 55, 13 30, 14 30, 15 40,
@@ -60,13 +60,29 @@ format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0)
 	lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 13)   
 	notes("Point estimates are wegihted sample means.") 
 ;
-#delimit cr		
+#delimit cr	
+
+// construct matrix:
+descr_tab $hhlevel, regions("3 4 7 0") wt(pw_w5)
+
+// export
+xml_tab C, save("$table/09_1_ess5_adoption_rates.xml") replace sheet("HH_w5", nogridlines) ///
+    title("Table: ESS5 - Adoption rates of innovations among rural households") ///
+    $options1
+
+
+// only for panel sample:
+descr_tab $hhlevel if hh_status==3, regions("3 4 7 0") wt(pw_w5) 
+
+xml_tab C, save("$table/09_1_ess5_adoption_rates_panel.xml") replace sheet("HH_w5_panel", nogridlines) ///
+    title("Table: ESS5 - Adoption rates of innovations among rural households - panel sample only") ///
+    $options1
+
 
 
 * Household level: other regions ---------------------------- 
 
-descr_tab_othreg "$hhlevel" "2 5 6 12 13 15" pw_w5
-
+// prep:
 local rname ""
 foreach var in $hhlevel {
 	local lbl : variable label `var'
@@ -74,15 +90,14 @@ foreach var in $hhlevel {
 }
 
 # delimit;
-xml_tab C,  save("$table/09_1_adoption_rates.xml") append sheet("HH_w5_othreg", nogridlines) 
+global options2
 rnames(`rname' "Total No. of obs. per region") cnames(`cnames') 
 ceq("Afar" "Afar" "Afar" "Afar" "Afar" "Somali" "Somali" "Somali" "Somali" "Somali" 
 "Benshangul Gumuz" "Benshangul Gumuz" "Benshangul Gumuz"  "Benshangul Gumuz"  "Benshangul Gumuz"  
-"Gambela"  "Gambela" "Gambela"    "Gambela"  "Gambela"  "Harar" "Harar" "Harar" "Harar" "Harar" 
+"Gambela"  "Gambela" "Gambela" "Gambela"  "Gambela"  "Harar" "Harar" "Harar" "Harar" "Harar" 
 "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa") showeq 
-rblanks(COL_NAMES "Proportion of hh that adopt on at least one plot :" S2149, 
+rblanks(COL_NAMES "Proportion of hh that adopt on at least one plot:" S2149, 
 hhd_impccr  "Share of plots per household" S2149)	
-title(Table 1: ESS4 - Rural Household level - Section 6 - Other regions)  
 font("Times New Roman" 10) 
 cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
 6 55, 7 55, 8 30, 9 30, 10 40,
@@ -101,6 +116,20 @@ format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0)
 	notes( "Point estimates are wegihted sample means."  ) //Add your notes here
 ; 
 # delimit cr
+
+// matrix:
+descr_tab_othreg $hhlevel, regions("2 5 6 12 13 15") wt(pw_w5)
+
+xml_tab C,  save("$table/09_1_ess5_adoption_rates.xml") append sheet("HH_w5_othreg", nogridlines) ///
+    title("Table: ESS5 - Adoption rates of innovations among rural households: other regions")  ///
+    $options2
+
+// panel:
+descr_tab_othreg $hhlevel if hh_status==3, regions("2 5 6 12 13 15") wt(pw_w5)
+
+xml_tab C,  save("$table/09_1_ess5_adoption_rates_panel.xml") append sheet("HH_w5_othreg_pnl", nogridlines) ///
+    title("Table: ESS5 - Adoption rates of innovations among rural households: other regions (panel sample only)")  ///
+    $options2
 
 
 * EA level ------------------------------
@@ -121,7 +150,7 @@ ead_impcr14 ead_impcr3 ead_impcr5 ead_impcr60 ead_impcr62
 #delimit cr
 
 // matrix:	
-descr_tab "$ealevel" "3 4 7 0" 1  // unweighted means at EA level
+descr_tab $ealevel, regions("3 4 7 0")  // unweighted means at EA level
 
 local rname ""
 foreach var in $ealevel {
@@ -162,7 +191,7 @@ cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40,
 
 * EA level: other regions -----------------
 
-descr_tab_othreg "$ealevel" "2 5 6 12 13 15" 1
+descr_tab_othreg $ealevel, regions("2 5 6 12 13 15") 
 
 local rname ""
 foreach var in $ealevel {

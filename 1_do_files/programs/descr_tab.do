@@ -186,24 +186,3 @@ program descr_tab_othreg
     }
 
 end
-
-
-capture program drop myprog
-program myprog
-    syntax varlist [if] [in], regions(string) [wt(varname)]
-    marksample touse
-
-    if "`wt'" == "" { 
-        local wt 1 
-    } 
-
-    foreach x of local regions {
-
-        foreach var of local varlist {
-            mean `var' [pw=`wt'] if region==`x' & `touse'
-        }
-
-        sum region if region==`x' & `touse'
-
-    }
-end

@@ -35,7 +35,7 @@ label define _merge 1 "1. Newly added in ESPS5", modify
 label define _merge 2 "2. Dropped in ESPS5", modify
 label define _merge 3 "3. Matched ", modify
 
-save "${tmp}/dynamics/05_1_track_hh.dta", replace
+save "${tmp}/dynamics/06_1_track_hh.dta", replace
 
 
 * are there new EAs added in ESS5?
@@ -112,5 +112,5 @@ merge 1:1 household_id using `ea_merged_w5'
 keep if _merge==2  // keep only hhs dropped from ESPS5 (i.e., only in ESPS4)
 drop _merge
 
-save "${tmp}/dynamics/05_1_track_ea_dropped.dta", replace
+save "${tmp}/dynamics/06_1_track_ea_dropped.dta", replace
 
