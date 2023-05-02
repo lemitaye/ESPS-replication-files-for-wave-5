@@ -20,102 +20,9 @@ consq2 asset_index pssetindex income_offfarm
 #delimit cr
 
 
-* TABLES * Table 13 -Household level variables
-matrix drop _all
+do "${code}/programs/descr_tab.do"
 
-foreach x in 3 4 7 0 {
-
-	foreach var in $hhlevel {
-
-		cap:mean `var' [pw=pw_w5] if region==`x' & wave==5
-		if _rc==2000 {
-			matrix  `var'meanr`x'=0
-			matrix define `var'V`x'= 0
-			scalar `var'se`x'=0
-		}
-		else if _rc!=0 {
-			error _rc
-		}
-		else {
-			matrix  `var'meanr`x'=e(b)'
-			matrix define `var'V`x'= e(V)'
-			matrix define `var'VV`x'=(vecdiag(`var'V`x'))'
-			matrix list `var'VV`x'
-			scalar `var'se`x'=sqrt(`var'VV`x'[1,1])
-		}
-
-		sum    `var'  if region==`x' & wave==5
-		scalar `var'minr`x'=r(min)
-		scalar `var'maxr`x'=r(max)
-		scalar `var'n`x'=r(N)
-
-		qui sum region if region==`x' & wave==5
-		local obsr`x'=r(N)
-
-		matrix mat`var'`x'  = ( `var'meanr`x', `var'se`x', `var'minr`x', `var'maxr`x', `var'n`x')
-
-		matrix list mat`var'`x'
-
-		matrix A1`x' = nullmat(A1`x')\ mat`var'`x'
-
-		mat A2`x'=(., . , ., .,`obsr`x'')
-		mat B`x'=A1`x'\A2`x'
-
-		matrix colnames B`x' = "Mean" "SE" "Min" "Max" "N"
-
-	}
-
-}
-	
-* National
-foreach var in $hhlevel {
-
-	cap:mean `var' [pw=pw_w5] if wave==5
-
-	if _rc==2000 {
-		matrix  `var'meanrN=0
-		matrix define `var'VN= 0
-		scalar `var'seN=0
-					}
-	else if _rc!=0 {
-		error _rc
-					}
-	else {	
-		matrix  `var'meanrN=e(b)'
-		matrix define `var'VN= e(V)'
-		matrix define `var'VVN=(vecdiag(`var'VN))'
-		matrix list `var'VVN
-		scalar `var'seN=sqrt(`var'VVN[1,1])
-	}
-
-	sum    `var'  if  wave==5
-	scalar `var'minrN=r(min)
-	scalar `var'maxrN=r(max)
-	scalar `var'nN=r(N)
-
-	qui sum region if  wave==5
-	local obsrN=r(N)
-
-	matrix mat`var'N  = ( `var'meanrN,`var'seN, `var'minrN, `var'maxrN, `var'nN)
-
-	matrix list mat`var'N
-
-	matrix A1N = nullmat(A1N)\ mat`var'N
-
-	mat A2N=(., . , ., .,`obsrN')
-	mat BN=A1N\A2N
-
-	matrix colnames BN = "Mean" "SE" "Min" "Max" "N"
-
-}
-
-local rname ""
-foreach var in $hhlevel {
-	local lbl : variable label `var'
-	local rname `"  `rname'   "`lbl'" "'		
-}	
-
-mat C= B3, B4, B7, B0, BN											
+descr_tab "$hhlevel"										
 
 #delimit;
 xml_tab C,  save("${tmp}/covariates/tables/04_4_1_descriptive_stats.xml") replace 
@@ -146,27 +53,37 @@ Only rural sample included.) //Add your notes here
 
 
 
-/* Who are the adopters? --------------------------------------------------------
+* Who are the adopters? --------------------------------------------------------
 
-use "${data}/ess5_pp_hh_new.dta", clear // INNOVATIONS DATASET 
+use "${data}/ess5_pp_hh_new.dta", clear 
 
 merge 1:1 household_id using "${tmp}/covariates/04_2_covars_hh_pp.dta"
-keep if _m==3   // keep only panel households (n=1823)
+/*
+    Result                      Number of obs
+    -----------------------------------------
+    Not matched                             0
+    Matched                             2,079  (_merge==3)
+    -----------------------------------------
+*/
 drop _merge
 
 rename hhd_cross_largerum crlargerum
 rename hhd_cross_smallrum crsmallrum
 rename hhd_cross_poultry crpoultry
 
+rename total_cons_ann_win totconswin
+rename nom_totcons_aeq nmtotcons
 
-*HH level 
+
+* HH level ----
+
 #delimit;
 global hhdemo      
-hhd_flab flivman age_head parcesizeHA pssetindex income_offfarm 
+hhd_flab flivman parcesizeHA asset_index pssetindex income_offfarm total_cons_ann 
+totconswin nmtotcons consq1 consq2 adulteq 
 ;
 #delimit cr
-// The following covariates were removed from above:
-// asset_index total_cons_ann  totconswin nmtotcons consq1 consq2 adulteq 
+
 
 #delimit;
 global adopt     
@@ -178,54 +95,9 @@ maize_cg dtmz hhd_agroind hhd_grass hhd_cross crlargerum crsmallrum crpoultry
 ;
 #delimit cr
 
+do "${code}/programs/covar_regress.do"
 
-
-matrix drop _all
- 
-foreach i in   $adopt {
-
-    foreach var in $hhdemo {
-
-        qui: reg `var' `i' if  wave==5 [pw=pw_w5]
-        scalar coef`var'`i'=e(b)[1,1]   // coefficient
-        matrix mat`var'`i'=coef`var'`i'
-
-        test `i'=0
-        scalar `var'pval`i'=r(p)
-
-            if (`var'pval`i'<=0.1 & `var'pval`i'>0.05)  {
-            matrix mstr`var'`i' = (3)      // significant at 10% level
-            }
-            
-            if (`var'pval`i'  <=0.05 & `var'pval`i'>0.01)  {
-            matrix mstr`var'`i' = (2)      // significant at 5% level
-            }
-            
-            if `var'pval`i'  <=0.01 {
-            matrix mstr`var'`i' = (1)      // significant at 1% level
-            }
-            
-            if `var'pval`i'   >0.1 {
-            matrix mstr`var'`i' = (0)       // Non-significant
-            }
-                       
-        matrix A1`i' = nullmat(A1`i')\ mat`var'`i'
-
-        matrix A1`i'_STARS =  nullmat(A1`i'_STARS)\mstr`var'`i'
-
-    }
-
-    matrix colnames A1`i' = "Difference"
-
-    matrix C=nullmat(C), A1`i'
-    matrix C_STARS=nullmat(C_STARS), A1`i'_STARS 
-
-}
-
-* Transpose:
-matrix D=C'
-matrix D_STARS=C_STARS'
-
+covar_regress "$adopt" "$hhdemo"
 
 local cname ""
 foreach var in $hhdemo {
@@ -251,3 +123,59 @@ cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12
 	notes(Each cell is a coefficient estimate from a separate regression of the 
 	column variable on the row variable.); 
 # delimit cr
+
+
+* EA level ----
+
+use "${data}/ess5_pp_cov_ea_new.dta", clear
+
+rename ead_sweetpotato ead_sp
+rename ead_mintillage ead_mtill
+
+#delimit;
+global adopt5 ead_ofsp ead_awassa83 ead_avocado ead_papaya ead_mango ead_fieldp 
+ead_sp ead_motorpump ead_rdisp ead_rotlegume ead_cresidue1 ead_cresidue2 ead_mtill 
+ead_zerotill ead_consag1 ead_consag2 ead_swc ead_terr ead_wcatch ead_affor ead_ploc 
+commirr ead_cross ead_crlr ead_crpo ead_livIA ead_agroind ead_grass ead_kabuli
+ead_psnp maize_cg dtmz ead_impcr2 ead_impcr1
+;
+#delimit cr
+
+#delimit;
+global eacov5 cs9q01 cs6q12_11 cs6q12_12 cs6q12_13 cs6q12_14 cs6q13_11 cs6q13_12 
+cs6q13_13 cs6q13_14 cs6q14_11 cs6q14_12 cs6q14_13 cs6q14_14 cs6q15_11 cs6q15_12 
+cs6q15_13 cs4q01_11 cs4q01_12 cs4q01_13 cs4q01_14 cs4q03 cs4q08 cs4q11 cs4q14 
+cs4q52 cs9q13 cs9q13_wiz cs9q14 cs6q01 cs6q10 cs4q02 cs4q02_wiz cs4q01 cs4q09 
+cs4q09_wiz cs4q11 cs4q12b cs4q12b_wiz  cs4q15 cs4q15_wiz cs3q02 cs3q02_wiz cs4q52 
+cs4q53 cs4q53_wiz 
+;
+#delimit cr
+
+covar_regress "$adopt5" "$eacov5"
+
+local cname ""
+foreach var in $eacov5 {
+    local lbl : variable label `var'
+    local cname `" `cname' "`lbl'" "'		
+}
+
+local rname ""
+foreach var in $adopt5 {
+	local lbl : variable label `var'
+	local rname `" `rname' "`lbl'" "'		
+}
+
+#delimit ;
+xml_tab D,  save("${tmp}/covariates/tables/04_4_3_adopters_chrxs_ea.xml") replace 
+sheet("Table 14 - ESS5 EA level", nogridlines)  
+rnames(`rname') cnames(`cname') lines(COL_NAMES 2 LAST_ROW 2)  
+title(Table 1: ESPS5 - Correlates of adoption)  font("Times New Roman" 10) 
+cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12 55) 
+	format((SCLR0) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) 
+    (NBCR2) (NBCR2) (NBCR2) (NBCR2))  
+	stars(* 0.1 ** 0.05 *** 0.01)  
+	notes(Each cell is a coefficient estimate from a separate regression of the column 
+	variable on the row variable.); 
+# delimit cr
+
+
