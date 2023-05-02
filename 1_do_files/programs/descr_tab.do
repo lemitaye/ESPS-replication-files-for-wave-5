@@ -115,7 +115,7 @@ program descr_tab
 
 end
 
-
+// For all other regions:
 capture program drop descr_tab_othreg
 
 program descr_tab_othreg
