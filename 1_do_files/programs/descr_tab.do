@@ -6,18 +6,21 @@
 capture program drop descr_tab
 
 program descr_tab
-    args VARS REGIONS WT
+    version 17.0
+    syntax varlist [if] [in], regions(string) [wt(varname)]
+    marksample touse, novarlist  // see documentation for "mark"
 
-    local vars `"`VARS'"'
-    local regions `"`REGIONS'"'
+    if "`wt'" == "" { 
+        local wt 1 
+    } 
 
     matrix drop _all
 
-    foreach x of local regions {  // these are the three main regions (Tigray excluded) and others
+    foreach x of local regions {  
 
-        foreach var of local vars {
+        foreach var of local varlist {
 
-            cap: mean `var' [pw=`WT'] if region==`x' 
+            cap: mean `var' [pw=`wt'] if region==`x' & `touse'
             if _rc==2000 {  // error code = 2000. no observations [see "help error"]
                 matrix  `var'meanr`x'=0
                 matrix define `var'V`x'= 0
@@ -35,7 +38,7 @@ program descr_tab
                 scalar `var'se`x'=sqrt(`var'VV`x'[1,1])  // standard error
             }
             // we do the following to get min, max, and # of obs; weighted mean is computed above
-            qui sum    `var'  if region==`x' 
+            qui sum `var'  if region==`x' & `touse'
             scalar `var'minr`x'=r(min)   // "summarize" is an r-class command (see "return list")
             scalar `var'maxr`x'=r(max)
             scalar `var'n`x'=r(N)
@@ -51,7 +54,7 @@ program descr_tab
 
         }
 
-        qui sum region if region==`x' 
+        qui sum region if region==`x' & `touse'
         local obsr`x'=r(N)  // # of households in region `x'
 
         mat A2`x'=(., . , ., .,`obsr`x'')  
@@ -64,9 +67,9 @@ program descr_tab
 
     * National:
 
-    foreach var of local vars {
+    foreach var of local varlist {
 
-        cap: mean `var' [pw=`WT'] 
+        cap: mean `var' [pw=`wt'] if `touse'
 
         if _rc==2000 {
             matrix  `var'meanrN=0
@@ -85,12 +88,12 @@ program descr_tab
             scalar `var'seN=sqrt(`var'VVN[1,1])
         }
 
-        qui sum    `var'  
+        qui sum `var' if `touse'
         scalar `var'minrN=r(min)
         scalar `var'maxrN=r(max)
         scalar `var'nN=r(N)
 
-        qui sum region 
+        qui sum region if `touse'
         local obsrN=r(N)
 
         matrix mat`var'N  = ( `var'meanrN,`var'seN, `var'minrN, `var'maxrN, `var'nN)
@@ -119,18 +122,21 @@ end
 capture program drop descr_tab_othreg
 
 program descr_tab_othreg
-    args VARS REGIONS WT
+    version 17.0
+    syntax varlist [if] [in], regions(string) [wt(varname)]
+    marksample touse, novarlist
 
-    local vars `"`VARS'"'
-    local regions `"`REGIONS'"'
+    if "`wt'" == "" { 
+        local wt 1
+    } 
 
     matrix drop _all
 
-    foreach x of local regions {  // these are the three main regions (Tigray excluded) and others
+    foreach x of local regions {  
 
-        foreach var of local vars {
+        foreach var of local varlist {
 
-            cap: mean `var' [pw=`WT'] if othregion==`x' 
+            cap: mean `var' [pw=`wt'] if othregion==`x' & `touse'
             if _rc==2000 {  // error code = 2000. no observations [see "help error"]
                 matrix  `var'meanr`x'=0
                 matrix define `var'V`x'= 0
@@ -148,7 +154,7 @@ program descr_tab_othreg
                 scalar `var'se`x'=sqrt(`var'VV`x'[1,1])  // standard error
             }
             // we do the following to get min, max, and # of obs; weighted mean is computed above
-            qui sum    `var'  if othregion==`x' 
+            qui sum  `var'  if othregion==`x' & `touse'
             scalar `var'minr`x'=r(min)   // "summarize" is an r-class command (see "return list")
             scalar `var'maxr`x'=r(max)
             scalar `var'n`x'=r(N)
@@ -164,7 +170,7 @@ program descr_tab_othreg
 
         }
 
-        qui sum othregion if othregion==`x' 
+        qui sum othregion if othregion==`x' & `touse'
         local obsr`x'=r(N)  // # of households in region `x'
 
         mat A2`x'=(., . , ., .,`obsr`x'')  
@@ -179,4 +185,25 @@ program descr_tab_othreg
         matrix C = (nullmat(C), B`x')
     }
 
+end
+
+
+capture program drop myprog
+program myprog
+    syntax varlist [if] [in], regions(string) [wt(varname)]
+    marksample touse
+
+    if "`wt'" == "" { 
+        local wt 1 
+    } 
+
+    foreach x of local regions {
+
+        foreach var of local varlist {
+            mean `var' [pw=`wt'] if region==`x' & `touse'
+        }
+
+        sum region if region==`x' & `touse'
+
+    }
 end
