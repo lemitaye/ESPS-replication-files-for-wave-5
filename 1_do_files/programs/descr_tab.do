@@ -57,7 +57,7 @@ program descr_tab
         mat A2`x'=(., . , ., .,`obsr`x'')  
         mat B`x'=A1`x'\A2`x'
 
-        matrix colnames B`x' = "Mean (%)" "SE" "Min" "Max" "N"
+        matrix colnames B`x' = "Mean" "SE" "Min" "Max" "N"
 
     }	
 
@@ -103,7 +103,7 @@ program descr_tab
         mat A2N=(., . , ., .,`obsrN')
         mat BN=A1N\A2N
 
-        matrix colnames BN = "Mean (%)" "SE" "Min" "Max" "N"
+        matrix colnames BN = "Mean" "SE" "Min" "Max" "N"
 
     }
 
@@ -170,7 +170,7 @@ program descr_tab_othreg
         mat A2`x'=(., . , ., .,`obsr`x'')  
         mat B`x'=A1`x'\A2`x'
 
-        matrix colnames B`x' = "Mean (%)" "SE" "Min" "Max" "N"
+        matrix colnames B`x' = "Mean" "SE" "Min" "Max" "N"
 
     }
 

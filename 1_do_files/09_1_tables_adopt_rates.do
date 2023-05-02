@@ -43,7 +43,7 @@ ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia"
 "Other regions" "Other regions" "Other regions" "Other regions" "National" 
 "National" "National" "National" "National" ) 
 showeq 
-rblanks(COL_NAMES "Percentage of hh that adopt on at least one plot :" S2149, 
+rblanks(COL_NAMES "Proportion of hh that adopt on at least one plot :" S2149, 
 hhd_impccr  "Share of plots per household" S2149)	 
 title(Table 1: ESS5 - Rural Household level - Section 6)  font("Times New Roman" 10) 
 cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
@@ -80,7 +80,7 @@ ceq("Afar" "Afar" "Afar" "Afar" "Afar" "Somali" "Somali" "Somali" "Somali" "Soma
 "Benshangul Gumuz" "Benshangul Gumuz" "Benshangul Gumuz"  "Benshangul Gumuz"  "Benshangul Gumuz"  
 "Gambela"  "Gambela" "Gambela"    "Gambela"  "Gambela"  "Harar" "Harar" "Harar" "Harar" "Harar" 
 "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa") showeq 
-rblanks(COL_NAMES "Percentage of hh that adopt on at least one plot :" S2149, 
+rblanks(COL_NAMES "Proportion of hh that adopt on at least one plot :" S2149, 
 hhd_impccr  "Share of plots per household" S2149)	
 title(Table 1: ESS4 - Rural Household level - Section 6 - Other regions)  
 font("Times New Roman" 10) 
@@ -137,9 +137,9 @@ ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia"
 "Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Other regions" "Other regions" 
 "Other regions" "Other regions" "Other regions"  "National" "National" "National" 
 "National" "National"  ) showeq 
-rblanks(COL_NAMES "Perc. of EA in the sample with at least 1 hh adopting:" S2149,
-ead_impccr   "Perc. of hh per EA adopting" S2149, 
-sh_ea_impccr"Perc. of plots per EA adopting" S2149)	 
+rblanks(COL_NAMES "Prop. of EA in the sample with at least 1 hh adopting:" S2149,
+ead_impccr   "Prop. of hh per EA adopting" S2149, 
+sh_ea_impccr"Prop. of plots per EA adopting" S2149)	 
 title(Table 5: ESS5 - Crop variety - EA )  font("Times New Roman" 10) 
 cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
 6 55, 7 55, 8 30, 9 30, 10 40,
@@ -155,7 +155,7 @@ cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40,
     (NBCR0) (NBCR0)) 
 	star(.1 .05 .01)  
 	lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 13)  
-	notes("Point estimates are wegihted sample means.") 
+	notes("Point estimates are un-wegihted sample means.") 
 ; 
 # delimit cr
 
@@ -178,9 +178,9 @@ rnames(`rname' "Total No. of obs. per region") cnames(`cnames') ceq("Afar" "Afar
 "Gambela"  "Gambela"  "Harar" "Harar" "Harar" "Harar" "Harar" "Dire Dawa" "Dire Dawa" 
 "Dire Dawa" "Dire Dawa" "Dire Dawa" "Other regions"   "Other regions" "Other regions" 
 "Other regions" "Other regions") showeq 
-rblanks(COL_NAMES "Perc. of EA in the sample with at least 1 hh adopting:" S2149,
-ead_sweetpotato   "Perc. of hh per EA adopting" S2149, 
-sh_ea_sweetpotato "Perc. of plots per EA adopting" S2149)	 
+rblanks(COL_NAMES "Prop. of EA in the sample with at least 1 hh adopting:" S2149,
+ead_sweetpotato   "Prop. of hh per EA adopting" S2149, 
+sh_ea_sweetpotato "Prop. of plots per EA adopting" S2149)	 
 title(Table 5_b: ESS5 - Crop variety - EA - Other regions )  font("Times New Roman" 10) 
 cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
 6 55, 7 55, 8 30, 9 30, 10 40,
@@ -196,7 +196,7 @@ cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40,
 	(NBCR0) (NBCR0))  
 	star(.1 .05 .01)   
 	lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 13)  
-	notes("Point estimates are wegihted sample means.") //Add your notes here
+	notes("Point estimates are un-wegihted sample means.") //Add your notes here
 ; 
 # delimit cr
 
@@ -218,7 +218,7 @@ foreach var in dtmz maize_cg {
 }
 
 #delimit;
-xml_tab C, save("$table/09_1_adoption_rates.xml") append sheet("HH_DNA", nogridlines)  
+xml_tab C, save("$table/09_1_adoption_rates.xml") append sheet("DNA", nogridlines)  
 rnames(`rname' "Total No. of obs. per region") ///
 cnames(`cnames')  ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" 
 "Oromia" "Oromia" "Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" 
