@@ -1,13 +1,15 @@
-*********************************************************************************
-*                           Ethiopia Synthesis Report 
-*                     DO: Covariates at the community (EA) level 
+********************************************************************************
+*                           Ethiopia Synthesis Report - v2
+*                     DO: ESS4-ESS5 dynamics - Tables on covariates
 * Country: Ethiopia 
-* Data: ESS 5
-* Author: Lemi Daba (tayelemi@gmail.com) [code adopted from Paola Mallia and Solomon Alemu]
+* Data: ESS4 (replication files) and ESS 5
+* Author: Lemi Daba (tayelemi@gmail.com) 
+*         [Paola Mallia from ESS4 rep. file]
+* Date created: May 02, 2023
 * STATA Version: MP 17.0
 ********************************************************************************
 
-* Descriptive stats ----------------------------------------------------
+* Descriptive stats of covariates ----------------------------------------------
 
 use "${tmp}/covariates/04_2_covars_hh_pp.dta", clear
 
@@ -20,7 +22,7 @@ consq2 asset_index pssetindex income_offfarm
 #delimit cr
 
 
-do "${code}/programs/descr_tab.do"
+
 
 descr_tab "$hhlevel"										
 
@@ -95,7 +97,7 @@ maize_cg dtmz hhd_agroind hhd_grass hhd_cross crlargerum crsmallrum crpoultry
 ;
 #delimit cr
 
-do "${code}/programs/covar_regress.do"
+
 
 covar_regress "$adopt" "$hhdemo"
 
