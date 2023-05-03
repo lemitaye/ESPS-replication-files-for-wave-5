@@ -631,7 +631,10 @@ joint_rate_tbl_panel <- bind_rows(
 # PSNP: Special edition ----
 
 
-ess4_hh_psnp <- read_dta(file.path(root, w4_dir, "ess4_hh_psnp.dta")) 
+ess4_hh_psnp <- read_dta(file.path(root, w4_dir, "ess4_hh_psnp.dta"))
+
+sect14_hh_w4 <- read_dta(file.path(root, 
+                   "supplemental/replication_files/2_raw_data/ESS4_2018-19/Data/sect14_hh_w4.dta"))
 
 ess5_hh_psnp <- read_dta(file.path(root, w5_dir, "ess5_hh_psnp.dta")) %>% 
   mutate(wave = "Wave 5")
@@ -660,13 +663,32 @@ recode_all_regions <- function(tbl, var) {
   
 }
 
+relevel_region <- function(tbl) {
+  tbl %>% 
+    mutate(    
+      region = fct_relevel(
+      region, 
+      "Tigray", "Afar", "Amhara", "Oromia", "Somali", "Benishangul Gumuz", 
+      "SNNP", "Gambela", "Harar", "Addis Ababa", "Dire Dawa", "National")
+      ) %>% 
+    suppressWarnings()
+}
+
+psnp_w4_dir <- sect14_hh_w4 %>% 
+  filter(assistance_cd==1) %>% 
+  mutate(hhd_psnp_dir = case_when(
+    s14q01==2 ~ 0, s14q01==1 ~ 1
+  )) %>% 
+  select(household_id, hhd_psnp_dir)
+
 psnp_w4 <- ess4_hh_psnp %>% 
+  left_join(psnp_w4_dir, by = "household_id") %>% 
   mutate(
     wave = "Wave 4",
     locality = recode(saq14, `1` = "Rural", `2` = "Urban")
     ) %>% 
   recode_all_regions(saq01) %>% 
-  select(household_id, pw_w4, locality, hhd_psnp, region, wave)
+  select(household_id, pw_w4, locality, hhd_psnp, hhd_psnp_dir, region, wave)
 
 psnp_w5 <- ess5_hh_psnp %>% 
   mutate(
@@ -674,44 +696,51 @@ psnp_w5 <- ess5_hh_psnp %>%
     locality = recode(saq14, `1` = "Rural", `2` = "Urban")
   ) %>% 
   recode_all_regions(saq01) %>% 
-  select(household_id, pw_w5, locality, hhd_psnp, region, wave) 
+  select(household_id, pw_w5, locality, hhd_psnp, hhd_psnp_dir, region, wave) 
 
 
-psnp_all <- bind_rows(
-  mean_tbl(psnp_w4, "hhd_psnp", group_vars = c("wave", "region"), pw = pw_w4),
-  mean_tbl(psnp_w4, "hhd_psnp", group_vars = c("wave"), pw = pw_w4) %>% 
-    mutate(region = "National"),
+
+summ_psnp <- function(tbl, locality, ...) {
   
-  mean_tbl(psnp_w5, "hhd_psnp", group_vars = c("wave", "region"), pw = pw_w5),
-  mean_tbl(psnp_w5, "hhd_psnp", group_vars = c("wave"), pw = pw_w5) %>% 
-    mutate(region = "National")
-) %>% 
-  mutate(
-    region = fct_relevel(
-      region, 
-      "Tigray", "Afar", "Amhara", "Oromia", "Somali", "Benishangul Gumuz", 
-      "SNNP", "Gambela", "Harar", "Addis Ababa", "Dire Dawa", "National")
-  )
-
-psnp_local <- bind_rows(
-  mean_tbl(psnp_w4, "hhd_psnp", group_vars = c("wave", "region", "locality"), pw = pw_w4),
-  mean_tbl(psnp_w4, "hhd_psnp", group_vars = c("wave", "locality"), pw = pw_w4) %>% 
-    mutate(region = "National"),
+  if (locality) {
+    grp_vars_reg <- c("wave", "variable", "region", "locality")
+    grp_vars_nat <- c("wave", "variable", "locality")
+  } else {
+    grp_vars_reg <- c("wave", "variable", "region")
+    grp_vars_nat <- c("wave", "variable")
+  }
   
-  mean_tbl(psnp_w5, "hhd_psnp", group_vars = c("wave", "region", "locality"), pw = pw_w5),
-  mean_tbl(psnp_w5, "hhd_psnp", group_vars = c("wave", "locality"), pw = pw_w5) %>% 
-    mutate(region = "National")
-) %>% 
-  mutate(
-    region = fct_relevel(
-      region, 
-      "Tigray", "Afar", "Amhara", "Oromia", "Somali", "Benishangul Gumuz", 
-      "SNNP", "Gambela", "Harar", "Addis Ababa", "Dire Dawa", "National")
+  mean_bind_tbl <- bind_rows(
+    
+    mean_tbl(tbl, c("hhd_psnp", "hhd_psnp_dir"), 
+             group_vars = grp_vars_reg, pw = ...),
+    
+    mean_tbl(tbl, c("hhd_psnp", "hhd_psnp_dir"), 
+             group_vars = grp_vars_nat, pw = ...) %>% 
+      mutate(region = "National")
+    
   )
+  
+  return(mean_bind_tbl)
+  
+}
 
 
-psnp_all %>% 
-  filter(region != "Tigray") %>% 
+psnp_all_agg <- bind_rows(
+  summ_psnp(psnp_w4, locality = FALSE, pw_w4),
+  summ_psnp(psnp_w5, locality = FALSE, pw_w5)
+) %>% 
+  relevel_region()
+
+psnp_all_local <- bind_rows(
+  summ_psnp(psnp_w4, locality = TRUE, pw_w4),
+  summ_psnp(psnp_w5, locality = TRUE, pw_w5)
+) %>% 
+  relevel_region()
+
+
+psnp_all_agg %>% 
+  filter(region != "Tigray", variable == "hhd_psnp_dir") %>% 
   ggplot(aes(region, mean, fill = wave)) +
   geom_col(position = "dodge") +
   geom_text(aes(label = paste0( round(mean*100, 1), "%", "\n(", nobs, ")" ) ),
@@ -739,8 +768,8 @@ ggsave(
 )  
 
 
-psnp_local %>% 
-  filter(region != "Tigray") %>% 
+psnp_all_local %>% 
+  filter(region != "Tigray", variable == "hhd_psnp_dir") %>% 
   ggplot(aes(region, mean, fill = wave)) +
   geom_col(position = "dodge") +
   geom_text(aes(label = paste0( round(mean*100, 1), "%", "\n(", nobs, ")" ) ),
@@ -772,7 +801,7 @@ ggsave(
 ## PSNP: Only panel hhs ----
 
 
-ess5_weights_hh <- read_dta(file.path(root, "LSMS_W5/2_raw_data/data/HH/ESS5_weights_hh.dta"))
+ess5_weights_hh <- read_dta(file.path(root, "2_raw_data/data/HH/ESS5_weights_hh.dta"))
 
 psnp_w4_panel <- psnp_w4 %>% 
   semi_join(psnp_w5, by = "household_id") %>% 
@@ -785,41 +814,21 @@ psnp_w5_panel <- psnp_w5 %>%
             by = "household_id")
 
 
-psnp_all_panel <- bind_rows(
-  mean_tbl(psnp_w4_panel, "hhd_psnp", group_vars = c("wave", "region"), pw = pw_panel),
-  mean_tbl(psnp_w4_panel, "hhd_psnp", group_vars = c("wave"), pw = pw_panel) %>% 
-    mutate(region = "National"),
-  
-  mean_tbl(psnp_w5_panel, "hhd_psnp", group_vars = c("wave", "region"), pw = pw_panel),
-  mean_tbl(psnp_w5_panel, "hhd_psnp", group_vars = c("wave"), pw = pw_panel) %>% 
-    mutate(region = "National")
+psnp_panel_agg <- bind_rows(
+  summ_psnp(psnp_w4_panel, locality = FALSE, pw_w4),
+  summ_psnp(psnp_w5_panel, locality = FALSE, pw_w5)
 ) %>% 
-  mutate(
-    region = fct_relevel(
-      region, 
-      "Afar", "Amhara", "Oromia", "Somali", "Benishangul Gumuz", 
-      "SNNP", "Gambela", "Harar", "Addis Ababa", "Dire Dawa", "National")
-  )
+  relevel_region()
 
 
-psnp_local_panel <- bind_rows(
-  mean_tbl(psnp_w4_panel, "hhd_psnp", group_vars = c("wave", "region", "locality"), pw = pw_panel),
-  mean_tbl(psnp_w4_panel, "hhd_psnp", group_vars = c("wave", "locality"), pw = pw_panel) %>% 
-    mutate(region = "National"),
-  
-  mean_tbl(psnp_w5_panel, "hhd_psnp", group_vars = c("wave", "region", "locality"), pw = pw_panel),
-  mean_tbl(psnp_w5_panel, "hhd_psnp", group_vars = c("wave", "locality"), pw = pw_panel) %>% 
-    mutate(region = "National")
+psnp_panel_local <- bind_rows(
+  summ_psnp(psnp_w4_panel, locality = TRUE, pw_w4),
+  summ_psnp(psnp_w5_panel, locality = TRUE, pw_w5)
 ) %>% 
-  mutate(
-    region = fct_relevel(
-      region, 
-      "Afar", "Amhara", "Oromia", "Somali", "Benishangul Gumuz", 
-      "SNNP", "Gambela", "Harar", "Addis Ababa", "Dire Dawa", "National")
-  )
+  relevel_region()
 
 
-psnp_all_panel %>% 
+psnp_panel_agg %>% 
   filter(region != "Tigray") %>% 
   ggplot(aes(region, mean, fill = wave)) +
   geom_col(position = "dodge") +
@@ -849,7 +858,7 @@ ggsave(
 
 
 
-psnp_local_panel %>% 
+psnp_panel_local %>% 
   filter(region != "Tigray") %>% 
   ggplot(aes(region, mean, fill = wave)) +
   geom_col(position = "dodge") +
@@ -927,39 +936,44 @@ mean_tbl_nowt <- function(tbl, vars = vars_both, group_vars) {
   
 }
 
+summ_comm_psnp <- function(tbl, locality) {
+  
+  if (locality) {
+    grp_vars_reg <- c("wave", "region", "locality")
+    grp_vars_nat <- c("wave", "locality")
+  } else {
+    grp_vars_reg <- c("wave", "region")
+    grp_vars_nat <- c("wave")
+  }
+  
+  mean_bind_tbl <- bind_rows(
+    
+    mean_tbl_nowt(tbl, "comm_psnp", 
+             group_vars = grp_vars_reg),
+    
+    mean_tbl_nowt(tbl, "comm_psnp", 
+             group_vars = grp_vars_nat) %>% 
+      mutate(region = "National")
+    
+  )
+  
+  return(mean_bind_tbl)
+  
+}
+
 
 comm_psnp_all_agg <- bind_rows(
-  mean_tbl_nowt(ess4_comm_psnp, "comm_psnp", group_vars = c("wave", "region")),
-  mean_tbl_nowt(ess4_comm_psnp, "comm_psnp", group_vars = c("wave")) %>% 
-    mutate(region = "National"),
-  
-  mean_tbl_nowt(ess5_comm_psnp, "comm_psnp", group_vars = c("wave", "region")),
-  mean_tbl_nowt(ess5_comm_psnp, "comm_psnp", group_vars = c("wave")) %>% 
-    mutate(region = "National")
+  summ_comm_psnp(ess4_comm_psnp, locality = FALSE),
+  summ_comm_psnp(ess5_comm_psnp, locality = FALSE)
 ) %>% 
-  mutate(
-    region = fct_relevel(
-      region,
-      "Tigray", "Afar", "Amhara", "Oromia", "Somali", "Benishangul Gumuz",
-      "SNNP", "Gambela", "Harar", "Addis Ababa", "Dire Dawa", "National")
-  )
+  relevel_region()
 
 
 comm_psnp_all_local <- bind_rows(
-  mean_tbl_nowt(ess4_comm_psnp, "comm_psnp", group_vars = c("wave", "region", "locality")),
-  mean_tbl_nowt(ess4_comm_psnp, "comm_psnp", group_vars = c("wave", "locality")) %>% 
-    mutate(region = "National"),
-  
-  mean_tbl_nowt(ess5_comm_psnp, "comm_psnp", group_vars = c("wave", "region", "locality")),
-  mean_tbl_nowt(ess5_comm_psnp, "comm_psnp", group_vars = c("wave", "locality")) %>% 
-    mutate(region = "National")
+  summ_comm_psnp(ess4_comm_psnp, locality = TRUE),
+  summ_comm_psnp(ess5_comm_psnp, locality = TRUE)
 ) %>% 
-  mutate(
-    region = fct_relevel(
-      region, 
-      "Tigray", "Afar", "Amhara", "Oromia", "Somali", "Benishangul Gumuz", 
-      "SNNP", "Gambela", "Harar", "Addis Ababa", "Dire Dawa", "National")
-  )
+  relevel_region()
 
 comm_psnp_all <- bind_rows(
   comm_psnp_all_agg %>% 
@@ -1040,37 +1054,17 @@ ess4_comm_psnp_panel <- ess4_comm_psnp %>%
 
 
 comm_psnp_panel_agg <- bind_rows(
-  mean_tbl_nowt(ess4_comm_psnp_panel, "comm_psnp", group_vars = c("wave", "region")),
-  mean_tbl_nowt(ess4_comm_psnp_panel, "comm_psnp", group_vars = c("wave")) %>% 
-    mutate(region = "National"),
-  
-  mean_tbl_nowt(ess5_comm_psnp_panel, "comm_psnp", group_vars = c("wave", "region")),
-  mean_tbl_nowt(ess5_comm_psnp_panel, "comm_psnp", group_vars = c("wave")) %>% 
-    mutate(region = "National")
+  summ_comm_psnp(ess4_comm_psnp_panel, locality = FALSE),
+  summ_comm_psnp(ess4_comm_psnp_panel, locality = FALSE)
 ) %>% 
-  mutate(
-    region = fct_relevel(
-      region,
-      "Afar", "Amhara", "Oromia", "Somali", "Benishangul Gumuz",
-      "SNNP", "Gambela", "Harar", "Addis Ababa", "Dire Dawa", "National")
-  )
+  relevel_region()
 
 
 comm_psnp_panel_local <- bind_rows(
-  mean_tbl_nowt(ess4_comm_psnp_panel, "comm_psnp", group_vars = c("wave", "region", "locality")),
-  mean_tbl_nowt(ess4_comm_psnp_panel, "comm_psnp", group_vars = c("wave", "locality")) %>% 
-    mutate(region = "National"),
-  
-  mean_tbl_nowt(ess5_comm_psnp_panel, "comm_psnp", group_vars = c("wave", "region", "locality")),
-  mean_tbl_nowt(ess5_comm_psnp_panel, "comm_psnp", group_vars = c("wave", "locality")) %>% 
-    mutate(region = "National")
+  summ_comm_psnp(ess4_comm_psnp_panel, locality = TRUE),
+  summ_comm_psnp(ess4_comm_psnp_panel, locality = TRUE)
 ) %>% 
-  mutate(
-    region = fct_relevel(
-      region, 
-      "Afar", "Amhara", "Oromia", "Somali", "Benishangul Gumuz", 
-      "SNNP", "Gambela", "Harar", "Addis Ababa", "Dire Dawa", "National")
-  )
+  relevel_region()
 
 
 comm_psnp_panel <- bind_rows(

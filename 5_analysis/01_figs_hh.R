@@ -1,7 +1,13 @@
 
+# ----- #
+# Purpose: to create data on adoption rates of innovations
+# Author: Lemi Daba (tayelemi@gmail.com)
+# ----- #
+
+
+# load packages ----
 library(haven)
 library(tidyverse)
-# library(thatssorandom)
 library(labelled)
 library(janitor)
 library(kableExtra)
@@ -9,8 +15,7 @@ library(scales)
 library(ggpubr)
 
 
-# theme_set(theme_light())
-
+# load data ----
 root <- "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Country teams/Ethiopia/LSMS_W5"
 w4_dir <- "supplemental/replication_files/3_report_data"
 w5_dir <- "3_report_data"
@@ -21,6 +26,8 @@ wave5_hh <- read_dta(file.path(root, w5_dir, "wave5_hh_new.dta"))
 ess4_hh_psnp <- read_dta(file.path(root, w4_dir, "ess4_hh_psnp.dta"))
 hh_livestock <- read_dta(file.path(root, w5_dir, "01_6_hh_livestock.dta"))
 
+
+# some cleaning ----
 wave4_hh_new <- wave4_hh %>% 
   rename(hhd_sesbaniya = hhd_sasbaniya, hhd_alfalfa = hhd_alfa) %>% 
   mutate(hhd_grass = case_when(
