@@ -739,65 +739,6 @@ psnp_all_local <- bind_rows(
   relevel_region()
 
 
-psnp_all_agg %>% 
-  filter(region != "Tigray", variable == "hhd_psnp_dir") %>% 
-  ggplot(aes(region, mean, fill = wave)) +
-  geom_col(position = "dodge") +
-  geom_text(aes(label = paste0( round(mean*100, 1), "%", "\n(", nobs, ")" ) ),
-            position = position_dodge(width = 1),
-            vjust = -.35, size = 2.5) +
-  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
-  scale_y_continuous(labels = percent_format()) +
-  expand_limits(y = .35) +
-  theme(
-    legend.position = "top"#,
-    # legend.margin = margin(t = -0.4, unit = "cm"),
-    # axis.title = element_text(size = 12.5),
-    # plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
-  ) +
-  labs(x = "", y = "Percent", fill = "",
-       title = "PSNP - all households in each wave")
-
-
-ggsave(
-  filename = file.path(root, "LSMS_W5/tmp/figures/psnp_all.pdf"),
-  device = cairo_pdf,
-  width = 180,
-  height = 127,
-  units = "mm"
-)  
-
-
-psnp_all_local %>% 
-  filter(region != "Tigray", variable == "hhd_psnp_dir") %>% 
-  ggplot(aes(region, mean, fill = wave)) +
-  geom_col(position = "dodge") +
-  geom_text(aes(label = paste0( round(mean*100, 1), "%", "\n(", nobs, ")" ) ),
-            position = position_dodge(width = 1),
-            vjust = -.35, size = 2.5) +
-  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
-  scale_y_continuous(labels = percent_format()) +
-  expand_limits(y = .4) +
-  facet_wrap(~ locality, nrow = 2, scales = "free_y") +
-  theme(
-    legend.position = "top"#,
-    # legend.margin = margin(t = -0.4, unit = "cm"),
-    # axis.title = element_text(size = 12.5),
-    # plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
-  ) +
-  labs(x = "", y = "Percent", fill = "",
-       title = "PSNP - all households in each wave by locality")
-
-
-ggsave(
-  filename = file.path(root, "LSMS_W5/tmp/figures/psnp_all_local.pdf"),
-  device = cairo_pdf,
-  width = 180,
-  height = 200,
-  units = "mm"
-)  
-
-
 ## PSNP: Only panel hhs ----
 
 
@@ -828,65 +769,18 @@ psnp_panel_local <- bind_rows(
   relevel_region()
 
 
-psnp_panel_agg %>% 
-  filter(region != "Tigray") %>% 
-  ggplot(aes(region, mean, fill = wave)) +
-  geom_col(position = "dodge") +
-  geom_text(aes(label = paste0( round(mean*100, 1), "%", "\n(", nobs, ")" ) ),
-            position = position_dodge(width = 1),
-            vjust = -.35, size = 2.5) +
-  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
-  scale_y_continuous(labels = percent_format()) +
-  expand_limits(y = .35) +
-  theme(
-    legend.position = "top"#,
-    # legend.margin = margin(t = -0.4, unit = "cm"),
-    # axis.title = element_text(size = 12.5),
-    # plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
-  ) +
-  labs(x = "", y = "Percent", fill = "",
-       title = "PSNP - only panel households")
+psnp_hh <- bind_rows(
+  psnp_all_agg %>% 
+    mutate(locality = "Aggregate", sample = "All"), 
+  psnp_all_local %>% 
+    mutate(sample = "All"),
+  psnp_panel_agg %>% 
+    mutate(locality = "Aggregate", sample = "Panel"), 
+  psnp_panel_local %>% 
+    mutate(sample = "Panel")
+)
 
-
-ggsave(
-  filename = file.path(root, "LSMS_W5/tmp/figures/psnp_all_panel.pdf"),
-  device = cairo_pdf,
-  width = 180,
-  height = 127,
-  units = "mm"
-)  
-
-
-
-psnp_panel_local %>% 
-  filter(region != "Tigray") %>% 
-  ggplot(aes(region, mean, fill = wave)) +
-  geom_col(position = "dodge") +
-  geom_text(aes(label = paste0( round(mean*100, 1), "%", "\n(", nobs, ")" ) ),
-            position = position_dodge(width = 1),
-            vjust = -.35, size = 2.5) +
-  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
-  scale_y_continuous(labels = percent_format()) +
-  expand_limits(y = .4) +
-  facet_wrap(~ locality, nrow = 2, scales = "free_y") +
-  theme(
-    legend.position = "top"#,
-    # legend.margin = margin(t = -0.4, unit = "cm"),
-    # axis.title = element_text(size = 12.5),
-    # plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
-  ) +
-  labs(x = "", y = "Percent", fill = "",
-       title = "PSNP - panel households by locality")
-
-
-ggsave(
-  filename = file.path(root, "LSMS_W5/tmp/figures/psnp_local_panel.pdf"),
-  device = cairo_pdf,
-  width = 180,
-  height = 200,
-  units = "mm"
-)  
-
+write_csv(psnp_hh, file = "dynamics_presentation/data/psnp_hh.csv")
 
 
 ## Community psnp ----
@@ -975,13 +869,164 @@ comm_psnp_all_local <- bind_rows(
 ) %>% 
   relevel_region()
 
-comm_psnp_all <- bind_rows(
+
+# panel EAs:
+
+ess5_comm_psnp_panel <- ess5_comm_psnp %>% 
+  semi_join(ess4_comm_psnp, by = "ea_id")
+
+ess4_comm_psnp_panel <- ess4_comm_psnp %>% 
+  semi_join(ess5_comm_psnp, by = "ea_id")
+
+
+comm_psnp_panel_agg <- bind_rows(
+  summ_comm_psnp(ess4_comm_psnp_panel, locality = FALSE),
+  summ_comm_psnp(ess4_comm_psnp_panel, locality = FALSE)
+) %>% 
+  relevel_region()
+
+
+comm_psnp_panel_local <- bind_rows(
+  summ_comm_psnp(ess4_comm_psnp_panel, locality = TRUE),
+  summ_comm_psnp(ess4_comm_psnp_panel, locality = TRUE)
+) %>% 
+  relevel_region()
+
+
+comm_psnp <- bind_rows(
   comm_psnp_all_agg %>% 
-    mutate(locality = "Aggregate"), 
-  comm_psnp_all_local 
+    mutate(locality = "Aggregate", sample = "All"), 
+  comm_psnp_all_local %>% 
+    mutate(sample = "All"),
+  comm_psnp_panel_agg %>% 
+    mutate(locality = "Aggregate", sample = "Panel"), 
+  comm_psnp_panel_local %>% 
+    mutate(sample = "Panel")
 )
 
-write_csv(comm_psnp_all, file = "dynamics_presentation/data/comm_psnp_all.csv")
+write_csv(comm_psnp, file = "dynamics_presentation/data/comm_psnp.csv")
+
+
+
+## PSNP plots ----
+
+psnp_all_agg %>% 
+  filter(region != "Tigray", variable == "hhd_psnp_dir") %>% 
+  ggplot(aes(region, mean, fill = wave)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = paste0( round(mean*100, 1), "%", "\n(", nobs, ")" ) ),
+            position = position_dodge(width = 1),
+            vjust = -.35, size = 2.5) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+  scale_y_continuous(labels = percent_format()) +
+  expand_limits(y = .35) +
+  theme(
+    legend.position = "top"#,
+    # legend.margin = margin(t = -0.4, unit = "cm"),
+    # axis.title = element_text(size = 12.5),
+    # plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
+  ) +
+  labs(x = "", y = "Percent", fill = "",
+       title = "PSNP - all households in each wave")
+
+
+ggsave(
+  filename = file.path(root, "LSMS_W5/tmp/figures/psnp_all.pdf"),
+  device = cairo_pdf,
+  width = 180,
+  height = 127,
+  units = "mm"
+)  
+
+
+psnp_all_local %>% 
+  filter(region != "Tigray", variable == "hhd_psnp_dir") %>% 
+  ggplot(aes(region, mean, fill = wave)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = paste0( round(mean*100, 1), "%", "\n(", nobs, ")" ) ),
+            position = position_dodge(width = 1),
+            vjust = -.35, size = 2.5) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+  scale_y_continuous(labels = percent_format()) +
+  expand_limits(y = .4) +
+  facet_wrap(~ locality, nrow = 2, scales = "free_y") +
+  theme(
+    legend.position = "top"#,
+    # legend.margin = margin(t = -0.4, unit = "cm"),
+    # axis.title = element_text(size = 12.5),
+    # plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
+  ) +
+  labs(x = "", y = "Percent", fill = "",
+       title = "PSNP - all households in each wave by locality")
+
+
+ggsave(
+  filename = file.path(root, "LSMS_W5/tmp/figures/psnp_all_local.pdf"),
+  device = cairo_pdf,
+  width = 180,
+  height = 200,
+  units = "mm"
+)  
+
+
+psnp_panel_agg %>% 
+  filter(region != "Tigray") %>% 
+  ggplot(aes(region, mean, fill = wave)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = paste0( round(mean*100, 1), "%", "\n(", nobs, ")" ) ),
+            position = position_dodge(width = 1),
+            vjust = -.35, size = 2.5) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+  scale_y_continuous(labels = percent_format()) +
+  expand_limits(y = .35) +
+  theme(
+    legend.position = "top"#,
+    # legend.margin = margin(t = -0.4, unit = "cm"),
+    # axis.title = element_text(size = 12.5),
+    # plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
+  ) +
+  labs(x = "", y = "Percent", fill = "",
+       title = "PSNP - only panel households")
+
+
+ggsave(
+  filename = file.path(root, "LSMS_W5/tmp/figures/psnp_all_panel.pdf"),
+  device = cairo_pdf,
+  width = 180,
+  height = 127,
+  units = "mm"
+)  
+
+
+
+psnp_panel_local %>% 
+  filter(region != "Tigray") %>% 
+  ggplot(aes(region, mean, fill = wave)) +
+  geom_col(position = "dodge") +
+  geom_text(aes(label = paste0( round(mean*100, 1), "%", "\n(", nobs, ")" ) ),
+            position = position_dodge(width = 1),
+            vjust = -.35, size = 2.5) +
+  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+  scale_y_continuous(labels = percent_format()) +
+  expand_limits(y = .4) +
+  facet_wrap(~ locality, nrow = 2, scales = "free_y") +
+  theme(
+    legend.position = "top"#,
+    # legend.margin = margin(t = -0.4, unit = "cm"),
+    # axis.title = element_text(size = 12.5),
+    # plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
+  ) +
+  labs(x = "", y = "Percent", fill = "",
+       title = "PSNP - panel households by locality")
+
+
+ggsave(
+  filename = file.path(root, "LSMS_W5/tmp/figures/psnp_local_panel.pdf"),
+  device = cairo_pdf,
+  width = 180,
+  height = 200,
+  units = "mm"
+)  
 
 
 comm_psnp_all_agg %>% 
@@ -1044,39 +1089,6 @@ ggsave(
 )  
 
 
-# panel EAs:
-
-ess5_comm_psnp_panel <- ess5_comm_psnp %>% 
-  semi_join(ess4_comm_psnp, by = "ea_id")
-
-ess4_comm_psnp_panel <- ess4_comm_psnp %>% 
-  semi_join(ess5_comm_psnp, by = "ea_id")
-
-
-comm_psnp_panel_agg <- bind_rows(
-  summ_comm_psnp(ess4_comm_psnp_panel, locality = FALSE),
-  summ_comm_psnp(ess4_comm_psnp_panel, locality = FALSE)
-) %>% 
-  relevel_region()
-
-
-comm_psnp_panel_local <- bind_rows(
-  summ_comm_psnp(ess4_comm_psnp_panel, locality = TRUE),
-  summ_comm_psnp(ess4_comm_psnp_panel, locality = TRUE)
-) %>% 
-  relevel_region()
-
-
-comm_psnp_panel <- bind_rows(
-  comm_psnp_panel_agg %>% 
-    mutate(locality = "Aggregate"), 
-  comm_psnp_panel_local 
-)
-
-write_csv(comm_psnp_panel, file = "dynamics_presentation/data/comm_psnp_panel.csv")
-
-
-
 
 comm_psnp_panel_agg %>% 
   filter(region != "Tigray") %>% 
@@ -1135,15 +1147,3 @@ ggsave(
   height = 200,
   units = "mm"
 ) 
-
-
-
-
-
-
-
-
-
-
-
-
