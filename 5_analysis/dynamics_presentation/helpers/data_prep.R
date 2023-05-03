@@ -13,6 +13,10 @@ dna_means_hh <- read_csv("data/dna_means_hh.csv")
 
 dna_means_ea <- read_csv("data/dna_means_ea.csv")
 
+psnp_hh <- read_csv("data/psnp_hh.csv")
+
+comm_psnp <- read_csv("data/comm_psnp.csv")
+
 
 
 # cleaning ----
@@ -92,7 +96,18 @@ plot_waves <- function(tbl) {
 }
 
 
+# PSNP:
 
+psnp <- bind_rows(
+  psnp_hh, comm_psnp
+) %>% 
+  filter(region != "Tigray") %>% 
+  mutate(
+    region = fct_relevel(
+      region, 
+      "Afar", "Amhara", "Oromia", "Somali", "Benishangul Gumuz", "SNNP", "Gambela", 
+      "Harar", "Dire Dawa", "Addis Ababa", "National")
+  )
 
 
 

@@ -1,11 +1,14 @@
 ---
-title: "Dynamics in the adoption of CGIAR related innovations in the ESPS with a focus on regional comparison"
+title: Dynamics in the adoption of CGIAR related innovations in the ESPS with a focus
+  on regional comparison
 author: "Lemi Daba (tayelemi@gmail.com) - SPIA CGIAR"
 date: "`r Sys.Date()`"
-output: 
+output:
   html_document:
-    toc: true
+    toc: yes
 runtime: shiny
+resource_files:
+- adoption_rates_ESS/app.R
 ---
 
 ```{r setup, include=FALSE}
@@ -135,6 +138,133 @@ plotShiny <- function(tbl, title = "Add Title") {
 }
 
 ```
+
+```{r}
+
+plotShiny_psnp <- function(tbl, title = "Add Title") {
+  
+  require(shiny)
+  
+  shinyApp(
+    ui <- fluidPage(
+      
+      sidebarLayout(
+        sidebarPanel(
+          helpText("'All' corresponds to all rural households or EAs in each wave; 'Panel' corresponds to only panel rural households or EAs across the two waves."),
+          # 
+          # # selectInput("var", 
+          # #             label = "Choose a variable to display",
+          # #             choices = labels_choices,
+          # #             multiple = FALSE,
+          # #             selected = NULL),
+          
+          radioButtons("type",
+                       label = "Choose sample type to display",
+                       choices = list(
+                         "All", 
+                         "Panel"
+                       ),
+                       selected = "All"),
+          
+          width = 2
+          
+        ),
+        
+        mainPanel(
+          tabsetPanel(
+            type = "tabs",
+            tabPanel("Rural", plotOutput("plotrur")),
+            tabPanel("Urban", plotOutput("ploturb")),
+            tabPanel("Aggregate", plotOutput("plotagg"))
+          )
+          
+        )
+      )
+    ),
+    
+    # Define server logic required to draw a histogram
+    server <- function(input, output) {
+      
+      filteredDataRur <- reactive({
+        tbl %>%
+          filter(
+            sample == input$type, locality == "Rural"
+          )
+      })
+      
+      filteredDataUrb <- reactive({
+        tbl %>%
+          filter(
+            sample == input$type, locality == "Urban"
+          )
+      })
+      
+      filteredDataAgg <- reactive({
+        tbl %>%
+          filter(
+            sample == input$type, locality == "Aggregate"
+          )
+      })
+      
+      maxGridRur <- reactive({
+        filteredDataRur() %>% 
+          slice_max(mean) %>% 
+          pull(mean)
+      })
+      
+      maxGridUrb <- reactive({
+        filteredDataUrb() %>% 
+          slice_max(mean) %>% 
+          pull(mean)
+      })
+      
+      maxGridAgg <- reactive({
+        filteredDataAgg() %>% 
+          slice_max(mean) %>% 
+          pull(mean)
+      })
+      
+      output$plotrur <- renderPlot({
+        
+        filteredDataRur() %>% 
+          plot_waves() +
+          expand_limits(y = maxGridRur() + .15) +
+          labs(title = title)
+        
+        
+      }, height = 450)
+      
+      output$ploturb <- renderPlot({
+        
+        filteredDataUrb() %>% 
+          plot_waves() +
+          expand_limits(y = maxGridUrb() + .15) +
+          labs(title = title)
+        
+        
+      }, height = 450)
+      
+      output$plotagg <- renderPlot({
+        
+        filteredDataAgg() %>% 
+          plot_waves() +
+          expand_limits(y = maxGridAgg() + .15) +
+          labs(title = title)
+        
+        
+      }, height = 450)
+      
+    }
+    
+ 
+    
+
+  )
+  
+}
+
+```
+
 
 
 # Animal Agriculture
@@ -320,7 +450,7 @@ adoption_rates %>%
 
 # Policy Influences 
 
-## Productive Safety-net Program (PSNP)
+## Productive Safety-net Program (PSNP) - Temporary Labor
 
 Our results show that the proportion of rural households benefitting from PSNP declined across all regions. Nationally, it declined from 9.7% in ESS4 to 7% in ESS5, when only panel households are considered. The biggest fall is observed in Amhara (18.7% to 14.3%) followed by Oromia (4.3% to 1.7%) and “Other regions” (13.4% to 10.3%), while the decline was slight in SNNP (8.2% to 7.3%). Rural households in Oromia seem to be benefit the least from PSNP in both waves. The picture at the EA level is more mixed. While the proportion of EAs with at least one household benefitting from PSNP increased in Amhara and SNNP, it shows a marked decline in Oromia and a moderate decline in “Other regions”. But, overall there is a fall in the percentage of EAs with PSNP nationally.
 
@@ -329,11 +459,40 @@ Our results show that the proportion of rural households benefitting from PSNP d
 
 adoption_rates %>% 
   filter(label=="At Least 1 Member Benefitting From Psnp") %>% 
-  plotShiny("Productive Safety-net Program (PSNP)")
+  plotShiny("Productive Safety-net Program (PSNP) - Temporary Labor")
 
 ```
 
-## Community PSNP
+## Community PSNP (EA level)
+
+```{r psnp2, echo=FALSE}
+
+psnp %>% 
+  filter(variable=="comm_psnp") %>% 
+  plotShiny_psnp("Community PSNP (EA level)")
+
+```
+
+
+## PSNP - Direct Support
+
+```{r psnp3, echo=FALSE}
+
+psnp %>% 
+  filter(variable=="hhd_psnp_dir") %>% 
+  plotShiny_psnp("PSNP - Direct Support")
+
+```
+
+## PSNP - Temporary Labour
+
+```{r psnp4, echo=FALSE}
+
+psnp %>% 
+  filter(variable=="hhd_psnp") %>% 
+  plotShiny_psnp("PSNP - Temporary Labour")
+
+```
 
 
 

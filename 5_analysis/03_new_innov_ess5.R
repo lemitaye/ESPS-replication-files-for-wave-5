@@ -778,7 +778,7 @@ psnp_hh <- bind_rows(
     mutate(locality = "Aggregate", sample = "Panel"), 
   psnp_panel_local %>% 
     mutate(sample = "Panel")
-)
+) 
 
 write_csv(psnp_hh, file = "dynamics_presentation/data/psnp_hh.csv")
 
@@ -881,14 +881,14 @@ ess4_comm_psnp_panel <- ess4_comm_psnp %>%
 
 comm_psnp_panel_agg <- bind_rows(
   summ_comm_psnp(ess4_comm_psnp_panel, locality = FALSE),
-  summ_comm_psnp(ess4_comm_psnp_panel, locality = FALSE)
+  summ_comm_psnp(ess5_comm_psnp_panel, locality = FALSE)
 ) %>% 
   relevel_region()
 
 
 comm_psnp_panel_local <- bind_rows(
   summ_comm_psnp(ess4_comm_psnp_panel, locality = TRUE),
-  summ_comm_psnp(ess4_comm_psnp_panel, locality = TRUE)
+  summ_comm_psnp(ess5_comm_psnp_panel, locality = TRUE)
 ) %>% 
   relevel_region()
 
@@ -902,7 +902,8 @@ comm_psnp <- bind_rows(
     mutate(locality = "Aggregate", sample = "Panel"), 
   comm_psnp_panel_local %>% 
     mutate(sample = "Panel")
-)
+) %>% 
+  mutate(variable = "comm_psnp")
 
 write_csv(comm_psnp, file = "dynamics_presentation/data/comm_psnp.csv")
 
