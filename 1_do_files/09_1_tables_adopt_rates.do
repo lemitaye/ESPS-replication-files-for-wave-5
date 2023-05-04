@@ -84,60 +84,7 @@ descr_tab $hhlevel if hh_status==3, regions("2 3 4 5 6 7 12 13 15") wt(pw_w5)
 xml_tab C, save("$table/09_1_ess5_adoption_rates.xml") append sheet("HH_w5_panel", nogridlines) ///
     title("Table: ESS5 - Adoption rates of innovations among rural households - panel sample only") ///
     $options1
-
-
-
-* Household level: other regions ---------------------------- 
-
-// prep:
-local rname ""
-foreach var in $hhlevel {
-	local lbl : variable label `var'
-	local rname `"  `rname'   "`lbl'" "'		
-}
-
-# delimit;
-global options2
-rnames(`rname' "Total No. of obs. per region") cnames(`cnames') 
-ceq("Afar" "Afar" "Afar" "Afar" "Afar" "Somali" "Somali" "Somali" "Somali" "Somali" 
-"Benshangul Gumuz" "Benshangul Gumuz" "Benshangul Gumuz"  "Benshangul Gumuz"  "Benshangul Gumuz"  
-"Gambela"  "Gambela" "Gambela" "Gambela"  "Gambela"  "Harar" "Harar" "Harar" "Harar" "Harar" 
-"Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa") showeq 
-rblanks(COL_NAMES "Proportion of hh that adopt on at least one plot:" S2149, 
-hhd_impccr  "Share of plots per household" S2149)	
-font("Times New Roman" 10) 
-cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
-6 55, 7 55, 8 30, 9 30, 10 40,
-11 55, 12 55, 13 30, 14 30, 15 40,
-16 55, 17 55, 18 30, 19 30, 20 40,
-21 55, 22 55, 23 30, 24 30, 25 40,
-26 55, 27 55, 28 30, 29 30, 30 40,
-) 
-format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-(NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-(NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-(NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-(NBCR0) (NBCR0))   
-	star(.1 .05 .01)  
-	lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 13)  
-	notes( "Point estimates are wegihted sample means."  ) //Add your notes here
-; 
-# delimit cr
-
-// matrix:
-descr_tab_othreg $hhlevel, regions("2 5 6 12 13 15") wt(pw_w5)
-
-xml_tab C,  save("$table/09_1_ess5_adoption_rates.xml") append sheet("HH_w5_othreg", nogridlines) ///
-    title("Table: ESS5 - Adoption rates of innovations among rural households: other regions")  ///
-    $options2
-
-// panel:
-descr_tab_othreg $hhlevel if hh_status==3, regions("2 5 6 12 13 15") wt(pw_w5)
-
-xml_tab C,  save("$table/09_1_ess5_adoption_rates.xml") append sheet("HH_w5_othreg_pnl", nogridlines) ///
-    title("Table: ESS5 - Adoption rates of innovations among rural households: other regions (panel sample only)")  ///
-    $options2
-
+    
 
 * EA level ------------------------------
 
