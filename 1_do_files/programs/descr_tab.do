@@ -20,7 +20,7 @@ program descr_tab
 
         foreach var of local varlist {
 
-            cap: mean `var' [pw=`wt'] if region==`x' & `touse'
+            cap: mean `var' [pw=`wt'] if saq01==`x' & `touse'
             if _rc==2000 {  // error code = 2000. no observations [see "help error"]
                 matrix  `var'meanr`x'=0
                 matrix define `var'V`x'= 0
@@ -38,7 +38,7 @@ program descr_tab
                 scalar `var'se`x'=sqrt(`var'VV`x'[1,1])  // standard error
             }
             // we do the following to get min, max, and # of obs; weighted mean is computed above
-            qui sum `var'  if region==`x' & `touse'
+            qui sum `var'  if saq01==`x' & `touse'
             scalar `var'minr`x'=r(min)   // "summarize" is an r-class command (see "return list")
             scalar `var'maxr`x'=r(max)
             scalar `var'n`x'=r(N)
@@ -54,7 +54,7 @@ program descr_tab
 
         }
 
-        qui sum region if region==`x' & `touse'
+        qui sum saq01 if saq01==`x' & `touse'
         local obsr`x'=r(N)  // # of households in region `x'
 
         mat A2`x'=(., . , ., .,`obsr`x'')  
@@ -93,7 +93,7 @@ program descr_tab
         scalar `var'maxrN=r(max)
         scalar `var'nN=r(N)
 
-        qui sum region if `touse'
+        qui sum saq01 if `touse'
         local obsrN=r(N)
 
         matrix mat`var'N  = ( `var'meanrN,`var'seN, `var'minrN, `var'maxrN, `var'nN)

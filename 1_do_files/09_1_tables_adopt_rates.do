@@ -39,19 +39,26 @@ foreach var in $hhlevel {
 #delimit ;
 global options1 
 rnames(`rname' "Total No. of obs. per region") cnames(`cnames') 
-ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia" 
-"Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Other regions" 
-"Other regions" "Other regions" "Other regions" "Other regions" "National" 
-"National" "National" "National" "National" ) showeq 
+ceq(
+"Afar" "Afar" "Afar" "Afar" "Afar" "Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" 
+"Oromia" "Oromia" "Oromia" "Oromia" "Oromia" "Somali" "Somali" "Somali" "Somali" "Somali"
+"Benishangul Gumuz" "Benishangul Gumuz" "Benishangul Gumuz" "Benishangul Gumuz" "Benishangul Gumuz"
+"SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Gambela" "Gambela" "Gambela" "Gambela" "Gambela" 
+"Harar" "Harar" "Harar" "Harar" "Harar" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa"
+"National" "National" "National" "National" "National") showeq 
 rblanks(COL_NAMES "Proportion of hh that adopt on at least one plot:" S2149, 
 hhd_impccr  "Share of plots per household" S2149)	 
 font("Times New Roman" 10) 
 cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
-6 55, 7 55, 8 30, 9 30, 10 40,
-11 55, 12 55, 13 30, 14 30, 15 40,
-16 55, 17 55, 18 30, 19 30, 20 40,
-21 55, 22 55, 23 30, 24 30, 25 40,
-26 55, 27 55, 28 30, 29 30, 30 40) 
+        6 55, 7 55, 8 30, 9 30, 10 40,
+        11 55, 12 55, 13 30, 14 30, 15 40,
+        16 55, 17 55, 18 30, 19 30, 20 40,
+        21 55, 22 55, 23 30, 24 30, 25 40,
+        26 55, 27 55, 28 30, 29 30, 30 40,
+        31 55, 32 55, 33 30, 34 30, 35 40,
+        36 55, 37 55, 38 30, 39 30, 40 40,
+        41 55, 42 55, 43 30, 44 30, 45 40,
+        46 55, 47 55, 48 30, 49 30, 50 40) 
 format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
 (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
 (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
@@ -63,7 +70,7 @@ format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0)
 #delimit cr	
 
 // construct matrix:
-descr_tab $hhlevel, regions("3 4 7 0") wt(pw_w5)
+descr_tab $hhlevel, regions("2 3 4 5 6 7 12 13 15") wt(pw_w5)
 
 // export
 xml_tab C, save("$table/09_1_ess5_adoption_rates.xml") replace sheet("HH_w5", nogridlines) ///
@@ -72,9 +79,9 @@ xml_tab C, save("$table/09_1_ess5_adoption_rates.xml") replace sheet("HH_w5", no
 
 
 // only for panel sample:
-descr_tab $hhlevel if hh_status==3, regions("3 4 7 0") wt(pw_w5) 
+descr_tab $hhlevel if hh_status==3, regions("2 3 4 5 6 7 12 13 15") wt(pw_w5) 
 
-xml_tab C, save("$table/09_1_ess5_adoption_rates_panel.xml") replace sheet("HH_w5_panel", nogridlines) ///
+xml_tab C, save("$table/09_1_ess5_adoption_rates.xml") append sheet("HH_w5_panel", nogridlines) ///
     title("Table: ESS5 - Adoption rates of innovations among rural households - panel sample only") ///
     $options1
 
@@ -127,7 +134,7 @@ xml_tab C,  save("$table/09_1_ess5_adoption_rates.xml") append sheet("HH_w5_othr
 // panel:
 descr_tab_othreg $hhlevel if hh_status==3, regions("2 5 6 12 13 15") wt(pw_w5)
 
-xml_tab C,  save("$table/09_1_ess5_adoption_rates_panel.xml") append sheet("HH_w5_othreg_pnl", nogridlines) ///
+xml_tab C,  save("$table/09_1_ess5_adoption_rates.xml") append sheet("HH_w5_othreg_pnl", nogridlines) ///
     title("Table: ESS5 - Adoption rates of innovations among rural households: other regions (panel sample only)")  ///
     $options2
 
@@ -149,27 +156,24 @@ ead_impcr14 ead_impcr3 ead_impcr5 ead_impcr60 ead_impcr62
 ;
 #delimit cr
 
-// matrix:	
-descr_tab $ealevel, regions("3 4 7 0")  // unweighted means at EA level
 
+// prep:
 local rname ""
 foreach var in $ealevel {
 	local lbl : variable label `var'
 	local rname `"  `rname'   "`lbl'" "'		
-}	
+}
 
-// export:
-#delimit;
-xml_tab C,  save("$table/09_1_adoption_rates.xml") append sheet("EA_w5", nogridlines)  
+# delimit;
+global options3
 rnames(`rname' "Total No. of obs. per region") cnames(`cnames') 
-ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia" 
-"Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Other regions" "Other regions" 
-"Other regions" "Other regions" "Other regions"  "National" "National" "National" 
-"National" "National"  ) showeq 
-rblanks(COL_NAMES "Prop. of EA in the sample with at least 1 hh adopting:" S2149,
-ead_impccr   "Prop. of hh per EA adopting" S2149, 
-sh_ea_impccr"Prop. of plots per EA adopting" S2149)	 
-title(Table 5: ESS5 - Crop variety - EA )  font("Times New Roman" 10) 
+ceq("Afar" "Afar" "Afar" "Afar" "Afar" "Somali" "Somali" "Somali" "Somali" "Somali" 
+"Benshangul Gumuz" "Benshangul Gumuz" "Benshangul Gumuz"  "Benshangul Gumuz"  "Benshangul Gumuz"  
+"Gambela"  "Gambela" "Gambela" "Gambela"  "Gambela"  "Harar" "Harar" "Harar" "Harar" "Harar" 
+"Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa") showeq 
+rblanks(COL_NAMES "Proportion of hh that adopt on at least one plot:" S2149, 
+hhd_impccr  "Share of plots per household" S2149)	
+font("Times New Roman" 10) 
 cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
 6 55, 7 55, 8 30, 9 30, 10 40,
 11 55, 12 55, 13 30, 14 30, 15 40,
@@ -177,21 +181,34 @@ cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40,
 21 55, 22 55, 23 30, 24 30, 25 40,
 26 55, 27 55, 28 30, 29 30, 30 40,
 ) 
-	format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0)) 
+format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0))   
 	star(.1 .05 .01)  
 	lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 13)  
-	notes("Point estimates are un-wegihted sample means.") 
+	notes( "Point estimates are un-wegihted sample means.") //Add your notes here
 ; 
 # delimit cr
 
+xml_tab C,  save("$table/09_1_ess5_adoption_rates.xml") append sheet("EA_w5", nogridlines) ///
+    title("Table: ESS5 - Adoption rates of innovations among rural EAs")  ///
+    $options2
+
+// matrix:	
+descr_tab $ealevel, regions("3 4 7 0")  // unweighted means at EA level
 
 * EA level: other regions -----------------
 
-descr_tab_othreg $ealevel, regions("2 5 6 12 13 15") 
+descr_tab_othreg $ealevel, regions("2 5 6 12 13 15")
+
+xml_tab C,  save("$table/09_1_ess5_adoption_rates.xml") append sheet("EA_w5_othreg", nogridlines) ///
+    title("Table: ESS5 - Adoption rates of innovations among rural EAs: other regions")  ///
+    $options2
+
+
+ 
 
 local rname ""
 foreach var in $ealevel {
