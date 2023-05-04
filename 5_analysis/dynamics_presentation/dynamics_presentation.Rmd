@@ -463,16 +463,6 @@ adoption_rates %>%
 
 ```
 
-## Community PSNP (EA level)
-
-```{r psnp2, echo=FALSE}
-
-psnp %>% 
-  filter(variable=="comm_psnp") %>% 
-  plotShiny_psnp("Community PSNP (EA level)")
-
-```
-
 
 ## PSNP - Direct Support
 
@@ -484,13 +474,33 @@ psnp %>%
 
 ```
 
-## PSNP - Temporary Labour
+## PSNP - Temporary Labor
 
 ```{r psnp4, echo=FALSE}
 
 psnp %>% 
   filter(variable=="hhd_psnp") %>% 
-  plotShiny_psnp("PSNP - Temporary Labour")
+  plotShiny_psnp("PSNP - Temporary Labor")
+
+```
+
+## PSNP - Temporary Labor or Direct Support
+
+```{r psnp5, echo=FALSE}
+
+psnp %>% 
+  filter(variable=="hhd_psnp_any") %>% 
+  plotShiny_psnp("PSNP - Temporary Labor or Direct Support")
+
+```
+
+## Community PSNP (EA level)
+
+```{r psnp2, echo=FALSE}
+
+psnp %>% 
+  filter(variable=="comm_psnp") %>% 
+  plotShiny_psnp("Community PSNP (EA level)")
 
 ```
 

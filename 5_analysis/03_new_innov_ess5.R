@@ -685,18 +685,26 @@ psnp_w4 <- ess4_hh_psnp %>%
   left_join(psnp_w4_dir, by = "household_id") %>% 
   mutate(
     wave = "Wave 4",
-    locality = recode(saq14, `1` = "Rural", `2` = "Urban")
+    locality = recode(saq14, `1` = "Rural", `2` = "Urban"),
+    hhd_psnp_any = case_when(
+      (hhd_psnp==1 | hhd_psnp_dir==1) ~ 1,
+      TRUE ~ 0
+    )
     ) %>% 
   recode_all_regions(saq01) %>% 
-  select(household_id, pw_w4, locality, hhd_psnp, hhd_psnp_dir, region, wave)
+  select(household_id, pw_w4, locality, hhd_psnp, hhd_psnp_dir, hhd_psnp_any, region, wave)
 
 psnp_w5 <- ess5_hh_psnp %>% 
   mutate(
     wave = "Wave 5",
-    locality = recode(saq14, `1` = "Rural", `2` = "Urban")
+    locality = recode(saq14, `1` = "Rural", `2` = "Urban"),
+    hhd_psnp_any = case_when(
+      (hhd_psnp==1 | hhd_psnp_dir==1) ~ 1,
+      TRUE ~ 0
+    )
   ) %>% 
   recode_all_regions(saq01) %>% 
-  select(household_id, pw_w5, locality, hhd_psnp, hhd_psnp_dir, region, wave) 
+  select(household_id, pw_w5, locality, hhd_psnp, hhd_psnp_dir, hhd_psnp_any, region, wave) 
 
 
 
@@ -712,10 +720,10 @@ summ_psnp <- function(tbl, locality, ...) {
   
   mean_bind_tbl <- bind_rows(
     
-    mean_tbl(tbl, c("hhd_psnp", "hhd_psnp_dir"), 
+    mean_tbl(tbl, c("hhd_psnp", "hhd_psnp_dir", "hhd_psnp_any"), 
              group_vars = grp_vars_reg, pw = ...),
     
-    mean_tbl(tbl, c("hhd_psnp", "hhd_psnp_dir"), 
+    mean_tbl(tbl, c("hhd_psnp", "hhd_psnp_dir", "hhd_psnp_any"), 
              group_vars = grp_vars_nat, pw = ...) %>% 
       mutate(region = "National")
     
