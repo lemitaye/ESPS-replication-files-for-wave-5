@@ -70,7 +70,8 @@ foreach i in largerum smallrum poultry {
 }
 
 
-collapse (max) ead* sh_plotea* sh_ea_* wave region othregion (firstnm) pw_w5, by(ea_id)
+collapse (max) ead* sh_plotea* sh_ea_* ///
+	(firstnm) wave saq01 saq14 region othregion pw_w5, by(ea_id)
 
 /*
 The following (livestock variables) removed from the loop below:
