@@ -43,7 +43,7 @@ save "${tmp}/dynamics/06_1_track_hh.dta", replace
 use "${supp}/replication_files/2_raw_data/ESS4_2018-19/Data/sect_cover_pp_w4.dta", clear
 
 destring household_id, replace
-collapse (firstnm) saq14 pw_w4 saq01 (count) household_id, by(ea_id)
+collapse (firstnm) saq14 saq01 (count) household_id, by(ea_id)
 rename saq01 region_w4
 rename saq14 location_w4
 rename household_id nohh_per_ea_w4
@@ -54,21 +54,26 @@ save `cover_pp_ea_w4'
 use "${rawdata}/PP/sect_cover_pp_w5", clear
 
 destring household_id, replace
-collapse (firstnm) saq14 pw_w5 saq01 (count) household_id, by(ea_id)
+collapse (firstnm) saq14 saq01 (count) household_id, by(ea_id)
 rename saq01 region_w5
 rename saq14 location_w5
 rename household_id nohh_per_ea_w5
 
 merge 1:1 ea_id using `cover_pp_ea_w4', force
 
-tab region_w5 _m  // # of EAs added
-tab region_w4 _m  // # of EAs dropped (with 0 hhs)
-sum nohh_per_ea_w5
+rename _merge ea_status
 
-save "${tmp}/dynamics/track_ea_w5.dta", replace
+label define _merge 1 "1. Newly added in ESPS5", modify
+label define _merge 2 "2. Dropped in ESPS5", modify
+label define _merge 3 "3. Matched ", modify
+
+tab region_w5 ea_status  // # of EAs added
+tab region_w4 ea_status  // # of EAs dropped (with 0 hhs)
+
+save "${tmp}/dynamics/06_1_track_ea.dta", replace
 
 
-* ESPS4 households that were in EAs surveyed in ESPS5
+* ESPS4 households that were in EAs surveyed in ESPS5 ----------
 
 use "${supp}/replication_files/2_raw_data/ESS4_2018-19/Data/sect_cover_pp_w4", clear
 
