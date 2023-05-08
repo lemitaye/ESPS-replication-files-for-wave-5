@@ -7,14 +7,33 @@
 
 source("dynamics_presentation/helpers/ggplot_theme_Publication-2.R")
 
+
+# read psnp data:
+psnp_hh <- read_csv("dynamics_presentation/data/psnp_hh.csv")
+
+psnp_ea_rural <- read_csv("dynamics_presentation/data/psnp_ea_rural.csv")
+
+
+nat_adpt_panel <- bind_rows(
+  filter(adopt_rates_panel_hh, region == "National") %>% 
+    mutate(level = "Household", sample = "Panel"),
+  filter(innov_ea_panel, region == "National") %>% 
+    mutate(level = "Village", sample = "Panel"),
+  filter(psnp_hh, sample == "Panel", locality == "Rural", 
+         region == "National") %>% 
+    mutate(level = "Household", sample = "Panel"),
+  filter(psnp_ea_rural, sample == "Panel", locality == "Rural", 
+         region == "National") %>% 
+    mutate(level = "Village", sample = "Panel")
+) %>%
+  select(-locality)
+
+
+
+
 # Graph comparing animal agriculture innovations:
 
-animal_agri <- bind_rows(
-  filter(adopt_rates_panel_hh, region == "National") %>% 
-    mutate(level = "Household"),
-  filter(innov_ea_panel, region == "National") %>% 
-    mutate(level = "Village")
-) %>%  
+animal_agri <- nat_adpt_panel %>%  
   filter(variable %in% c(
     "hhd_cross_largerum", "hhd_cross_poultry", 
     "ead_cross_largerum", "ead_cross_poultry",
@@ -212,27 +231,25 @@ ggsave(
 
 # Afforestation and SWC (HH and EA level)
 
-swc_affor <- bind_rows(
-  mutate(national_hh_panel, level = "Household-level (only panel)"),
-  mutate(national_ea_panel, level = "EA-level (only panel)")
-) %>% 
-  select(-variable, -improv) %>%
-  mutate(
-    label = recode(
-      label,
-      "River dispersion" = "River diversion",
-      "Motor pump used for irrigation" = "Motorized pumps",
-      "Motor pump" = "Motorized pumps"
+nrm_policy <- nat_adpt_panel %>% 
+  filter(variable %in% c(
+    "hhd_swc", "ead_swc", "hhd_consag1", "ead_consag1", "hhd_affor", "ead_affor",
+    "ead_motorpump", "hhd_motorpump", "ead_rdisp", "hhd_rdisp", "hhd_psnp_any", 
+    "ead_psnp_any"
     )) %>% 
-  filter(label %in% c(
-    "Soil Water Conservation practices",
-    "Afforestation",
-    "River diversion",
-    "Motorized pumps"))
+  mutate(label = fct_reorder(label, mean))
+  #%>% 
+  # mutate(
+  #   label = recode(
+  #     label,
+  #     "River dispersion" = "River diversion",
+  #     "Motor pump used for irrigation" = "Motorized pumps",
+  #     "Motor pump" = "Motorized pumps"
+  #   )) 
 
 
-swc_aff_dyn_plt <- swc_affor %>% 
-  mutate(label = str_to_sentence(label)) %>% 
+swc_aff_dyn_plt <- nrm_policy %>% 
+  # mutate(label = str_to_sentence(label)) %>% 
   ggplot(aes(label, mean, fill = wave)) +
   geom_col(position = "dodge") +
   geom_text(aes(label = paste0( round(mean*100, 1) ) ),
@@ -243,7 +260,7 @@ swc_aff_dyn_plt <- swc_affor %>%
   # expand_limits(y = .6) +
   facet_wrap(~level, nrow = 1, scales = "free_y") +
   labs(x = "", y = "Percent",
-       title = "Natural resource management practices",
+       title = "Natural resource management and policy innovations",
        fill = "",
        caption = "Percent at the household level are weighted sample means using panel weights") +
   scale_fill_Publication() + 
@@ -532,10 +549,6 @@ forages_sf <- full_join(
   forages_panel, reg_rename, by = "region"
 ) %>% 
   st_as_sf()
-
-forages_sf %>% 
-  expand(wave, region)
-
 
 tm_shape(forages_sf) +
   tm_fill(col = "mean") +
