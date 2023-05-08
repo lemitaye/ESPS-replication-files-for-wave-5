@@ -59,9 +59,10 @@ animal_dyn_plt <- animal_agri %>%
   # expand_limits(y = .6) +
   facet_wrap(~level, nrow = 1, scales = "free_y") +
   labs(x = "", y = "Percent",
-       title = "Adoption of animal agriculture innovations (ESPS)",
+       title = "Animal agriculture",
+       # subtitle = "LSMS-ESPS, only panel sample",
        fill = "",
-       caption = "Percent at the household level are weighted sample means using panel weights") +
+       caption = "Only panel sample used. Percent at the household level are weighted sample means using panel weights.") +
   scale_fill_Publication() + 
   theme_Publication() +
   theme(
@@ -74,9 +75,9 @@ animal_dyn_plt <- animal_agri %>%
 
 
 ggsave(
-  filename = "LSMS_W5/tmp/figures/animal_dyn_plt.pdf",
+  filename = "../tmp/figures/animal_dyn_plt.png",
   plot = animal_dyn_plt,
-  device = cairo_pdf,
+  # device = cairo_pdf,
   width = 8,
   height = 5#,
   # scale = 1.2#,
@@ -169,7 +170,7 @@ kabuli_dyn_plt <- kabuli_bind %>%
   labs(x = "", y = "Percent",
        title = "Adoption rate of chickpea Kabuli in waves 3 and 5",
        fill = "",
-       caption = "Percent are weighted sample means at the household level.") +
+       caption = "Only panel sample used. Percent are weighted sample means at the household level.") +
   scale_fill_Publication() + 
   theme_Publication() +
   theme(
@@ -234,21 +235,20 @@ ggsave(
 nrm_policy <- nat_adpt_panel %>% 
   filter(variable %in% c(
     "hhd_swc", "ead_swc", "hhd_consag1", "ead_consag1", "hhd_affor", "ead_affor",
-    "ead_motorpump", "hhd_motorpump", "ead_rdisp", "hhd_rdisp", "hhd_psnp_any", 
-    "ead_psnp_any"
+    # "ead_motorpump", "hhd_motorpump", "ead_rdisp", "hhd_rdisp", 
+    "hhd_psnp_any", "ead_psnp_any"
     )) %>% 
-  mutate(label = fct_reorder(label, mean))
-  #%>% 
-  # mutate(
-  #   label = recode(
-  #     label,
-  #     "River dispersion" = "River diversion",
-  #     "Motor pump used for irrigation" = "Motorized pumps",
-  #     "Motor pump" = "Motorized pumps"
-  #   )) 
+  mutate(label = fct_reorder(label, mean)) %>%
+  mutate(
+    label = recode(
+      label,
+      "Afforestation" = " Afforestation",
+      "Soil Water Conservation Practices" = "Soil & Water Conserv. Practices",
+      "Conservation Agriculture - Using Minimum Tillage" = "Conserv. Agriculture - using Minimum Tillage"
+    ))
 
 
-swc_aff_dyn_plt <- nrm_policy %>% 
+nrm_policy_dyn_plt <- nrm_policy %>% 
   # mutate(label = str_to_sentence(label)) %>% 
   ggplot(aes(label, mean, fill = wave)) +
   geom_col(position = "dodge") +
@@ -262,7 +262,7 @@ swc_aff_dyn_plt <- nrm_policy %>%
   labs(x = "", y = "Percent",
        title = "Natural resource management and policy innovations",
        fill = "",
-       caption = "Percent at the household level are weighted sample means using panel weights") +
+       caption = "Only panel sample used. Percent at the household level are weighted sample means using panel weights") +
   scale_fill_Publication() + 
   theme_Publication() +
   theme(
@@ -274,9 +274,9 @@ swc_aff_dyn_plt <- nrm_policy %>%
 
 
 ggsave(
-  filename = "LSMS_W5/tmp/figures/swc_aff_dyn_plt.pdf",
-  plot = swc_aff_dyn_plt,
-  device = cairo_pdf,
+  filename = "../tmp/figures/nrm_policy_dyn_plt.png",
+  plot = nrm_policy_dyn_plt,
+  # device = cairo_pdf,
   width = 8,
   height = 5#,
   # scale = 1.2#,
@@ -516,6 +516,9 @@ for (i in seq_along(joint_plots_pnl)) {
 library(tmap)
 library(sp)
 library(sf)
+library(RColorBrewer)
+library(colorspace)
+
 
 adopt_rates_panel_hh <- read_csv("dynamics_presentation/data/adopt_rates_panel_hh.csv")
 
@@ -556,8 +559,48 @@ tm_shape(forages_sf) +
   tm_facets(by = "wave", free.coords = FALSE)
   
 
+forage_map <- ggplot(forages_sf) +
+  geom_sf(aes(fill = mean)) +
+  # geom_sf_text(
+  #   aes(label = region),
+  #   size = 3,
+  #   color = "blue"
+  # ) +
+  facet_wrap(~ wave) +
+  # theme_void() +
+  scale_fill_continuous_sequential(palette = "YlGnBu") +
+  theme(
+    axis.ticks = element_blank(),
+    axis.text = element_blank(),
+    axis.line = element_blank(),
+    panel.border = element_blank(),
+    panel.grid = element_line(color = "transparent"),
+    panel.background = element_blank(),
+    plot.background = element_rect(fill = "transparent", color = "transparent"),
+    strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
+    strip.text = element_text(face="bold"),
+    legend.position = "bottom",
+    legend.key.height = unit(0.5, "cm"),
+    legend.key.width = unit(1, "cm")#,
+    # legend.text = element_text(size = 12, family = "Times"),
+    # legend.title = element_text(size = 12, family = "Times")
+  ) +
+  guides(fill = guide_colorbar(title.position = "top")) +
+  labs(fill = "Percent of households adopting",
+       title = "Adoption of improved forages by region",
+       subtitle = "Ethiopia, LSMS-ESPS"
+       )
 
 
+#--- dpi = 320 ---#
+ggsave("../tmp/figures/forage_map.png", forage_map, height = 5, width = 7, dpi = 400)
+
+#--- dpi = 72 ---#
+ggsave("forage_map.png", forage_map, height = 5, width = 7, dpi = "screen")
+
+
+#--- plot the palettes ---#
+hcl_palettes(plot = TRUE)
 
 
 
