@@ -5,7 +5,7 @@
 
 # depends on: figs_hh.R, figs_ea.R
 
-source("adoption_rates_ESS/helpers/ggplot_theme_Publication-2.R")
+source("dynamics_presentation/helpers/ggplot_theme_Publication-2.R")
 
 # Graph comparing animal agriculture innovations:
 
@@ -14,26 +14,22 @@ animal_agri <- bind_rows(
     mutate(level = "Household"),
   filter(innov_ea_panel, region == "National") %>% 
     mutate(level = "Village")
-) %>% 
-  select(-variable, -improv) %>% 
+) %>%  
+  filter(variable %in% c(
+    "hhd_cross_largerum", "hhd_cross_poultry", 
+    "ead_cross_largerum", "ead_cross_poultry",
+    "hhd_grass", "ead_grass", "ead_livIA", "hhd_livIA"
+  )) %>% 
   mutate(
     label = recode(
       label,
-      "AI on any livestock type - both public & private" = "Artificial insemination use", 
-      "Livestock AI - both public & private" = "Artificial insemination use", 
-      "Large ruminants crossbred" = "Crossbred LARGE RUMINANTS",
-      "Small ruminants crossbred" = "Crossbred SMALL RUMINANTS",
-      "Poultry crossbred" = "Crossbred POULTRY",
-      "Feed and forages: Elephant grass, Sesbaniya, & Alfalfa" = "Forages"             
-    )) %>%  
-  filter(label %in% c(
-    "Crossbred LARGE RUMINANTS",
-    "Crossbred POULTRY",
-    "Artificial insemination use",
-    "Forages"))
+      "Ai On Any Livestock Type - Both Public & Private" = "Artificial Insemination use", 
+      "Feed And Forages: Elephant Grass, Sesbaniya, & Alfalfa" = "Forages"             
+    )) %>% 
+  mutate(label = fct_reorder(label, mean))
 
 animal_dyn_plt <- animal_agri %>% 
-  mutate(label = str_to_sentence(label)) %>% 
+  # mutate(label = str_to_sentence(label)) %>% 
   ggplot(aes(label, mean, fill = wave)) +
   geom_col(position = "dodge") +
   geom_text(aes(label = paste0( round(mean*100, 1) ) ),
