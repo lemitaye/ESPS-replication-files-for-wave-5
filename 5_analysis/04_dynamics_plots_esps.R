@@ -10,8 +10,10 @@ source("adoption_rates_ESS/helpers/ggplot_theme_Publication-2.R")
 # Graph comparing animal agriculture innovations:
 
 animal_agri <- bind_rows(
-  mutate(national_hh_panel, level = "Household-level (only panel)"),
-  mutate(national_ea_panel, level = "EA-level (only panel)")
+  filter(adopt_rates_panel_hh, region == "National") %>% 
+    mutate(level = "Household"),
+  filter(innov_ea_panel, region == "National") %>% 
+    mutate(level = "Village")
 ) %>% 
   select(-variable, -improv) %>% 
   mutate(
@@ -496,10 +498,54 @@ for (i in seq_along(joint_plots_pnl)) {
 }
 
 
+# Chloropleth map (Karen's request; May 08, 2023) ----
+
+library(tmap)
+library(sp)
+library(sf)
+
+adopt_rates_panel_hh <- read_csv("dynamics_presentation/data/adopt_rates_panel_hh.csv")
+
+eth_regions <- st_read(
+  dsn = "./gadm41_ETH_shp",
+  layer = "gadm41_ETH_1"
+)
+
+forages_panel <- adopt_rates_panel_hh %>% 
+  filter(variable == "hhd_grass", region != "National") %>% 
+  mutate(mean = mean * 100) %>% 
+  select(wave, region, mean) %>% 
+  bind_rows(
+    expand_grid(wave = c("Wave 4", "Wave 5"), 
+                region = c("Addis Ababa", "Tigray"))
+  )
+
+reg_rename <- eth_regions %>% 
+  select(region = NAME_1) %>% 
+  mutate(region = case_match(
+    region, 
+    "Addis Abeba" ~ "Addis Ababa",
+    "Benshangul-Gumaz" ~ "Benishangul Gumuz",
+    "Gambela Peoples" ~ "Gambela",
+    "Harari People" ~ "Harar",
+    "Southern Nations, Nationalities" ~ "SNNP",
+    .default = region
+  )) 
+
+forages_sf <- full_join(
+  forages_panel, reg_rename, by = "region"
+) %>% 
+  st_as_sf()
+
+forages_sf %>% 
+  expand(wave, region)
 
 
-
-
+tm_shape(forages_sf) +
+  tm_fill(col = "mean") +
+  tm_borders() +
+  tm_facets(by = "wave", free.coords = FALSE)
+  
 
 
 
