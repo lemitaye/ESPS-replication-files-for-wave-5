@@ -223,14 +223,14 @@ recode_region_dna <- function(tbl, region_var = region) {
 
 ess4_dna_hh_new <- read_dta(file.path(root, w4_dir, "ess4_dna_hh_new.dta")) %>% 
   filter(!is.na(maize_cg), !is.na(dtmz)) %>%  # retain only maize
-  select(-barley_cg, -sorghum_cg) %>% 
+  dplyr::select(-c(barley_cg, sorghum_cg)) %>% 
   recode_region_dna(saq01)
 
 
-ess5_dna_hh_new <- read_dta(file.path(root, "ESPS_DNA/3_output", "01_3_ess5_dna_hh.dta")) %>% 
+ess5_dna_hh_new <- read_dta(file.path(root, w5_dir, "03_5_ess5_dna_hh.dta")) %>% 
   recode_region_dna()
 
-ess5_weights_hh <- read_dta(file.path(root, "LSMS_W5/2_raw_data/data/HH/ESS5_weights_hh.dta"))
+ess5_weights_hh <- read_dta(file.path(root, "2_raw_data/data/HH/ESS5_weights_hh.dta"))
 
 summarize_dna_hh <- function(tbl, pw) {
   tbl %>% 
@@ -276,32 +276,32 @@ dna_means_hh_all <- bind_rows(
 ess4_dna_hh_panel <- ess4_dna_hh_new %>% 
   semi_join(ess5_dna_hh_new,
             by = "household_id") %>% 
-  left_join(select(ess5_weights_hh, household_id, pw_panel),
+  left_join(dplyr::select(ess5_weights_hh, household_id, pw_panel),
             by = "household_id")
 
 ess5_dna_hh_panel <- ess5_dna_hh_new %>% 
   semi_join(ess4_dna_hh_new,
             by = "household_id") %>% 
-  left_join(select(ess5_weights_hh, household_id, pw_panel),
+  left_join(dplyr::select(ess5_weights_hh, household_id, pw_panel),
             by = "household_id")
 
 dna_means_hh_panel <- bind_rows(
   ess4_dna_hh_panel %>% 
     group_by(region) %>% 
-    summarize_dna(pw = pw_panel) %>% 
+    summarize_dna_hh(pw = pw_panel) %>% 
     mutate(wave = "Wave 4"),
   
   ess4_dna_hh_panel %>% 
-    summarize_dna(pw = pw_panel) %>% 
+    summarize_dna_hh(pw = pw_panel) %>% 
     mutate(region = "National", wave = "Wave 4"),
   
   ess5_dna_hh_panel %>% 
     group_by(region) %>% 
-    summarize_dna(pw = pw_panel) %>%
+    summarize_dna_hh(pw = pw_panel) %>%
     mutate(wave = "Wave 5"),
   
   ess5_dna_hh_panel %>% 
-    summarize_dna(pw = pw_panel) %>% 
+    summarize_dna_hh(pw = pw_panel) %>% 
     mutate(region = "National", wave = "Wave 5")
   
 ) %>% 
@@ -325,7 +325,7 @@ dna_means_hh <- bind_rows(
   )
   )
 
-write_csv(dna_means_hh, "adoption_rates_ESS/data/dna_means_hh.csv")
+write_csv(dna_means_hh, "dynamics_presentation/data/dna_means_hh.csv")
 
 
 
@@ -434,7 +434,7 @@ dna_means_ea <- bind_rows(
   )
 
 
-write_csv(dna_means_ea, "adoption_rates_ESS/data/dna_means_ea.csv")
+write_csv(dna_means_ea, "dynamics_presentation/data/dna_means_ea.csv")
 
 
 

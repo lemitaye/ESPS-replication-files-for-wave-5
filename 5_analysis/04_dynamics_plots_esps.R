@@ -3,15 +3,29 @@
 
 # created on: February 7, 2022
 
+# load libraries:
+library(tidyverse)
+library(haven)
+library(ggpubr)
+
 # depends on: figs_hh.R, figs_ea.R
 
 source("dynamics_presentation/helpers/ggplot_theme_Publication-2.R")
+
+esps_dna_path <- "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Country teams/Ethiopia/ESS5_DNA_Data/ESPS_DNA"
 
 
 # read psnp data:
 psnp_hh <- read_csv("dynamics_presentation/data/psnp_hh.csv")
 
 psnp_ea_rural <- read_csv("dynamics_presentation/data/psnp_ea_rural.csv")
+
+dna_means_hh <- read_csv("dynamics_presentation/data/dna_means_hh.csv")
+
+dna_means_ea <- read_csv("dynamics_presentation/data/dna_means_ea.csv")
+
+append_seed_source <- read_dta(file.path(esps_dna_path, "tmp/03_3_append_seed_source.dta")) %>%
+  mutate_if(is.labelled, as_factor)
 
 
 nat_adpt_panel <- bind_rows(
@@ -26,12 +40,40 @@ nat_adpt_panel <- bind_rows(
          region == "National") %>% 
     mutate(level = "Village", sample = "Panel")
 ) %>%
-  select(-locality)
+  dplyr::select(-locality) %>% 
+  mutate(wave = recode(wave, "Wave 4" = "2018/19", "Wave 5" = "2021/22"))
+
+# plot function:
+
+plot_dyn_nat <- function(tbl, title = "Add title") {
+  
+  tbl %>% 
+    ggplot(aes(label, mean, fill = wave)) +
+    geom_col(position = "dodge") +
+    geom_text(aes(label = paste0( round(mean*100, 1) ) ),
+              position = position_dodge(width = 1),
+              vjust = -.35, size = 3) +
+    scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
+    scale_y_continuous(labels = percent_format()) +
+    # expand_limits(y = .6) +
+    facet_wrap(~level, nrow = 1, scales = "free_y") +
+    labs(x = "", y = "Percent",
+         title = title,
+         fill = "",
+         caption = "Only panel sample used. Percent at the household level are weighted sample means using panel weights.") +
+    scale_fill_Publication() + 
+    theme_Publication() +
+    theme(
+      legend.position = "top",
+      legend.margin = margin(t = -0.4, unit = "cm"),
+      axis.title = element_text(size = 12.5),
+      plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
+    )
+  
+}
 
 
-
-
-# Graph comparing animal agriculture innovations:
+# Animal agriculture: ---------
 
 animal_agri <- nat_adpt_panel %>%  
   filter(variable %in% c(
@@ -49,30 +91,8 @@ animal_agri <- nat_adpt_panel %>%
 
 animal_dyn_plt <- animal_agri %>% 
   # mutate(label = str_to_sentence(label)) %>% 
-  ggplot(aes(label, mean, fill = wave)) +
-  geom_col(position = "dodge") +
-  geom_text(aes(label = paste0( round(mean*100, 1) ) ),
-            position = position_dodge(width = 1),
-            vjust = -.35, size = 3) +
-  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
-  scale_y_continuous(labels = percent_format()) +
-  # expand_limits(y = .6) +
-  facet_wrap(~level, nrow = 1, scales = "free_y") +
-  labs(x = "", y = "Percent",
-       title = "Animal agriculture",
-       # subtitle = "LSMS-ESPS, only panel sample",
-       fill = "",
-       caption = "Only panel sample used. Percent at the household level are weighted sample means using panel weights.") +
-  scale_fill_Publication() + 
-  theme_Publication() +
-  theme(
-    legend.position = "top",
-    legend.margin = margin(t = -0.4, unit = "cm"),
-    axis.title = element_text(size = 12.5),
-    plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
-  )
+  plot_dyn_nat(title = "Animal agriculture")
   
-
 
 ggsave(
   filename = "../tmp/figures/animal_dyn_plt.png",
@@ -89,7 +109,7 @@ ggsave(
 
 
 
-# Comparing adoption of CA and constitutent practices
+# CA and constituent practices ---------
 
 cons_agri <- bind_rows(
   mutate(national_hh_panel, level = "Household-level (only panel)"),
@@ -250,28 +270,7 @@ nrm_policy <- nat_adpt_panel %>%
 
 nrm_policy_dyn_plt <- nrm_policy %>% 
   # mutate(label = str_to_sentence(label)) %>% 
-  ggplot(aes(label, mean, fill = wave)) +
-  geom_col(position = "dodge") +
-  geom_text(aes(label = paste0( round(mean*100, 1) ) ),
-            position = position_dodge(width = 1),
-            vjust = -.35, size = 3) +
-  scale_x_discrete(labels = function(x) str_wrap(x, width = 10)) +
-  scale_y_continuous(labels = percent_format()) +
-  # expand_limits(y = .6) +
-  facet_wrap(~level, nrow = 1, scales = "free_y") +
-  labs(x = "", y = "Percent",
-       title = "Natural resource management and policy innovations",
-       fill = "",
-       caption = "Only panel sample used. Percent at the household level are weighted sample means using panel weights") +
-  scale_fill_Publication() + 
-  theme_Publication() +
-  theme(
-    legend.position = "top",
-    legend.margin = margin(t = -0.4, unit = "cm"),
-    axis.title = element_text(size = 12.5),
-    plot.margin = unit(c(1, 1, 0.5, 1), units = "line") # top, right, bottom, & left
-  )
-
+  plot_dyn_nat(title = "Natural resource management and policy innovations")
 
 ggsave(
   filename = "../tmp/figures/nrm_policy_dyn_plt.png",
@@ -333,7 +332,154 @@ ggsave(
 ) 
 
 
-# Comparing joint adoption rates:
+# Maize DNA germplasm ----------
+
+## DTMZ & CG-germplasm ------
+
+dna_means <- bind_rows(
+  dna_means_hh, dna_means_ea
+) %>% 
+  mutate(
+    sample = recode(
+      sample, 
+      "All households/EA" = "All",
+      "Panel households/EA" = "Panel"),
+    level = recode(
+      level, "EA" = "Village"
+    ),
+    label = str_replace(label, "\\(DNA data\\)", "")
+  ) %>% 
+  filter(region == "National", sample == "Panel") %>% 
+  mutate(wave = recode(wave, "Wave 4" = "2018/19", "Wave 5" = "2021/22"))
+
+dna_dyn_plt <- dna_means %>% 
+  plot_dyn_nat(title = "Maize DNA")
+
+ggsave(
+  filename = "../tmp/figures/dna_dyn_plt.png",
+  plot = dna_dyn_plt,
+  # device = cairo_pdf,
+  width = 8,
+  height = 5#,
+  # scale = 1.2#,
+  # units = "mm"
+)
+
+## Purity -----
+
+append_seed_source <- append_seed_source %>% 
+  mutate(wave = recode(wave, "Wave 4" = "2018/19", "Wave 5" = "2021/22"))
+
+tit_lab <- "Sample only includes panel households with DNAFP and CG-germplasm."
+
+# Boxplots:
+append_seed_source %>%
+  filter(cg_source == "Yes", hh_status == "3. Matched") %>%
+  ggboxplot(
+    y = "purity_percent", x = "wave", fill = "wave"
+  ) +
+  labs(
+    x = "", y = "Genetic purity (%)", fill = "", 
+    caption = tit_lab
+  )
+
+ggsave(
+  filename = "../tmp/figures/purity_box_I.png",
+  width = 7,
+  height = 5
+)
+
+append_seed_source %>%
+  filter(!is.na(source), cg_source == "Yes", hh_status == "3. Matched") %>%
+  ggboxplot(
+    y = "purity_percent", x = "source", fill = "wave"
+  ) +
+  labs(
+    x = "Source of seed", y = "Genetic purity (%)", fill = "", 
+    caption = tit_lab
+  )
+
+ggsave(
+  filename = "../tmp/figures/purity_box_II.png",
+  width = 7,
+  height = 5
+)
+
+append_seed_source %>%
+  filter(cg_source == "Yes", hh_status == "3. Matched") %>%
+  ggboxplot(
+    y = "purity_percent", x = "wave", fill = "wave"
+  ) +
+  facet_wrap(~type) +
+  labs(
+    x = "", y = "Genetic purity (%)", fill = "", 
+    caption = tit_lab
+  )
+
+ggsave(
+  filename = "../tmp/figures/purity_box_III.png",
+  width = 7,
+  height = 5
+)
+
+
+# Density plots:
+append_seed_source %>%
+  filter(cg_source == "Yes", hh_status == "3. Matched") %>%
+  ggdensity(
+    x = "purity_percent", rug = TRUE, color = "wave", size = .8
+  ) +
+  geom_vline(aes(xintercept = 95), linetype = "dashed") +
+  labs(
+    y = "Density", x = "Genetic purity (%)", color = "", 
+    caption = tit_lab
+  )
+
+ggsave(
+  filename = "../tmp/figures/purity_density_I.png",
+  width = 8,
+  height = 5
+)
+
+append_seed_source %>%
+  filter(!is.na(source), cg_source == "Yes", hh_status == "3. Matched") %>%
+  ggdensity(
+    x = "purity_percent", rug = TRUE, color = "wave", size = .8
+  ) +
+  geom_vline(aes(xintercept = 95), linetype = "dashed") +
+  facet_wrap(~source) +
+  labs(
+    y = "Density", x = "Genetic purity (%)", color = "", 
+    caption = tit_lab
+  )
+
+ggsave(
+  filename = "../tmp/figures/purity_density_II.png",
+  width = 8,
+  height = 5
+)
+
+append_seed_source %>%
+  filter(cg_source == "Yes") %>%
+  ggdensity(
+    x = "purity_percent", rug = TRUE, color = "wave", size = .8
+  ) +
+  geom_vline(aes(xintercept = 95), linetype = "dashed") +
+  facet_wrap(~type) +
+  labs(
+    y = "Density", x = "Genetic purity (%)", color = "", 
+    caption = tit_lab
+  )
+
+ggsave(
+  filename = "../tmp/figures/purity_density_III.png",
+  width = 8,
+  height = 5
+)
+
+
+
+# Comparing joint adoption rates: ---------
 
 
 nrm_joint <- joint_rate_tbl %>% 
@@ -511,7 +657,7 @@ for (i in seq_along(joint_plots_pnl)) {
 }
 
 
-# Chloropleth map (Karen's request; May 08, 2023) ----
+# Choropleth map (Karen's request; May 08, 2023) ----
 
 library(tmap)
 library(sp)
@@ -527,17 +673,23 @@ eth_regions <- st_read(
   layer = "gadm41_ETH_1"
 )
 
+eth_contour <- st_read(
+  dsn = "./ContourLines-Interval500m",
+  layer = "etnaaloscont500m"
+)
+
 forages_panel <- adopt_rates_panel_hh %>% 
   filter(variable == "hhd_grass", region != "National") %>% 
   mutate(mean = mean * 100) %>% 
-  select(wave, region, mean) %>% 
+  dplyr::select(wave, region, mean) %>% 
   bind_rows(
     expand_grid(wave = c("Wave 4", "Wave 5"), 
                 region = c("Addis Ababa", "Tigray"))
-  )
+  ) %>% 
+  mutate(wave = recode(wave, "Wave 4" = "2018/19", "Wave 5" = "2021/22"))
 
 reg_rename <- eth_regions %>% 
-  select(region = NAME_1) %>% 
+  dplyr::select(region = NAME_1) %>% 
   mutate(region = case_match(
     region, 
     "Addis Abeba" ~ "Addis Ababa",
@@ -548,24 +700,26 @@ reg_rename <- eth_regions %>%
     .default = region
   )) 
 
+region_centroids <- reg_rename %>% 
+  st_point_on_surface() %>% 
+  st_coordinates() %>% 
+  as_tibble() %>% 
+  mutate(name = reg_rename$region) %>% 
+  rename(x = X, y = Y)
+
 forages_sf <- full_join(
   forages_panel, reg_rename, by = "region"
 ) %>% 
   st_as_sf()
 
-tm_shape(forages_sf) +
-  tm_fill(col = "mean") +
-  tm_borders() +
-  tm_facets(by = "wave", free.coords = FALSE)
-  
 
 forage_map <- ggplot(forages_sf) +
   geom_sf(aes(fill = mean)) +
-  # geom_sf_text(
-  #   aes(label = region),
-  #   size = 3,
-  #   color = "blue"
-  # ) +
+  geom_text(
+    data = region_centroids, 
+    aes(x, y, label = str_wrap(name, width = 10)),
+    size = 3, color = "red"
+    ) +
   facet_wrap(~ wave) +
   # theme_void() +
   scale_fill_continuous_sequential(palette = "YlGnBu") +
@@ -580,62 +734,115 @@ forage_map <- ggplot(forages_sf) +
     strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
     strip.text = element_text(face="bold"),
     legend.position = "bottom",
-    legend.key.height = unit(0.5, "cm"),
-    legend.key.width = unit(1, "cm")#,
+    legend.key.height = unit(0.3, "cm"),
+    legend.key.width = unit(1, "cm"),
+    plot.margin = unit(c(0, 0, 0, 0), units = "line"), # top, right, bottom, & left
+    legend.margin = margin(b = -0.4, unit = "cm")
     # legend.text = element_text(size = 12, family = "Times"),
     # legend.title = element_text(size = 12, family = "Times")
   ) +
   guides(fill = guide_colorbar(title.position = "top")) +
-  labs(fill = "Percent of households adopting",
-       title = "Adoption of improved forages by region",
-       subtitle = "Ethiopia, LSMS-ESPS"
+  labs(fill = "Percent of households adopting", x = "", y = ""
        )
 
 
 #--- dpi = 320 ---#
-ggsave("../tmp/figures/forage_map.png", forage_map, height = 5, width = 7, dpi = 400)
-
-#--- dpi = 72 ---#
-ggsave("forage_map.png", forage_map, height = 5, width = 7, dpi = "screen")
+ggsave("../tmp/figures/forage_map.png", forage_map, height = 5, width = 10, dpi = 400)
 
 
-#--- plot the palettes ---#
-hcl_palettes(plot = TRUE)
+## Topographical map of Ethiopia:
+
+# install and load necessary packages
+library(raster)
+library(rnaturalearth)
+
+# get country boundaries for Ethiopia
+ethiopia <- ne_countries(country = "Ethiopia", returnclass = "sf")
+
+# get topography data for Ethiopia
+topo_eth <- getData("alt", country = "ETH")
+
+# plot topography map of Ethiopia
+plot(topo_eth, col = terrain.colors(100), main = "Topographical Map of Ethiopia")
+
+# add country boundaries
+plot(ethiopia, add = TRUE, border = "red", lwd = 1)
+
+
+topo_eth_df <- as.data.frame(topo_eth, xy = TRUE) %>% 
+  na.omit() %>% 
+  as_tibble() %>% 
+  mutate(alt = as.numeric(ETH_msk_alt))
+
+
+topo_map_eth <- ggplot(topo_eth_df) +
+  geom_raster(aes(x = x, y = y, fill = alt)) +
+  geom_text(
+    data = region_centroids, 
+    aes(x, y, label = str_wrap(name, width = 10)),
+    size = 3, color = "blue"
+  ) +
+  scale_fill_distiller(palette = "Spectral", direction = 1) +
+  geom_sf(data = reg_rename, fill = NA, size = 2) +
+  theme(
+    axis.ticks = element_blank(),
+    axis.text = element_blank(),
+    axis.line = element_blank(),
+    panel.border = element_blank(),
+    panel.grid = element_line(color = "transparent"),
+    panel.background = element_blank(),
+    plot.background = element_rect(fill = "transparent", color = "transparent"),
+    strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
+    strip.text = element_text(face="bold"),
+    legend.position = "right",
+    legend.key.height = unit(.8, "cm"),
+    legend.key.width = unit(.5, "cm")#,
+    # legend.text = element_text(size = 12, family = "Times"),
+    # legend.title = element_text(size = 12, family = "Times")
+  ) +
+  guides(fill = guide_colorbar(title.position = "top")) +
+  labs(fill = "Altitude (m)", x = "", y = "")
+
+ggsave("../tmp/figures/topo_map_eth.png", topo_map_eth, height = 6, width = 8, dpi = 400)
 
 
 
 
+# from Solomon's file:
+turnover_year <- tibble(
+  title = c(
+    "Shift to a newer released improved (most recent one) vs. early or  the same year",
+    "Shift to an older released improved vs. newer or  the same year",
+    "Shift to the same year released vs. early or later year"
+  ),
+  value = c(0.3609467, 0.183432, 0.4556213)
+)
+
+age_variety <- tibble(
+  year = c("2")
+)
 
 
+turnover_year %>% 
+  mutate(title = fct_reorder(title, value)) %>% 
+  ggplot(aes(value, title, fill = title)) +
+  geom_col() +
+  geom_text(aes(label = paste0( round(value*100, 1), "%" ) ),
+            position = position_dodge(width = 1),
+            hjust = -.25, size = 3) +
+  expand_limits(x = .5) +
+  scale_y_discrete(labels = function(x) str_wrap(x, width = 30)) +
+  scale_x_continuous(labels = percent_format()) +
+  theme_Publication() +
+  theme(legend.position = "none") +
+  labs(x = "Percent", y = "", title = "",
+       caption = "Sample only includes households shifting from improved to improved varieties.")
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ggsave(
+  "../tmp/figures/shift_year.png", 
+  height = 5, 
+  width = 7
+)
 
 
 
