@@ -7,7 +7,7 @@
 capture program drop covar_regress
 
 program covar_regress
-    args ADOPT COVAR
+    args ADOPT COVAR 
 
     local adopt `"`ADOPT'"'
     local covar `"`COVAR'"'

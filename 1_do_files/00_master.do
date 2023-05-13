@@ -23,6 +23,8 @@ global table    "${root}/4_table"
 global supp     "${root}/supplemental"
 global tmp      "${root}/tmp"
 
+global dataw4   "${supp}/replication_files/3_report_data"
+
 /*
 * Call all do files:
 do "${code}/01_0_hh.do"

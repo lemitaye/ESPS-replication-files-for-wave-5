@@ -450,29 +450,18 @@ adoption_rates %>%
 
 # Policy Influences 
 
-## Productive Safety-net Program (PSNP) - Temporary Labor
+<!-- ## Productive Safety-net Program (PSNP) - Temporary Labor -->
 
-Our results show that the proportion of rural households benefitting from PSNP declined across all regions. Nationally, it declined from 9.7% in ESS4 to 7% in ESS5, when only panel households are considered. The biggest fall is observed in Amhara (18.7% to 14.3%) followed by Oromia (4.3% to 1.7%) and “Other regions” (13.4% to 10.3%), while the decline was slight in SNNP (8.2% to 7.3%). Rural households in Oromia seem to be benefit the least from PSNP in both waves. The picture at the EA level is more mixed. While the proportion of EAs with at least one household benefitting from PSNP increased in Amhara and SNNP, it shows a marked decline in Oromia and a moderate decline in “Other regions”. But, overall there is a fall in the percentage of EAs with PSNP nationally.
-
-
-```{r psnp, echo=FALSE}
-
-adoption_rates %>% 
-  filter(label=="At Least 1 Member Benefitting From Psnp") %>% 
-  plotShiny("Productive Safety-net Program (PSNP) - Temporary Labor")
-
-```
+<!-- Our results show that the proportion of rural households benefitting from PSNP declined across all regions. Nationally, it declined from 9.7% in ESS4 to 7% in ESS5, when only panel households are considered. The biggest fall is observed in Amhara (18.7% to 14.3%) followed by Oromia (4.3% to 1.7%) and “Other regions” (13.4% to 10.3%), while the decline was slight in SNNP (8.2% to 7.3%). Rural households in Oromia seem to be benefit the least from PSNP in both waves. The picture at the EA level is more mixed. While the proportion of EAs with at least one household benefitting from PSNP increased in Amhara and SNNP, it shows a marked decline in Oromia and a moderate decline in “Other regions”. But, overall there is a fall in the percentage of EAs with PSNP nationally. -->
 
 
-## PSNP - Direct Support
+<!-- ```{r psnp, echo=FALSE} -->
 
-```{r psnp3, echo=FALSE}
+<!-- adoption_rates %>%  -->
+<!--   filter(label=="At Least 1 Member Benefitting From Psnp") %>%  -->
+<!--   plotShiny("Productive Safety-net Program (PSNP) - Temporary Labor") -->
 
-psnp %>% 
-  filter(variable=="hhd_psnp_dir") %>% 
-  plotShiny_psnp("PSNP - Direct Support")
-
-```
+<!-- ``` -->
 
 ## PSNP - Temporary Labor
 
@@ -481,6 +470,16 @@ psnp %>%
 psnp %>% 
   filter(variable=="hhd_psnp") %>% 
   plotShiny_psnp("PSNP - Temporary Labor")
+
+```
+
+## PSNP - Direct Support
+
+```{r psnp3, echo=FALSE}
+
+psnp %>% 
+  filter(variable=="hhd_psnp_dir") %>% 
+  plotShiny_psnp("PSNP - Direct Support")
 
 ```
 
