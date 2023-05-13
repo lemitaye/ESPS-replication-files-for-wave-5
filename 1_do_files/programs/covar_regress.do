@@ -7,18 +7,25 @@
 capture program drop covar_regress
 
 program covar_regress
-    args ADOPT COVAR 
+    version 17.0
+    syntax varlist [if] [in], covar(varlist) [wt(varname)]
+    marksample touse, novarlist  // see documentation for "mark"
 
-    local adopt `"`ADOPT'"'
-    local covar `"`COVAR'"'
+    if "`wt'" == "" { 
+        local wt 1 
+    } 
+*    args ADOPT COVAR 
+
+*    local adopt `"`ADOPT'"'
+*   local covar `"`COVAR'"'
 
 	matrix drop _all
 
-    foreach i of local adopt {
+    foreach i of local varlist {
 		
         foreach var of local covar {
 
-        qui: reg `var' `i' if  wave==5 [pw=pw_w5]
+        qui: reg `var' `i' if `touse' [pw=`wt']
         scalar coef`var'`i'=e(b)[1,1]   // coefficient
         matrix mat`var'`i'=coef`var'`i'
 
