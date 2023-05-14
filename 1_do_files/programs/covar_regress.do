@@ -14,11 +14,7 @@ program covar_regress
     if "`wt'" == "" { 
         local wt 1 
     } 
-*    args ADOPT COVAR 
-
-*    local adopt `"`ADOPT'"'
-*   local covar `"`COVAR'"'
-
+    
 	matrix drop _all
 
     foreach i of local varlist {
