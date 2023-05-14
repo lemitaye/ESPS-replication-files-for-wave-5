@@ -61,7 +61,7 @@ hhd_impcr8
 #delimit cr
 
 // matrix of regs:
-covar_regress "$adopt" "$hhcov"
+covar_regress $adopt if hh_status==3, covar($hhcov) wt(pw_w5)
 
 local cname ""
 foreach var in $hhcov {
@@ -76,7 +76,7 @@ foreach var in $adopt {
 }
 
 #delimit ;
-xml_tab D,  save("$table/09_2_ess5_adopters_chrxs.xml") replace 
+xml_tab D,  save("$table/09_3_ess5_adopters_chrxs.xml") replace 
 sheet("Table14_hh", nogridlines)  
 rnames(`rname') cnames(`cname') lines(COL_NAMES 2 LAST_ROW 2)  
 title("Table: ESS5 - Correlates of adoption")  font("Times New Roman" 10) 
@@ -88,42 +88,38 @@ cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12
 	column variable on the row variable."); 
 # delimit cr
 
+
 // only for panel hhs
-// (until a better solution is found:)
-preserve
-    keep if hh_status==3
-    covar_regress "$adopt" "$hhcov"
+covar_regress $adopt if hh_status==3, covar($hhcov) wt(pw_w5)
 
-    local cname ""
-    foreach var in $hhcov {
-        local lbl : variable label `var'
-        local cname `" `cname' "`lbl'" "'		
-    }
+local cname ""
+foreach var in $hhcov {
+    local lbl : variable label `var'
+    local cname `" `cname' "`lbl'" "'		
+}
 
-    local rname ""
-    foreach var in $adopt {
-        local lbl : variable label `var'
-        local rname `" `rname' "`lbl'" "'		
-    }
+local rname ""
+foreach var in $adopt {
+    local lbl : variable label `var'
+    local rname `" `rname' "`lbl'" "'		
+}
 
-    #delimit ;
-    xml_tab D,  save("$table/09_2_ess5_adopters_chrxs.xml") append 
-    sheet("Table14_hh_panel", nogridlines)  
-    rnames(`rname') cnames(`cname') lines(COL_NAMES 2 LAST_ROW 2)  
-    title("Table: ESS5 - Correlates of adoption: only panel househods")  font("Times New Roman" 10) 
-    cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12 55) 
-        format((SCLR0) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) 
-        (NBCR2) (NBCR2) (NBCR2) (NBCR2))  
-        stars(* 0.1 ** 0.05 *** 0.01)  
-        notes("Each cell is a coefficient estimate from a separate regression of the 
-        column variable on the row variable."); 
-    # delimit cr
-restore
+#delimit ;
+xml_tab D,  save("$table/09_3_ess5_adopters_chrxs.xml") append 
+sheet("Table14_hh_panel", nogridlines)  
+rnames(`rname') cnames(`cname') lines(COL_NAMES 2 LAST_ROW 2)  
+title("Table: ESS5 - Correlates of adoption: only panel househods")  font("Times New Roman" 10) 
+cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12 55) 
+    format((SCLR0) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) 
+    (NBCR2) (NBCR2) (NBCR2) (NBCR2))  
+    stars(* 0.1 ** 0.05 *** 0.01)  
+    notes("Each cell is a coefficient estimate from a separate regression of the 
+    column variable on the row variable."); 
+# delimit cr
 
 
 
-
-* EA level ----
+/* EA level ----
 
 use "${data}/ess5_pp_cov_ea_new.dta", clear
 
