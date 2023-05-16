@@ -30,6 +30,9 @@ merge m:1 ea_id using "${data}/ess5_pp_cov_ea_new.dta", keepusing(cs4q01_11 cs4q
 keep if _merge==1 | _merge==3
 drop _merge
 
+// replace missing distances with zero:
+for var cs4q15 cs4q53: replace X=0 if X==.
+
 // merge with tracking file to id panel hhs:
 merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh.dta", keepusing(hh_status)
 keep if _merge==1 | _merge==3
@@ -52,7 +55,6 @@ hhd_flab flivman parcesizeHA asset_index pssetindex income_offfarm total_cons_an
 totconswin nmtotcons consq1 consq2 adulteq age_head cs4q01_11 cs4q15 cs4q53
 ;
 #delimit cr
-
 
 #delimit;
 global adopt     
@@ -132,6 +134,9 @@ use "${data}/ess5_pp_cov_ea_new.dta", clear
 merge 1:1 ea_id using "${tmp}/dynamics/06_1_track_ea.dta", keepusing(ea_status)
 keep if _merge==1 | _merge==3
 drop _merge
+
+// replace missing distances with zero:
+for var cs4q15 cs4q53: replace X=0 if X==.
 
 rename ead_sweetpotato ead_sp
 rename ead_mintillage ead_mtill
@@ -223,9 +228,13 @@ merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh.dta", keepusing(hh_s
 keep if _merge==1 | _merge==3
 drop _merge
 
+// merge with EA covariates:
 merge m:1 ea_id using "${dataw4}/ess4_pp_cov_ea_new.dta", keepusing(cs4q011 cs4q15 cs4q53)
 keep if _merge==1 | _merge==3
 drop _merge
+
+// replace missing distances with zero:
+for var cs4q15 cs4q53: replace X=0 if X==.
 
 rename nom_totcons_aeq nmtotcons
 rename hhd_mintillage hhd_mintil
@@ -319,6 +328,9 @@ use "${dataw4}/ess4_pp_cov_ea_new.dta", clear
 merge 1:1 ea_id using "${tmp}/dynamics/06_1_track_ea.dta", keepusing(ea_status)
 keep if _merge==1 | _merge==3
 drop _merge
+
+// replace missing distances with zero:
+for var cs4q15 cs4q53: replace X=0 if X==.
 
 rename ead_sweetpotato ead_sp
 rename ead_mintillage ead_mtill
