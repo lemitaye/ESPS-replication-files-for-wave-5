@@ -30,7 +30,7 @@ merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh.dta", keepusing(hh_s
 keep if _merge==1 | _merge==3
 drop _merge
 
-
+// shorter names:
 rename hhd_cross_largerum crlargerum
 rename hhd_cross_smallrum crsmallrum
 rename hhd_cross_poultry crpoultry
@@ -194,7 +194,7 @@ replace hhd_impcr2=. if maize_cg==.
 #delimit;
 global hhcov4
 hhd_flab flivman parcesizeHA asset_index pssetindex income_offfarm total_cons_ann 
-totconswin nmtotcons consq1 consq2 adulteq 
+totconswin nmtotcons consq1 consq2 adulteq age_head
 ;
 #delimit cr
 
