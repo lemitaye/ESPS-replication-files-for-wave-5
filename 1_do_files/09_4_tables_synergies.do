@@ -12,39 +12,42 @@
 * Joint adoption rates: HH level
 ********************************************************************************
 
-use "${data}\wave5_hh_new", clear
+use "${data}/wave5_hh_new.dta", clear
 
-merge 1:1 household_id using "${data}\ess4_hh_psnp"
-keep if _m==3 | _m==1
-drop _m
+// merge with tracking file to id panel hhs
+merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh.dta", keepusing(hh_status)
+keep if _merge==1 | _merge==3
+drop _merge
 
 rename largerum_cross hhd_crlr
 rename smallrum_cross hhd_crsm
 rename poultry_cross  hhd_crpo
 
+// NRM
 generate nrm=0
-replace nrm=1 if hhd_treadle==1  | hhd_motorpump==1  | hhd_rdisp==1  |  hhd_swc==1  | hhd_terr==1  | hhd_wcatch==1  | hhd_affor==1  | hhd_ploc==1  
+replace nrm=1 if hhd_treadle==1 | hhd_motorpump==1 | hhd_rdisp==1 | hhd_swc==1 ///
+    | hhd_terr==1 | hhd_wcatch==1 | hhd_affor==1 | hhd_ploc==1  
 
 generate ca=0
-replace ca=1 if hhd_consag1==1  | hhd_consag2==1 
+replace ca=1 if hhd_consag1==1 | hhd_consag2==1 
 
 generate ca1=0
-replace ca1=1 if hhd_rotlegume==1   | hhd_cresidue2==1  
+replace ca1=1 if hhd_rotlegume==1 | hhd_cresidue2==1  
 
 generate ca2=0
-replace ca2=1 if hhd_rotlegume==1  | hhd_mintillage==1  
+replace ca2=1 if hhd_rotlegume==1 | hhd_mintillage==1  
 
 generate ca3=0
-replace ca3=1 if hhd_rotlegume==1  | hhd_zerotill==1 
+replace ca3=1 if hhd_rotlegume==1 | hhd_zerotill==1 
 
 generate ca4=0
-replace ca4=1 if hhd_cresidue2==1  | hhd_mintillage==1 
+replace ca4=1 if hhd_cresidue2==1 | hhd_mintillage==1 
 
 generate ca5=0
-replace ca5=1 if hhd_cresidue2==1  | hhd_zerotill==1 
+replace ca5=1 if hhd_cresidue2==1 | hhd_zerotill==1 
 
 
-
+// Crop
 generate crop=0
 replace crop=1 if hhd_ofsp==1  | hhd_awassa83==1  |  hhd_fieldp==1  | hhd_sweetpotato==1  
 
@@ -60,27 +63,30 @@ replace breed=1 if hhd_cross==1  | hhd_crlr==1  | hhd_crsm==1  | hhd_crpo==1  | 
 generate breed2=0
 replace breed2=1 if hhd_crlr==1  | hhd_crsm==1   | hhd_livIA==1 
 
-*psnp
-generate psnp=hhd_psnp
+* psnp
+clonevar psnp=hhd_psnp
 
 
 *Different combinations of CA practices
-generate       rotlegume=0
+generate rotlegume=0
 replace rotlegume=1 if hhd_rotlegume==1 
+
 generate cresidue=0
 replace cresidue=1 if hhd_cresidue2==1  
+
 generate mintillage=hhd_mintillage==1  
 generate zerotill=hhd_zerotill==1  
 
+local vars nrm ca crop tree animal breed breed2 psnp rotlegume cresidue ///
+    mintillage zerotill ca1 ca2 ca3 ca4 ca5 
 
-local vars nrm ca crop tree animal breed breed2 psnp rotlegume cresidue mintillage zerotill ca1 ca2 ca3 ca4 ca5 
-
-local vars2  ca crop tree animal breed breed2 psnp rotlegume cresidue mintillage zerotill ca1 ca2 ca3 ca4 ca5
-
+local vars2  ca crop tree animal breed breed2 psnp rotlegume cresidue ///
+    mintillage zerotill ca1 ca2 ca3 ca4 ca5
 
 
 foreach var of local vars {
     local lbl : variable label `var'
+
     foreach i of local vars2 {
         local lbl2 : variable label `i'
         generate `var'_`i'=(`var'*`i') 
@@ -137,13 +143,11 @@ lab var cresidue           "Crop residue cover"
 lab var mintillage         "Minimum tillage"
 lab var zerotill           "Zero tillage"  
 
-
 lab var ca1                 "CA1 = Crop rotation with legume - Crop residue cover"
 lab var ca2                 "CA2 = Crop rotation with legume -Minimum tillage "
 lab var ca3                 "CA3 = Crop rotation with legume - Zero tillage"
 lab var ca4                 "CA4 = Crop residue cover - Minimum tillage"
 lab var ca5                 "CA5 = Crop residue cover - Zero tillage"
-
 
 lab var nrm_ca              "NRM - CA"
 lab var nrm_crop            "NRM & Crop varieties"
@@ -172,7 +176,6 @@ lab var animal_breed2       "Feed and Forages & Breeding (excl. poultry)"
 lab var animal_psnp         "Feed and Forages &  PSNP"
 lab var breed_psnp          "Breeding &  PSNP"
 lab var breed2_psnp         "Breeding (excl. poultry) &  PSNP"
-
 
 lab var nrm_rotlegume        "NRM & Crop rotation with legume"
 lab var nrm_cresidue         "NRM & Crop residue cover"
@@ -209,7 +212,7 @@ lab var cresidue_mintillage  "Crop residue cover & Minimum tillage"
 lab var cresidue_zerotill    "Crop residue cover & Zero tillage"  
   
   
-save "${data}\synergies_hh_ess5_new", replace  
+save "${data}/synergies_hh_ess5_new.dta", replace  
   
 #delimit;
 global int 
@@ -313,263 +316,68 @@ cresidue  zerotill      cresidue_zerotill
 #delimit cr		
 
 
-matrix drop _all
-
-foreach x in 3 4 7 0 {
-
-    foreach var in $int {
- 
-        cap:mean `var' [pw=pw_w5] if region==`x' & wave==5
-        if _rc==2000 {
-        matrix  `var'meanr`x'=0
-        matrix define `var'V`x'= 0
-        scalar `var'se`x'=0
-        }
-        else if _rc!=0 {
-        error _rc
-        }
-        else {
-        matrix  `var'meanr`x'=e(b)'
-        matrix define `var'V`x'= e(V)'
-        matrix define `var'VV`x'=(vecdiag(`var'V`x'))'
-        matrix list `var'VV`x'
-        scalar `var'se`x'=sqrt(`var'VV`x'[1,1])
-        }
-
-        sum    `var'  if region==`x' & wave==5
-        scalar `var'minr`x'=r(min)
-        scalar `var'maxr`x'=r(max)
-        scalar `var'n`x'=r(N)
-
-        qui sum region if region==`x' & wave==5
-        local obsr`x'=r(N)
-
-        matrix mat`var'`x'  = ( `var'meanr`x', `var'se`x', `var'minr`x', `var'maxr`x', `var'n`x')
-
-        matrix list mat`var'`x'
-
-        matrix A1`x' = nullmat(A1`x')\ mat`var'`x'
-
-        mat A2`x'=(., . , ., .,`obsr`x'')
-        mat B`x'=A1`x'\A2`x'
-
-        matrix colnames B`x' = "Mean" "SE" "Min" "Max" "N"
-
-    }
-
-    local rname ""
-    foreach var in $int {
-        local lbl : variable label `var'
-        local rname `"  `rname'   "`lbl'" " " "'		
-    }	
-
-}	
-
-* National
-foreach var in $int {
- 
-    cap:mean `var' [pw=pw_w5] if wave==5
-    if _rc==2000 {
-        matrix  `var'meanrN=0
-        matrix define `var'VN= 0
-        scalar `var'seN=0
-    }
-    else if _rc!=0 {
-        error _rc
-    }
-    else {	
-        matrix  `var'meanrN=e(b)'
-        matrix define `var'VN= e(V)'
-        matrix define `var'VVN=(vecdiag(`var'VN))'
-        matrix list `var'VVN
-        scalar `var'seN=sqrt(`var'VVN[1,1])
-    }
-
-    sum    `var'  if  wave==5
-    scalar `var'minrN=r(min)
-    scalar `var'maxrN=r(max)
-    scalar `var'nN=r(N)
-
-    qui sum region if  wave==5
-    local obsrN=r(N)
-
-    matrix mat`var'N  = ( `var'meanrN,`var'seN, `var'minrN, `var'maxrN, `var'nN)
-
-    matrix list mat`var'N
-
-    matrix A1N = nullmat(A1N)\ mat`var'N
-
-    mat A2N=(., . , ., ., `obsrN')
-    mat BN=A1N\A2N
-
-    matrix colnames BN = "Mean" "SE" "Min" "Max" "N"
-
-}
-
+// prep:
 local rname ""
 foreach var in $int {
     local lbl : variable label `var'
     local rname `"  `rname'   "`lbl'" "'		
 }	
 
-mat C= B3, B4, B7, B0, BN
-
-
 #delimit;
-xml_tab C,  save("$table\ESS5_innovation_overlapNEW.xml") replace sheet("Table_2_hh_ess5", nogridlines)  ///
+global options1
 rnames(`rname' "Total No. of obs. per region") cnames(`cnames') 
-ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia" "Oromia" "Oromia" 
-"SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Other regions" "Other regions" "Other regions" "Other regions" 
-"Other regions" "National" "National" "National" "National" "National" ) showeq ///
-title(Table 2: ESS5 - HH LEVEL )  font("Times New Roman" 10) ///
+ceq(
+"Afar" "Afar" "Afar" "Afar" "Afar" "Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" 
+"Oromia" "Oromia" "Oromia" "Oromia" "Oromia" "Somali" "Somali" "Somali" "Somali" "Somali"
+"Benishangul Gumuz" "Benishangul Gumuz" "Benishangul Gumuz" "Benishangul Gumuz" "Benishangul Gumuz"
+"SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Gambela" "Gambela" "Gambela" "Gambela" "Gambela" 
+"Harar" "Harar" "Harar" "Harar" "Harar" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa"
+"National" "National" "National" "National" "National"
+) showeq font("Times New Roman" 10) 
 cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
-6 55, 7 55, 8 30, 9 30, 10 40,
-11 55, 12 55, 13 30, 14 30, 15 40,
-16 55, 17 55, 18 30, 19 30, 20 40,
-21 55, 22 55, 23 30, 24 30, 25 40,
-26 55, 27 55, 28 30, 29 30, 30 40,
-) /// *Adjust the column width of the table, column 0 are the variable names* 1, 5 and 9 are the blank columns. 
-	format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0))  /// * format the columns. Each parentheses represents one column*
-	star(.1 .05 .01)  /// Define your star values/signs here (which are stored in B_STARS)
-	lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 13)  /// Draws lines in specific format (Numeric Value)
-	notes(Point estimates are weighted sample means. CA1 = Crop rotation with legume - Crop residue cover, CA2 = Crop rotation with legume -Minimum tillage, CA3 = Crop rotation with legume - Zero  tillage, CA4 = Crop residue cover - Minimum tillage, CA5 = Crop residue cover - Zero tillage.) 
+    6 55, 7 55, 8 30, 9 30, 10 40,
+    11 55, 12 55, 13 30, 14 30, 15 40,
+    16 55, 17 55, 18 30, 19 30, 20 40,
+    21 55, 22 55, 23 30, 24 30, 25 40,
+    26 55, 27 55, 28 30, 29 30, 30 40,
+    31 55, 32 55, 33 30, 34 30, 35 40,
+    36 55, 37 55, 38 30, 39 30, 40 40,
+    41 55, 42 55, 43 30, 44 30, 45 40,
+    46 55, 47 55, 48 30, 49 30, 50 40)  /// *Adjust the column width of the table, column 0 are the variable names* 1, 5 and 9 are the blank columns. 
+format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0))  /// * format the columns. Each parentheses represents one column*
+star(.1 .05 .01)  /// Define your star values/signs here (which are stored in B_STARS)
+lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 13)  /// Draws lines in specific format (Numeric Value)
+notes("Point estimates are weighted sample means. 
+CA1 = Crop rotation with legume - Crop residue cover, 
+CA2 = Crop rotation with legume -Minimum tillage, 
+CA3 = Crop rotation with legume - Zero  tillage, 
+CA4 = Crop residue cover - Minimum tillage, 
+CA5 = Crop residue cover - Zero tillage.") 
 ;
 #delimit cr	
 
+// construct matrix:
+descr_tab $int, regions("2 3 4 5 6 7 12 13 15") wt(pw_w5)
 
-********************************************************************************
-** Household level: only panel households
-********************************************************************************
-
-use "${data}\synergies_hh_ess5_new", clear
-
-* retian only panel hhs from ESPS5
-merge 1:1 household_id using "${data}\synergies_hh_ess4_new", keepusing(household_id) keep(3)
-drop _m
+// export
+xml_tab C, save("$table/09_4_ess5_synergies.xml") replace sheet("HH_w5", nogridlines) ///
+    title("Table: ESS5 - Adoption rates of innovations among rural households") ///
+    $options1
 
 
-matrix drop _all
+// only for panel households:
 
-foreach x in 3 4 7 0 {
+// matrix:
+descr_tab $int if hh_status==3, regions("2 3 4 5 6 7 12 13 15") wt(pw_w5)
 
-    foreach var in $int {
- 
-        cap:mean `var' [pw=pw_w5] if region==`x' & wave==5
-        if _rc==2000 {
-        matrix  `var'meanr`x'=0
-        matrix define `var'V`x'= 0
-        scalar `var'se`x'=0
-        }
-        else if _rc!=0 {
-        error _rc
-        }
-        else {
-        matrix  `var'meanr`x'=e(b)'
-        matrix define `var'V`x'= e(V)'
-        matrix define `var'VV`x'=(vecdiag(`var'V`x'))'
-        matrix list `var'VV`x'
-        scalar `var'se`x'=sqrt(`var'VV`x'[1,1])
-        }
-
-        sum    `var'  if region==`x' & wave==5
-        scalar `var'minr`x'=r(min)
-        scalar `var'maxr`x'=r(max)
-        scalar `var'n`x'=r(N)
-
-        qui sum region if region==`x' & wave==5
-        local obsr`x'=r(N)
-
-        matrix mat`var'`x'  = ( `var'meanr`x', `var'se`x', `var'minr`x', `var'maxr`x', `var'n`x')
-
-        matrix list mat`var'`x'
-
-        matrix A1`x' = nullmat(A1`x')\ mat`var'`x'
-
-        mat A2`x'=(., . , ., .,`obsr`x'')
-        mat B`x'=A1`x'\A2`x'
-
-        matrix colnames B`x' = "Mean" "SE" "Min" "Max" "N"
-
-    }
-
-    local rname ""
-    foreach var in $int {
-        local lbl : variable label `var'
-        local rname `"  `rname'   "`lbl'" " " "'		
-    }	
-
-}	
-
-* National
-foreach var in $int {
- 
-    cap:mean `var' [pw=pw_w5] if wave==5
-    if _rc==2000 {
-        matrix  `var'meanrN=0
-        matrix define `var'VN= 0
-        scalar `var'seN=0
-    }
-    else if _rc!=0 {
-        error _rc
-    }
-    else {	
-        matrix  `var'meanrN=e(b)'
-        matrix define `var'VN= e(V)'
-        matrix define `var'VVN=(vecdiag(`var'VN))'
-        matrix list `var'VVN
-        scalar `var'seN=sqrt(`var'VVN[1,1])
-    }
-
-    sum    `var'  if  wave==5
-    scalar `var'minrN=r(min)
-    scalar `var'maxrN=r(max)
-    scalar `var'nN=r(N)
-
-    qui sum region if  wave==5
-    local obsrN=r(N)
-
-    matrix mat`var'N  = ( `var'meanrN,`var'seN, `var'minrN, `var'maxrN, `var'nN)
-
-    matrix list mat`var'N
-
-    matrix A1N = nullmat(A1N)\ mat`var'N
-
-    mat A2N=(., . , ., ., `obsrN')
-    mat BN=A1N\A2N
-
-    matrix colnames BN = "Mean" "SE" "Min" "Max" "N"
-
-}
-
-local rname ""
-foreach var in $int {
-    local lbl : variable label `var'
-    local rname `"  `rname'   "`lbl'" "'		
-}	
-
-mat C= B3, B4, B7, B0, BN
-
-
-#delimit;
-xml_tab C,  save("$table\ESS5_innovation_overlap_panel.xml") replace sheet("Table_1_hh_ess5_panel", nogridlines)  ///
-rnames(`rname' "Total No. of obs. per region") cnames(`cnames') 
-ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia" "Oromia" "Oromia" 
-"SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Other regions" "Other regions" "Other regions" "Other regions" 
-"Other regions" "National" "National" "National" "National" "National" ) showeq ///
-title(Table 2: ESS5 - HH LEVEL )  font("Times New Roman" 10) ///
-cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
-6 55, 7 55, 8 30, 9 30, 10 40,
-11 55, 12 55, 13 30, 14 30, 15 40,
-16 55, 17 55, 18 30, 19 30, 20 40,
-21 55, 22 55, 23 30, 24 30, 25 40,
-26 55, 27 55, 28 30, 29 30, 30 40,
-) /// *Adjust the column width of the table, column 0 are the variable names* 1, 5 and 9 are the blank columns. 
-	format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0))  /// * format the columns. Each parentheses represents one column*
-	star(.1 .05 .01)  /// Define your star values/signs here (which are stored in B_STARS)
-	lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 13)  /// Draws lines in specific format (Numeric Value)
-	notes(Point estimates are weighted sample means. CA1 = Crop rotation with legume - Crop residue cover, CA2 = Crop rotation with legume -Minimum tillage, CA3 = Crop rotation with legume - Zero  tillage, CA4 = Crop residue cover - Minimum tillage, CA5 = Crop residue cover - Zero tillage.) 
-;
-#delimit cr	
+// export
+xml_tab C, save("$table/09_4_ess5_synergies.xml") append sheet("HH_w5_panel", nogridlines) ///
+    title("Table: ESS5 - Joint adoption rates and synergies, only panel sample") ///
+    $options1
 
 
 
