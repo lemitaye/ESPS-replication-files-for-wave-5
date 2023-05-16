@@ -297,11 +297,7 @@ ead_psnp maize_cg sorghum_cg barley_cg  dtmz ead_impcr2 ead_impcr1
 #delimit cr
 
 #delimit;
-global eacov4 cs9q01 cs6q12_11 cs6q12_12 cs6q12_13 cs6q12_14 cs6q13_11 cs6q13_12 
-cs6q13_13 cs6q13_14 cs6q14_11 cs6q14_12 cs6q14_13 cs6q14_14 cs6q15_11 cs6q15_12 
-cs6q15_13 cs4q011 cs4q012 cs4q013 cs4q014 cs4q03 cs4q08 cs4q11 cs4q14 cs4q52 cs9q13 
-cs9q13wiz cs9q14 cs6q01 cs6q10 cs4q02 cs4q02wiz cs4q01 cs4q09 cs4q09wiz cs4q11 
-cs4q12b cs4q12bwiz  cs4q15 cs4q15wiz cs3q02 cs3q02wiz cs4q52 cs4q53 csdq53wiz 
+global eacov4 cs4q011 cs4q15 cs4q53
 ;
 #delimit cr
 
