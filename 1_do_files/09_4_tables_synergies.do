@@ -802,41 +802,42 @@ xml_tab C,  save("$table/09_4_ess4_synergies.xml") append sheet("EA_w4_panel", n
 
 
 
+
+
 ********************************************************************************
 * DNA (Maize germplasm) synergies 
 ********************************************************************************
 
-* HH level
+* HH level ------------------------------
 
-use "${data}\ess5_dna_hh_new", clear
-merge 1:1 household_id using "${data}\synergies_hh_ess5_new"
+* Note: all DNA households in ESS5 are panel households. So, no need to run 
+* separate analysis for panel sample.
 
-keep if _m==3
-drop _m
+* ESS5 ----------------------------
 
+use "${data}/ess5_dna_hh_new.dta", clear
+
+merge 1:1 household_id using "${data}/synergies_hh_ess5_new.dta"
+keep if _merge==3
+drop _merge
 
 local vars nrm ca crop tree animal breed breed2 psnp rotlegume cresidue mintillage zerotill  
 
 rename maize_cg maize
 lab var maize "Maize - CG germplasm"
 
-
 foreach var of local vars {
-
     local lbl : variable label `var'
     local lbl2 : variable label maize
 
     generate `var'_maize=(`var'*maize) 
     label variable `var'_maize `" `lbl' - `lbl2'"'
-
 }
-
 
 foreach x in nrm ca crop tree animal breed breed2 psnp rotlegume cresidue mintillage zerotill {
     generate `x'maize=.
     replace `x'maize =`x' if maize!=.
 }
-
 
 local vars nrm ca crop tree animal breed breed2 psnp rotlegume cresidue mintillage zerotill
 
@@ -845,11 +846,11 @@ foreach var of local vars {
     label variable `var'maize `" `lbl'"'
 }
 
-save "${data}\synergies_dna_hh_ess5", replace
+save "${data}/synergies_dna_hh_ess5.dta", replace
 
 
 #delimit;
-global int 
+global intdna 
 nrmmaize         maize nrm_maize
 camaize          maize ca_maize 
 cropmaize        maize crop_maize 
@@ -866,119 +867,20 @@ zerotillmaize    maize zerotill_maize
 #delimit cr		
 
 
-matrix drop _all
-
-foreach x in 3 4 7 13 15 {
-
-foreach var in $int {
-
-    cap:mean `var' [pw=pw_w5] if saq01==`x' & wave==5
-
-    if _rc==2000 {
-        matrix  `var'meanr`x'=0
-        matrix define `var'V`x'= 0
-        scalar `var'se`x'=0
-    }
-    else if _rc!=0 {
-        error _rc
-    }
-    else {
-        matrix  `var'meanr`x'=e(b)'
-        matrix define `var'V`x'= e(V)'
-        matrix define `var'VV`x'=(vecdiag(`var'V`x'))'
-        matrix list `var'VV`x'
-        scalar `var'se`x'=sqrt(`var'VV`x'[1,1])
-    }
-
-    sum    `var'  if saq01==`x' & wave==5
-    scalar `var'minr`x'=r(min)
-    scalar `var'maxr`x'=r(max)
-    scalar `var'n`x'=r(N)
-
-    qui sum region if saq01==`x' & wave==5
-    local obsr`x'=r(N)
-
-    matrix mat`var'`x'  = ( `var'meanr`x', `var'se`x', `var'minr`x', `var'maxr`x', `var'n`x')
-
-    matrix list mat`var'`x'
-
-    matrix A1`x' = nullmat(A1`x')\ mat`var'`x'
-
-    mat A2`x'=(., . , ., .,`obsr`x'')
-    mat B`x'=A1`x'\A2`x'
-
-    matrix colnames B`x' = "Mean" "SE" "Min" "Max" "N"
-
-    }
-
-    local rname ""
-    foreach var in $int {
-        local lbl : variable label `var'
-        local rname `"  `rname'   "`lbl'" " " "'		
-    }	
-
-}	
-
-
-* National
-foreach var in $int {
-
-    cap:mean `var' [pw=pw_w5] if wave==5
-
-    if _rc==2000 {
-        matrix  `var'meanrN=0
-        matrix define `var'VN= 0
-        scalar `var'seN=0
-    }
-    else if _rc!=0 {
-        error _rc
-    }
-    else {	
-        matrix  `var'meanrN=e(b)'
-        matrix define `var'VN= e(V)'
-        matrix define `var'VVN=(vecdiag(`var'VN))'
-        matrix list `var'VVN
-        scalar `var'seN=sqrt(`var'VVN[1,1])
-    }
-
-    sum    `var'  if  wave==5
-    scalar `var'minrN=r(min)
-    scalar `var'maxrN=r(max)
-    scalar `var'nN=r(N)
-
-    qui sum region if  wave==5
-    local obsrN=r(N)
-
-    matrix mat`var'N  = ( `var'meanrN,`var'seN, `var'minrN, `var'maxrN, `var'nN)
-
-    matrix list mat`var'N
-
-    matrix A1N = nullmat(A1N)\ mat`var'N
-
-    mat A2N=(., . , ., .,`obsrN')
-    mat BN=A1N\A2N
-
-    matrix colnames BN = "Mean" "SE" "Min" "Max" "N"
-
-}
-
 local rname ""
-foreach var in $int {
+foreach var in $intdna {
     local lbl : variable label `var'
     local rname `"  `rname'   "`lbl'" "'		
 }	
 
-mat C= B3, B4, B7, B13, B15, BN
-
-
 #delimit;
-xml_tab C,  save("$table\ESS5_innovation_overlap_DNANEW.xml") replace sheet("Table_1_hh_ess5", nogridlines)  ///
+global options2
 rnames(`rname' "Total No. of obs. per region") cnames(`cnames') 
 ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia" 
 "Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Harar" "Harar" "Harar" "Harar" "Harar" 
 "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" 
 "National" "National" "National" "National" "National") showeq ///
-title(Table 2: ESS5 - HH LEVEL )  font("Times New Roman" 10) ///
+font("Times New Roman" 10) ///
 cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
 6 55, 7 55, 8 30, 9 30, 10 40,
 11 55, 12 55, 13 30, 14 30, 15 40,
@@ -986,214 +888,74 @@ cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40,
 21 55, 22 55, 23 30, 24 30, 25 40,
 26 55, 27 55, 28 30, 29 30, 30 40,
 ) /// *Adjust the column width of the table, column 0 are the variable names* 1, 5 and 9 are the blank columns. 
-	format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0))  /// * format the columns. Each parentheses represents one column*
-	star(.1 .05 .01)  /// Define your star values/signs here (which are stored in B_STARS)
-	lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 13)  /// Draws lines in specific format (Numeric Value)
-	notes(Point estimates are weighted sample means.) 
+format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0))  /// * format the columns. Each parentheses represents one column*
+star(.1 .05 .01)  /// Define your star values/signs here (which are stored in B_STARS)
+lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 13)  /// Draws lines in specific format (Numeric Value)
+notes(Point estimates are weighted sample means.) 
 ;
 #delimit cr
 
+// construct matrix:
+descr_tab $intdna, regions("3 4 7 13 15") wt(pw_w5)
 
-
-* HH level: panel households
-
-use "${data}\synergies_dna_hh_ess5", clear
-
-preserve
-    use "${data}\synergies_dna_hh_ess4", clear
-    keep if maize_cg!=.
-
-    tempfile synergies_dna_hh_ess4
-    save `synergies_dna_hh_ess4'
-restore
-
-merge 1:1 household_id using `synergies_dna_hh_ess4', keepusing(household_id) keep(3)
-drop _m
-
-
-matrix drop _all
-
-foreach x in 3 4 7 13 15 {
-
-foreach var in $int {
-
-    cap:mean `var' [pw=pw_w5] if saq01==`x' & wave==5
-
-    if _rc==2000 {
-        matrix  `var'meanr`x'=0
-        matrix define `var'V`x'= 0
-        scalar `var'se`x'=0
-    }
-    else if _rc!=0 {
-        error _rc
-    }
-    else {
-        matrix  `var'meanr`x'=e(b)'
-        matrix define `var'V`x'= e(V)'
-        matrix define `var'VV`x'=(vecdiag(`var'V`x'))'
-        matrix list `var'VV`x'
-        scalar `var'se`x'=sqrt(`var'VV`x'[1,1])
-    }
-
-    sum    `var'  if saq01==`x' & wave==5
-    scalar `var'minr`x'=r(min)
-    scalar `var'maxr`x'=r(max)
-    scalar `var'n`x'=r(N)
-
-    qui sum region if saq01==`x' & wave==5
-    local obsr`x'=r(N)
-
-    matrix mat`var'`x'  = ( `var'meanr`x', `var'se`x', `var'minr`x', `var'maxr`x', `var'n`x')
-
-    matrix list mat`var'`x'
-
-    matrix A1`x' = nullmat(A1`x')\ mat`var'`x'
-
-    mat A2`x'=(., . , ., .,`obsr`x'')
-    mat B`x'=A1`x'\A2`x'
-
-    matrix colnames B`x' = "Mean" "SE" "Min" "Max" "N"
-
-    }
-
-    local rname ""
-    foreach var in $int {
-        local lbl : variable label `var'
-        local rname `"  `rname'   "`lbl'" " " "'		
-    }	
-
-}	
-
-
-* National
-foreach var in $int {
-
-    cap:mean `var' [pw=pw_w5] if wave==5
-
-    if _rc==2000 {
-        matrix  `var'meanrN=0
-        matrix define `var'VN= 0
-        scalar `var'seN=0
-    }
-    else if _rc!=0 {
-        error _rc
-    }
-    else {	
-        matrix  `var'meanrN=e(b)'
-        matrix define `var'VN= e(V)'
-        matrix define `var'VVN=(vecdiag(`var'VN))'
-        matrix list `var'VVN
-        scalar `var'seN=sqrt(`var'VVN[1,1])
-    }
-
-    sum    `var'  if  wave==5
-    scalar `var'minrN=r(min)
-    scalar `var'maxrN=r(max)
-    scalar `var'nN=r(N)
-
-    qui sum region if  wave==5
-    local obsrN=r(N)
-
-    matrix mat`var'N  = ( `var'meanrN,`var'seN, `var'minrN, `var'maxrN, `var'nN)
-
-    matrix list mat`var'N
-
-    matrix A1N = nullmat(A1N)\ mat`var'N
-
-    mat A2N=(., . , ., .,`obsrN')
-    mat BN=A1N\A2N
-
-    matrix colnames BN = "Mean" "SE" "Min" "Max" "N"
-
-}
-
-mat C= B3, B4, B7, B13, B15, BN
-
-local rname ""
-foreach var in $int {
-    local lbl : variable label `var'
-    local rname `"  `rname'   "`lbl'" "'		
-}	
-
-
-#delimit;
-xml_tab C,  save("$table\ESS5_innovation_overlap_panel.xml") append sheet("Table_2_DNAhh_ess5_panel", nogridlines)  ///
-rnames(`rname' "Total No. of obs. per region") cnames(`cnames') 
-ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia" 
-"Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Harar" "Harar" "Harar" "Harar" "Harar" 
-"Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" 
-"National" "National" "National" "National" "National") showeq ///
-title(Table 2: ESS5 - HH LEVEL )  font("Times New Roman" 10) ///
-cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
-6 55, 7 55, 8 30, 9 30, 10 40,
-11 55, 12 55, 13 30, 14 30, 15 40,
-16 55, 17 55, 18 30, 19 30, 20 40,
-21 55, 22 55, 23 30, 24 30, 25 40,
-26 55, 27 55, 28 30, 29 30, 30 40,
-) /// *Adjust the column width of the table, column 0 are the variable names* 1, 5 and 9 are the blank columns. 
-	format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0))  /// * format the columns. Each parentheses represents one column*
-	star(.1 .05 .01)  /// Define your star values/signs here (which are stored in B_STARS)
-	lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 13)  /// Draws lines in specific format (Numeric Value)
-	notes(Point estimates are weighted sample means.) 
-;
-#delimit cr
+// export
+xml_tab C, save("$table/09_4_ess5_synergies.xml") append sheet("HH_DNA_w5", nogridlines) ///
+    title("Table: ESS5 - Joint adoption rates and synergies, maize DNA germplasm") ///
+    $options2
 
 
 
+* ESS4 (HH level) --------------------------
 
-********************************************************************************
-* EA level
-********************************************************************************
+use "${data}/synergies_dna_hh_ess4.dta", clear
 
-use "${data}\ess5_dna_ea_new", clear
+// construct matrix:
+descr_tab $intdna, regions("3 4 7 13 15") wt(pw_w4)
 
-merge 1:1 ea_id using "${data}\synergies_ea_ess5_new"
-keep if _m==3
-drop _m
+// export
+xml_tab C, save("$table/09_4_ess4_synergies.xml") append sheet("HH_DNA_w4", nogridlines) ///
+    title("Table: ESS4 - Joint adoption rates and synergies, maize DNA germplasm") ///
+    $options2
 
 
-local vars nrm ca crop tree animal breed breed2 psnp rotlegume cresidue mintillage zerotill  
+
+* EA level ------------------------------------
+
+use "${data}/ess5_dna_ea_new.dta", clear
+
+merge 1:1 ea_id using "${data}/synergies_ea_ess5_new.dta"
+keep if _merge==3
+drop _merge
 
 rename maize_cg maize
 lab var maize "Maize - CG germplasm"
 
+local vars nrm ca crop tree animal breed breed2 psnp rotlegume cresidue mintillage zerotill  
 
 foreach var of local vars {
-
     local lbl : variable label `var'
     local lbl2 : variable label maize
 
     generate `var'_maize=(`var'*maize) 
     label variable `var'_maize `" `lbl' - `lbl2'"'
-
 }
 
-
-foreach x in nrm ca crop tree animal breed breed2 psnp rotlegume cresidue mintillage zerotill {
+foreach x in `vars' {
     generate `x'maize=.
     replace `x'maize =`x' if maize!=.
 }
-
-
-local vars nrm ca crop tree animal breed breed2 psnp rotlegume cresidue mintillage zerotill
 
 foreach var of local vars {
     local lbl : variable label `var'
     label variable `var'maize `" `lbl'"'
 }
 
-
-
 #delimit;
-global int 
+global intdna 
 nrmmaize         maize nrm_maize
 camaize          maize ca_maize 
 cropmaize        maize crop_maize 
@@ -1209,267 +971,79 @@ zerotillmaize    maize zerotill_maize
 ;
 #delimit cr		
 
+save "${data}/synergies_dna_ea_ess5.dta", replace
 
-matrix drop _all
+// construct matrix:
+descr_tab $intdna, regions("3 4 7 13 15") 
 
-foreach x in 3 4 7 13 15 {
-
-foreach var in $int {
-
-    cap:mean `var' [pw=pw_w5] if saq01==`x' & wave==5
-
-    if _rc==2000 {
-        matrix  `var'meanr`x'=0
-        matrix define `var'V`x'= 0
-        scalar `var'se`x'=0
-    }
-    else if _rc!=0 {
-        error _rc
-    }
-    else {
-        matrix  `var'meanr`x'=e(b)'
-        matrix define `var'V`x'= e(V)'
-        matrix define `var'VV`x'=(vecdiag(`var'V`x'))'
-        matrix list `var'VV`x'
-        scalar `var'se`x'=sqrt(`var'VV`x'[1,1])
-    }
-
-    sum    `var'  if saq01==`x' & wave==5
-    scalar `var'minr`x'=r(min)
-    scalar `var'maxr`x'=r(max)
-    scalar `var'n`x'=r(N)
-
-    qui sum region if saq01==`x' & wave==5
-    local obsr`x'=r(N)
-
-    matrix mat`var'`x'  = ( `var'meanr`x', `var'se`x', `var'minr`x', `var'maxr`x', `var'n`x')
-
-    matrix list mat`var'`x'
-
-    matrix A1`x' = nullmat(A1`x')\ mat`var'`x'
-
-    mat A2`x'=(., . , ., .,`obsr`x'')
-    mat B`x'=A1`x'\A2`x'
-
-    matrix colnames B`x' = "Mean" "SE" "Min" "Max" "N"
-
-    }
-
-    local rname ""
-    foreach var in $int {
-        local lbl : variable label `var'
-        local rname `"  `rname'   "`lbl'" " " "'		
-    }	
-
-}	
+// export
+xml_tab C, save("$table/09_4_ess5_synergies.xml") append sheet("EA_DNA_w5", nogridlines) ///
+    title("Table: ESS5 - Joint adoption rates and synergies, maize DNA germplasm") ///
+    $options2
 
 
-* National
-foreach var in $int {
+* ESS5 (EA level) --------------------------
 
-    cap:mean `var' [pw=pw_w5] if wave==5
+use "${dataw4}/ess4_dna_ea_new.dta", clear
 
-    if _rc==2000 {
-        matrix  `var'meanrN=0
-        matrix define `var'VN= 0
-        scalar `var'seN=0
-    }
-    else if _rc!=0 {
-        error _rc
-    }
-    else {	
-        matrix  `var'meanrN=e(b)'
-        matrix define `var'VN= e(V)'
-        matrix define `var'VVN=(vecdiag(`var'VN))'
-        matrix list `var'VVN
-        scalar `var'seN=sqrt(`var'VVN[1,1])
-    }
-
-    sum    `var'  if  wave==5
-    scalar `var'minrN=r(min)
-    scalar `var'maxrN=r(max)
-    scalar `var'nN=r(N)
-
-    qui sum region if  wave==5
-    local obsrN=r(N)
-
-    matrix mat`var'N  = ( `var'meanrN,`var'seN, `var'minrN, `var'maxrN, `var'nN)
-
-    matrix list mat`var'N
-
-    matrix A1N = nullmat(A1N)\ mat`var'N
-
-    mat A2N=(., . , ., .,`obsrN')
-    mat BN=A1N\A2N
-
-    matrix colnames BN = "Mean" "SE" "Min" "Max" "N"
-
+* Considering only dna sample cultivating households, respectively 
+foreach i in qpm dtmz maize_cg barley_cg sorghum_cg {
+    replace `i'=. if sample_dna_`i'==.
 }
 
-local rname ""
-foreach var in $int {
+merge 1:1 ea_id using "${dataw4}/synergies_ea_ess4_new.dta"
+keep if _merge==3
+drop _merge
+
+local vars nrm ca crop tree animal breed breed2 psnp rotlegume cresidue mintillage zerotill  
+
+foreach var of local vars {
     local lbl : variable label `var'
-    local rname `"  `rname'   "`lbl'" "'		
-}	
+    local lbl2 : variable label maize
 
-mat C= B3, B4, B7, B13, B15, BN
-
-
-#delimit;
-xml_tab C,  save("$table\ESS5_innovation_overlap_DNANEW.xml") append sheet("Table_2_EA_ess5", nogridlines)  ///
-rnames(`rname' "Total No. of obs. per region") cnames(`cnames') 
-ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia" 
-"Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Harar" "Harar" "Harar" 
-"Harar" "Harar" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" 
-"National" "National" "National" "National" "National" ) showeq ///
-title(Table 2: ESS5 - EA LEVEL )  font("Times New Roman" 10) ///
-cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
-6 55, 7 55, 8 30, 9 30, 10 40,
-11 55, 12 55, 13 30, 14 30, 15 40,
-16 55, 17 55, 18 30, 19 30, 20 40,
-21 55, 22 55, 23 30, 24 30, 25 40,
-26 55, 27 55, 28 30, 29 30, 30 40,
-) /// *Adjust the column width of the table, column 0 are the variable names* 1, 5 and 9 are the blank columns. 
-	format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0))  /// * format the columns. Each parentheses represents one column*
-	star(.1 .05 .01)  /// Define your star values/signs here (which are stored in B_STARS)
-	lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 13)  /// Draws lines in specific format (Numeric Value)
-	notes(Point estimates are weighted sample means.) 
-;
-#delimit cr	
-
-
-
-
-
-matrix drop _all
-
-foreach x in 3 4 7 0 {
-
-    foreach var in $int {
- 
-        cap:mean `var' [pw=pw_w4] if region==`x' & wave==4
-        if _rc==2000 {
-        matrix  `var'meanr`x'=0
-        matrix define `var'V`x'= 0
-        scalar `var'se`x'=0
-        }
-        else if _rc!=0 {
-        error _rc
-        }
-        else {
-        matrix  `var'meanr`x'=e(b)'
-        matrix define `var'V`x'= e(V)'
-        matrix define `var'VV`x'=(vecdiag(`var'V`x'))'
-        matrix list `var'VV`x'
-        scalar `var'se`x'=sqrt(`var'VV`x'[1,1])
-        }
-
-        sum    `var'  if region==`x' & wave==4
-        scalar `var'minr`x'=r(min)
-        scalar `var'maxr`x'=r(max)
-        scalar `var'n`x'=r(N)
-
-        qui sum region if region==`x' & wave==4
-        local obsr`x'=r(N)
-
-        matrix mat`var'`x'  = ( `var'meanr`x', `var'se`x', `var'minr`x', `var'maxr`x', `var'n`x')
-
-        matrix list mat`var'`x'
-
-        matrix A1`x' = nullmat(A1`x')\ mat`var'`x'
-
-        mat A2`x'=(., . , ., .,`obsr`x'')
-        mat B`x'=A1`x'\A2`x'
-
-        matrix colnames B`x' = "Mean" "SE" "Min" "Max" "N"
-
-    }
-
-    local rname ""
-    foreach var in $int {
-        local lbl : variable label `var'
-        local rname `"  `rname'   "`lbl'" " " "'		
-    }	
-
-}	
-
-* National
-foreach var in $int {
- 
-    cap:mean `var' [pw=pw_w4] if wave==4
-    if _rc==2000 {
-        matrix  `var'meanrN=0
-        matrix define `var'VN= 0
-        scalar `var'seN=0
-    }
-    else if _rc!=0 {
-        error _rc
-    }
-    else {	
-        matrix  `var'meanrN=e(b)'
-        matrix define `var'VN= e(V)'
-        matrix define `var'VVN=(vecdiag(`var'VN))'
-        matrix list `var'VVN
-        scalar `var'seN=sqrt(`var'VVN[1,1])
-    }
-
-    sum    `var'  if  wave==4
-    scalar `var'minrN=r(min)
-    scalar `var'maxrN=r(max)
-    scalar `var'nN=r(N)
-
-    qui sum region if  wave==4
-    local obsrN=r(N)
-
-    matrix mat`var'N  = ( `var'meanrN,`var'seN, `var'minrN, `var'maxrN, `var'nN)
-
-    matrix list mat`var'N
-
-    matrix A1N = nullmat(A1N)\ mat`var'N
-
-    mat A2N=(., . , ., ., `obsrN')
-    mat BN=A1N\A2N
-
-    matrix colnames BN = "Mean" "SE" "Min" "Max" "N"
-
+    generate `var'_maize=(`var'*maize) 
+    label variable `var'_maize `" `lbl' - `lbl2'"'
 }
 
-local rname ""
-foreach var in $int {
+foreach x in `vars' {
+    generate `x'maize=.
+    replace `x'maize =`x' if maize!=.
+}
+
+foreach var of local vars {
     local lbl : variable label `var'
-    local rname `"  `rname'   "`lbl'" "'		
-}	
-
-mat C= B3, B4, B7, B0, BN
-
+    label variable `var'maize `" `lbl'"'
+}
 
 #delimit;
-xml_tab C,  save("$table\ESS4_innovation_overlap_panel.xml") replace sheet("Table_1_hh_ess4_panel", nogridlines)  ///
-rnames(`rname' "Total No. of obs. per region") cnames(`cnames') 
-ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia" "Oromia" "Oromia" 
-"SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Other regions" "Other regions" "Other regions" "Other regions" 
-"Other regions" "National" "National" "National" "National" "National" ) showeq ///
-title(Table 2: ESS4 - HH LEVEL )  font("Times New Roman" 10) ///
-cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
-6 55, 7 55, 8 30, 9 30, 10 40,
-11 55, 12 55, 13 30, 14 30, 15 40,
-16 55, 17 55, 18 30, 19 30, 20 40,
-21 55, 22 55, 23 30, 24 30, 25 40,
-26 55, 27 55, 28 30, 29 30, 30 40,
-) /// *Adjust the column width of the table, column 0 are the variable names* 1, 5 and 9 are the blank columns. 
-	format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0))  /// * format the columns. Each parentheses represents one column*
-	star(.1 .05 .01)  /// Define your star values/signs here (which are stored in B_STARS)
-	lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 13)  /// Draws lines in specific format (Numeric Value)
-	notes(Point estimates are weighted sample means. CA1 = Crop rotation with legume - Crop residue cover, CA2 = Crop rotation with legume -Minimum tillage, CA3 = Crop rotation with legume - Zero  tillage, CA4 = Crop residue cover - Minimum tillage, CA5 = Crop residue cover - Zero tillage.) 
+global intdna
+nrmmaize         maize nrm_maize 
+camaize          maize ca_maize 
+cropmaize        maize crop_maize 
+treemaize        maize tree_maize 
+animalmaize      maize animal_maize 
+breedmaize       maize breed_maize 
+breed2maize      maize breed2_maize 
+psnpmaize        maize psnp_maize 
+rotlegumemaize   maize rotlegume_maize 
+cresiduemaize    maize cresidue_maize 
+mintillagemaize  maize mintillage_maize 
+zerotillmaize    maize zerotill_maize 
 ;
-#delimit cr	
+#delimit cr		
+
+// construct matrix:
+descr_tab $intdna, regions("3 4 7 13 15") wt(pw_w4)
+
+// export
+xml_tab C, save("$table/09_4_ess4_synergies.xml") append sheet("EA_DNA_w4", nogridlines) ///
+    title("Table: ESS4 - Joint adoption rates and synergies, maize DNA germplasm") ///
+    $options2
 
 
-* DNA for panel households in ESPS4
+
+
+/* DNA for panel households in ESPS4
 
 use "${data}\synergies_dna_hh_ess4", clear
 
