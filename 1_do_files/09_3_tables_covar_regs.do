@@ -185,6 +185,10 @@ merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh.dta", keepusing(hh_s
 keep if _merge==1 | _merge==3
 drop _merge
 
+merge m:1 ea_id using "${dataw4}/ess4_pp_cov_ea_new.dta", keepusing(cs4q011 cs4q15 cs4q53)
+keep if _merge==1 | _merge==3
+drop _merge
+
 rename nom_totcons_aeq nmtotcons
 rename hhd_mintillage hhd_mintil
 rename hhd_sweetpotato hhd_sp
@@ -194,7 +198,7 @@ replace hhd_impcr2=. if maize_cg==.
 #delimit;
 global hhcov4
 hhd_flab flivman parcesizeHA asset_index pssetindex income_offfarm total_cons_ann 
-totconswin nmtotcons consq1 consq2 adulteq age_head
+totconswin nmtotcons consq1 consq2 adulteq age_head cs4q011 cs4q15 cs4q53
 ;
 #delimit cr
 
@@ -259,6 +263,71 @@ xml_tab D,  save("$table/09_3_ess4_adopters_chrxs.xml") append
 sheet("Table14_hh_panel", nogridlines)  
 rnames(`rname') cnames(`cname') lines(COL_NAMES 2 LAST_ROW 2)  
 title("Table: ESS4 - Correlates of adoption: only panel househods")  font("Times New Roman" 10) 
+cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12 55) 
+    format((SCLR0) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) 
+    (NBCR2) (NBCR2) (NBCR2) (NBCR2))  
+    stars(* 0.1 ** 0.05 *** 0.01)  
+    notes("Each cell is a coefficient estimate from a separate regression of the 
+    column variable on the row variable."); 
+# delimit cr
+
+
+* EA level ------------------------
+
+use "${dataw4}/ess4_pp_cov_ea_new.dta", clear
+
+// merge with tracking file to id panel EAs
+merge 1:1 ea_id using "${tmp}/dynamics/06_1_track_ea.dta", keepusing(ea_status)
+keep if _merge==1 | _merge==3
+drop _merge
+
+rename ead_sweetpotato ead_sp
+rename ead_mintillage ead_mtill
+
+replace ead_impcr2=. if maize_cg==.
+replace ead_impcr1=. if barley_cg==.
+
+#delimit;
+global adopt4 ead_ofsp ead_awassa83 ead_avocado ead_papaya ead_mango ead_fieldp 
+ead_sp ead_motorpump ead_rdisp ead_rotlegume ead_cresidue1 ead_cresidue2 ead_mtill 
+ead_zerotill ead_consag1 ead_consag2 ead_swc ead_terr ead_wcatch ead_affor ead_ploc 
+commirr ead_cross ead_crlr ead_crsr ead_crpo ead_livIA ead_indprod ead_grass 
+ead_psnp maize_cg sorghum_cg barley_cg  dtmz ead_impcr2 ead_impcr1
+;
+#delimit cr
+
+#delimit;
+global eacov4 cs9q01 cs6q12_11 cs6q12_12 cs6q12_13 cs6q12_14 cs6q13_11 cs6q13_12 
+cs6q13_13 cs6q13_14 cs6q14_11 cs6q14_12 cs6q14_13 cs6q14_14 cs6q15_11 cs6q15_12 
+cs6q15_13 cs4q011 cs4q012 cs4q013 cs4q014 cs4q03 cs4q08 cs4q11 cs4q14 cs4q52 cs9q13 
+cs9q13wiz cs9q14 cs6q01 cs6q10 cs4q02 cs4q02wiz cs4q01 cs4q09 cs4q09wiz cs4q11 
+cs4q12b cs4q12bwiz  cs4q15 cs4q15wiz cs3q02 cs3q02wiz cs4q52 cs4q53 csdq53wiz 
+;
+#delimit cr
+
+for var $adopt4: recode X (100=1)  // recode 100 to 1 to make dummy
+
+// create matrix:
+covar_regress $adopt4, covar($eacov4)
+
+// export:
+local cname ""
+foreach var in $eacov4 {
+    local lbl : variable label `var'
+    local cname `" `cname' "`lbl'" "'		
+}
+
+local rname ""
+foreach var in $adopt4 {
+	local lbl : variable label `var'
+	local rname `" `rname' "`lbl'" "'		
+}
+
+#delimit ;
+xml_tab D,  save("$table/09_3_ess4_adopters_chrxs.xml") append 
+sheet("Table14_EA", nogridlines)  
+rnames(`rname') cnames(`cname') lines(COL_NAMES 2 LAST_ROW 2)  
+title("Table: ESS4 - Correlates of adoptions, EA level")  font("Times New Roman" 10) 
 cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12 55) 
     format((SCLR0) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) 
     (NBCR2) (NBCR2) (NBCR2) (NBCR2))  
