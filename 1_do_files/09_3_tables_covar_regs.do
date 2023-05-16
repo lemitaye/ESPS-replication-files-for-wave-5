@@ -119,9 +119,14 @@ cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12
 
 
 
-* EA level ----
+* EA level -----------
 
 use "${data}/ess5_pp_cov_ea_new.dta", clear
+
+// merge with tracking file to id panel EAs
+merge 1:1 ea_id using "${tmp}/dynamics/06_1_track_ea.dta", keepusing(ea_status)
+keep if _merge==1 | _merge==3
+drop _merge
 
 rename ead_sweetpotato ead_sp
 rename ead_mintillage ead_mtill
@@ -140,7 +145,8 @@ global eacov5 cs4q01_11 cs4q15 cs4q53
 ;
 #delimit cr
 
-covar_regress "$adopt5" "$eacov5"
+// matrix of regs:
+covar_regress $adopt5, covar($eacov5) 
 
 local cname ""
 foreach var in $eacov5 {
@@ -155,16 +161,48 @@ foreach var in $adopt5 {
 }
 
 #delimit ;
-xml_tab D,  save("$table/09_2_ess5_adopters_chrxs.xml") append 
+xml_tab D,  save("$table/09_3_ess5_adopters_chrxs.xml") append 
 sheet("Table14_EA", nogridlines)  
 rnames(`rname') cnames(`cname') lines(COL_NAMES 2 LAST_ROW 2)  
-title(Table 1: ESPS5 - Correlates of adoption)  font("Times New Roman" 10) 
+title("Table: ESS5 - Correlates of adoption, EA level")  font("Times New Roman" 10) 
 cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12 55) 
 	format((SCLR0) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) 
     (NBCR2) (NBCR2) (NBCR2) (NBCR2))  
 	stars(* 0.1 ** 0.05 *** 0.01)  
 	notes("Each cell is a coefficient estimate from a separate regression of the column 
 	variable on the row variable."); 
+# delimit cr
+
+
+// Only for panel EAs:
+
+// matrix of regs:
+covar_regress $adopt5 if ea_status==3, covar($eacov5) 
+
+local cname ""
+foreach var in $eacov5 {
+    local lbl : variable label `var'
+    local cname `" `cname' "`lbl'" "'		
+}
+
+local rname ""
+foreach var in $adopt5 {
+	local lbl : variable label `var'
+	local rname `" `rname' "`lbl'" "'		
+}
+
+#delimit ;
+xml_tab D,  save("$table/09_3_ess5_adopters_chrxs.xml") append 
+sheet("Table14_EA_panel", nogridlines)  
+rnames(`rname') cnames(`cname') lines(COL_NAMES 2 LAST_ROW 2)  
+title("Table: ESS5 - Correlates of adoption, EA level - only panel sample") 
+font("Times New Roman" 10) 
+cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12 55) 
+format((SCLR0) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) 
+(NBCR2) (NBCR2) (NBCR2) (NBCR2))  
+stars(* 0.1 ** 0.05 *** 0.01)  
+notes("Each cell is a coefficient estimate from a separate regression of the column 
+variable on the row variable."); 
 # delimit cr
 
 
@@ -267,6 +305,7 @@ cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12
 # delimit cr
 
 
+
 * EA level ------------------------
 
 use "${dataw4}/ess4_pp_cov_ea_new.dta", clear
@@ -325,4 +364,36 @@ cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12
     stars(* 0.1 ** 0.05 *** 0.01)  
     notes("Each cell is a coefficient estimate from a separate regression of the 
     column variable on the row variable."); 
+# delimit cr
+
+// Only for panel EAs:
+
+// create matrix:
+covar_regress $adopt4 if ea_status==3, covar($eacov4)
+
+// export:
+local cname ""
+foreach var in $eacov4 {
+    local lbl : variable label `var'
+    local cname `" `cname' "`lbl'" "'		
+}
+
+local rname ""
+foreach var in $adopt4 {
+	local lbl : variable label `var'
+	local rname `" `rname' "`lbl'" "'		
+}
+
+#delimit ;
+xml_tab D,  save("$table/09_3_ess4_adopters_chrxs.xml") append 
+sheet("Table14_EA_panel", nogridlines)  
+rnames(`rname') cnames(`cname') lines(COL_NAMES 2 LAST_ROW 2)  
+title("Table: ESS4 - Correlates of adoptions, EA level - only panel sample")  
+font("Times New Roman" 10) 
+cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12 55) 
+format((SCLR0) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) 
+(NBCR2) (NBCR2) (NBCR2) (NBCR2))  
+stars(* 0.1 ** 0.05 *** 0.01)  
+notes("Each cell is a coefficient estimate from a separate regression of the 
+column variable on the row variable."); 
 # delimit cr
