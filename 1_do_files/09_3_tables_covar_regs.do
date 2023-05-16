@@ -25,6 +25,11 @@ merge 1:1 household_id using "${tmp}/covariates/04_2_covars_hh_pp.dta"
 */
 drop _merge
 
+// merge with covar data at EA level:
+merge m:1 ea_id using "${data}/ess5_pp_cov_ea_new.dta", keepusing(cs4q01_11 cs4q15 cs4q53)
+keep if _merge==1 | _merge==3
+drop _merge
+
 // merge with tracking file to id panel hhs:
 merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh.dta", keepusing(hh_status)
 keep if _merge==1 | _merge==3
@@ -44,7 +49,7 @@ rename nom_totcons_aeq nmtotcons
 #delimit;
 global hhcov      
 hhd_flab flivman parcesizeHA asset_index pssetindex income_offfarm total_cons_ann 
-totconswin nmtotcons consq1 consq2 adulteq age_head
+totconswin nmtotcons consq1 consq2 adulteq age_head cs4q01_11 cs4q15 cs4q53
 ;
 #delimit cr
 
