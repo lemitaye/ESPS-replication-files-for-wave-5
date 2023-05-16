@@ -8,9 +8,9 @@
 ********************************************************************************
 
 
-********************************************************************************
-* Joint adoption rates: HH level
-********************************************************************************
+* Household level ---------------------------------------------------------
+
+* ESS5 -----------------------------------
 
 use "${data}/wave5_hh_new.dta", clear
 
@@ -380,23 +380,59 @@ xml_tab C, save("$table/09_4_ess5_synergies.xml") append sheet("HH_w5_panel", no
     $options1
 
 
+* ESS4: Household level ----------------------------------------------
 
-********************************************************************************
-*** EA -LEVEL ESS5 *
-********************************************************************************
+use "${dataw4}/synergies_hh_ess4_new.dta", clear
 
-use "${data}\wave5_ea_new", clear
-/*
-merge 1:1 ea_id using "${data}\ess4_ea_psnp"
-keep if _m==3 | _m==1
-drop _m
-*/
+// merge with tracking file to id panel hhs
+merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh.dta", keepusing(hh_status)
+keep if _merge==1 | _merge==3
+drop _merge
+
+
+// All households:
+
+// construct matrix:
+descr_tab $int, regions("2 3 4 5 6 7 12 13 15") wt(pw_w4)
+
+// export
+xml_tab C, save("$table/09_4_ess4_synergies.xml") replace sheet("HH_w4", nogridlines) ///
+    title("Table: ESS4 - Joint adoption rates and synergies") ///
+    $options1
+
+
+// Panel households:
+
+// construct matrix:
+descr_tab $int if hh_status==3, regions("2 3 4 5 6 7 12 13 15") wt(pw_w4)
+
+// export
+xml_tab C, save("$table/09_4_ess4_synergies.xml") append sheet("HH_w4_panel", nogridlines) ///
+    title("Table: ESS4 - Joint adoption rates and synergies, only panel sample") ///
+    $options1
+
+
+
+
+* EA level ----------------------------------------------
+
+* ESS5 ---------------------------------
+
+use "${data}/wave5_ea_new.dta", clear
+
+// merge with tracking file to id panel EAs
+merge 1:1 ea_id using "${tmp}/dynamics/06_1_track_ea.dta", keepusing(ea_status)
+keep if _merge==1 | _merge==3
+drop _merge
+
 rename ead_cross_largerum ead_crlr
 rename ead_cross_smallrum ead_crsm
 rename ead_cross_poultry  ead_crpo
 
 generate nrm=0
-replace nrm=1 if ead_treadle==1 | ead_motorpump==1 | ead_rdisp==1 |  ead_swc==1 | ead_terr==1 | ead_wcatch==1 | ead_affor==1 | ead_ploc==1 
+replace nrm=1 if ead_treadle==1 | ead_motorpump==1 | ead_rdisp==1 |  ead_swc==1 ///
+    | ead_terr==1 | ead_wcatch==1 | ead_affor==1 | ead_ploc==1 
+
 generate ca=0
 replace ca=1 if ead_consag1==1 | ead_consag2==1
 
@@ -416,7 +452,6 @@ generate ca5=0
 replace ca5=1 if ead_cresidue2==1 | ead_zerotill==1
 
 
-
 generate crop=0
 replace crop=1 if ead_ofsp==1 | ead_awassa83==1 |  ead_fieldp==1 | ead_sweetpotato==1 
 
@@ -433,38 +468,33 @@ generate breed2=0
 replace breed2=1 if ead_crlr==1 | ead_crsm==1  | ead_livIA==1
 
 *psnp
-generate psnp=comm_psnp
+clonevar psnp=ead_psnp
 
 *Different combinations of CA practices
 generate       rotlegume=0
 replace rotlegume=1 if ead_rotlegume==1
+
 generate cresidue=0
 replace cresidue=1 if ead_cresidue2==1 
+
 generate mintillage=ead_mintillage==1 
 generate zerotill=ead_zerotill==1 
 
 
+local vars nrm ca crop tree animal breed breed2 psnp rotlegume cresidue ///
+    mintillage zerotill ca1 ca2 ca3 ca4 ca5 
 
-
-
-
-local vars nrm ca crop tree animal breed breed2 psnp rotlegume cresidue mintillage zerotill ca1 ca2 ca3 ca4 ca5 
-
-local vars2  ca crop tree animal breed breed2 psnp rotlegume cresidue mintillage zerotill ca1 ca2 ca3 ca4 ca5
-
-
+local vars2  ca crop tree animal breed breed2 psnp rotlegume cresidue ///
+    mintillage zerotill ca1 ca2 ca3 ca4 ca5
 
 
 foreach var of local vars {
-
     local lbl : variable label `var'
 
     foreach i of local vars2 {
-
         local lbl2 : variable label `i'
         generate `var'_`i'=(`var'*`i')      // interaction
         label variable `var'_`i' `" `lbl' - `lbl2'"'
-
     }
 }
 
@@ -517,13 +547,11 @@ lab var cresidue           "Crop residue cover"
 lab var mintillage         "Minimum tillage"
 lab var zerotill           "Zero tillage"  
 
-
 lab var ca1                 "CA1 = Crop rotation with legume - Crop residue cover"
 lab var ca2                 "CA2 = Crop rotation with legume -Minimum tillage "
 lab var ca3                 "CA3 = Crop rotation with legume - Zero tillage"
 lab var ca4                 "CA4 = Crop residue cover - Minimum tillage"
 lab var ca5                 "CA5 = Crop residue cover - Zero tillage"
-
 
 lab var nrm_ca              "NRM - CA"
 lab var nrm_crop            "NRM & Crop varieties"
@@ -588,9 +616,7 @@ lab var rotlegume_zerotill   "Crop rotation with legume & Zero tillage"
 lab var cresidue_mintillage  "Crop residue cover & Minimum tillage" 
 lab var cresidue_zerotill    "Crop residue cover & Zero tillage"  
 
-
-save "${data}\synergies_ea_ess5_new", replace
-
+save "${data}/synergies_ea_ess5_new.dta", replace
 
   
 #delimit;
@@ -695,286 +721,84 @@ cresidue  zerotill      cresidue_zerotill
 #delimit cr	
 
 
-
-matrix drop _all
-
-foreach x in 3 4 7 0 {
-
-    foreach var in $int {
-    
-        cap:mean `var' [pw=pw_w5] if region==`x' & wave==5
-
-        if _rc==2000 {
-            matrix  `var'meanr`x'=0
-            matrix define `var'V`x'= 0
-
-            scalar `var'se`x'=0
-        }
-        else if _rc!=0 {
-            error _rc
-        }
-        else {
-            matrix  `var'meanr`x'=e(b)'
-            matrix define `var'V`x'= e(V)'
-            matrix define `var'VV`x'=(vecdiag(`var'V`x'))'
-            matrix list `var'VV`x'
-            scalar `var'se`x'=sqrt(`var'VV`x'[1,1])
-        }
-
-        sum    `var'  if region==`x' & wave==5
-        scalar `var'minr`x'=r(min)
-        scalar `var'maxr`x'=r(max)
-        scalar `var'n`x'=r(N)
-
-        qui sum region if region==`x' & wave==5
-        local obsr`x'=r(N)
-
-        matrix mat`var'`x'  = ( `var'meanr`x', `var'se`x', `var'minr`x', `var'maxr`x', `var'n`x')
-
-        matrix list mat`var'`x'
-
-        matrix A1`x' = nullmat(A1`x')\ mat`var'`x'
-
-        mat A2`x'=(., ., ., ., `obsr`x'')
-        mat B`x'=A1`x'\A2`x'
-
-        matrix colnames B`x' = "Mean" "SE" "Min" "Max" "N"
-
-    }
-
-    local rname ""
-    foreach var in $int {
-        local lbl : variable label `var'
-        local rname `"  `rname'   "`lbl'" " " "'		
-    }	
-
-}	
-
-* National
-foreach var in $int {
-
-    cap:mean `var' [pw=pw_w5] if wave==5
-
-    if _rc==2000 {
-        matrix  `var'meanrN=0
-        matrix define `var'VN= 0
-        scalar `var'seN=0
-                    }
-    else if _rc!=0 {
-        error _rc
-                    }
-
-    else {	
-        matrix  `var'meanrN=e(b)'
-        matrix define `var'VN= e(V)'
-        matrix define `var'VVN=(vecdiag(`var'VN))'
-        matrix list `var'VVN
-        scalar `var'seN=sqrt(`var'VVN[1,1])
-    }
-
-    sum    `var'  if  wave==5
-    scalar `var'minrN=r(min)
-    scalar `var'maxrN=r(max)
-    scalar `var'nN=r(N)
-
-    qui sum region if  wave==5
-    local obsrN=r(N)
-
-    matrix mat`var'N  = ( `var'meanrN,`var'seN, `var'minrN, `var'maxrN, `var'nN)
-
-    matrix list mat`var'N
-
-    matrix A1N = nullmat(A1N)\ mat`var'N
-
-    mat A2N=(., . , ., ., `obsrN')
-    mat BN=A1N\A2N
-
-    matrix colnames BN = "Mean" "SE" "Min" "Max" "N"
-
-}
-
+// prep:
 local rname ""
 foreach var in $int {
-    local lbl : variable label `var'
-    local rname `"  `rname'   "`lbl'" "'		
-}	
-mat C= B3, B4, B7, B0, BN
+	local lbl : variable label `var'
+	local rname `"  `rname'   "`lbl'" "'		
+}
 
-
-#delimit;
-xml_tab C,  save("$table\ESS5_innovation_overlapNEW.xml") append sheet("Table_1_ea_ess5", nogridlines)  ///
+# delimit;
+global options2
 rnames(`rname' "Total No. of obs. per region") cnames(`cnames') 
-ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" "Oromia" "Oromia" 
-"Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Other regions" "Other regions" 
-"Other regions" "Other regions" "Other regions" "National" "National" "National" "National" 
-"National" ) showeq ///
-title(Table 1: ESS5 - EA LEVEL )  font("Times New Roman" 10) ///
+ceq(
+"Afar" "Afar" "Afar" "Afar" "Afar" "Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" 
+"Oromia" "Oromia" "Oromia" "Oromia" "Oromia" "Somali" "Somali" "Somali" "Somali" "Somali"
+"Benishangul Gumuz" "Benishangul Gumuz" "Benishangul Gumuz" "Benishangul Gumuz" "Benishangul Gumuz"
+"SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" "Gambela" "Gambela" "Gambela" "Gambela" "Gambela" 
+"Harar" "Harar" "Harar" "Harar" "Harar" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa"
+"National" "National" "National" "National" "National") showeq 
+rblanks(COL_NAMES "Prop. of EA in the sample with at least 1 hh adopting:" S2149, 
+hhd_impccr  "Share of plots per household" S2149)	 
+font("Times New Roman" 10) 
 cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
-6 55, 7 55, 8 30, 9 30, 10 40,
-11 55, 12 55, 13 30, 14 30, 15 40,
-16 55, 17 55, 18 30, 19 30, 20 40,
-21 55, 22 55, 23 30, 24 30, 25 40,
-26 55, 27 55, 28 30, 29 30, 30 40,
-) /// *Adjust the column width of the table, column 0 are the variable names* 1, 5 and 9 are the blank columns. 
-	format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0))  /// * format the columns. Each parentheses represents one column*
-	star(.1 .05 .01)  /// Define your star values/signs here (which are stored in B_STARS)
-	lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 13)  /// Draws lines in specific format (Numeric Value)
-notes(Point estimates are weighted sample means. CA1 = Crop rotation with legume - Crop residue cover, 
-CA2 = Crop rotation with legume -Minimum tillage, CA3 = Crop rotation with legume - Zero  tillage, 
-CA4 = Crop residue cover - Minimum tillage, CA5 = Crop residue cover - Zero tillage.)
+        6 55, 7 55, 8 30, 9 30, 10 40,
+        11 55, 12 55, 13 30, 14 30, 15 40,
+        16 55, 17 55, 18 30, 19 30, 20 40,
+        21 55, 22 55, 23 30, 24 30, 25 40,
+        26 55, 27 55, 28 30, 29 30, 30 40,
+        31 55, 32 55, 33 30, 34 30, 35 40,
+        36 55, 37 55, 38 30, 39 30, 40 40,
+        41 55, 42 55, 43 30, 44 30, 45 40,
+        46 55, 47 55, 48 30, 49 30, 50 40) 
+format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
+(NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0))  
+	star(.1 .05 .01)  
+	lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 13)   
+	notes("Point estimates are un-wegihted sample means.") 
 ;
-#delimit cr	
-
-
-* EA level: Other Regions, Wave 5
-
-matrix drop _all
-
-foreach x in 2 5 6 12 13 15 {
-
-    foreach var in $int {
-    
-        cap: mean `var' [pw=pw_w5] if othregion==`x' & wave==5
-
-        if _rc==2000 {
-            matrix  `var'meanr`x'=0
-            matrix define `var'V`x'= 0
-            scalar `var'se`x'=0
-        }
-            else if _rc!=0 {
-            error _rc
-        }
-        else {
-            matrix  `var'meanr`x'=e(b)'
-            matrix define `var'V`x'= e(V)'
-            matrix define `var'VV`x'=(vecdiag(`var'V`x'))'
-            matrix list `var'VV`x'
-            scalar `var'se`x'=sqrt(`var'VV`x'[1,1])
-        }
-
-        sum    `var'  if othregion==`x' & wave==5
-        if r(N)==0 {
-            scalar `var'minr`x'=0
-            scalar `var'maxr`x'=0
-            scalar `var'n`x'=0
-        }
-        else {
-            scalar `var'minr`x'=r(min)
-            scalar `var'maxr`x'=r(max)
-            scalar `var'n`x'=r(N)
-        }
-
-        qui sum region if othregion==`x' & wave==5
-        local obsr`x'=r(N)
-
-        matrix mat`var'`x'  = ( `var'meanr`x', `var'se`x', `var'minr`x', `var'maxr`x', `var'n`x')
-
-        matrix list mat`var'`x'
-
-        matrix A1`x' = nullmat(A1`x')\ mat`var'`x'
-
-        mat A2`x'=(., . , ., .,`obsr`x'')
-        mat B`x'=A1`x'\A2`x'
-
-        matrix colnames B`x' = "Mean" "SE" "Min" "Max" "N"
-
-    }
-
-
-    local rname ""
-    foreach var in $int {
-        local lbl : variable label `var'
-        local rname `"  `rname'   "`lbl'" "'		
-    }	
-
-}
-	
-* All Other regions
-foreach var in $int {
-
-    cap:mean `var' [pw=pw_w5] if wave==5 & region==0
-
-    if _rc==2000 {
-        matrix  `var'meanrN=0
-        matrix define `var'VN= 0
-        scalar `var'seN=0
-    }
-    else if _rc!=0 {
-        error _rc
-    }
-
-    else {
-        matrix  `var'meanrN=e(b)'
-        matrix define `var'VN= e(V)'
-        matrix define `var'VVN=(vecdiag(`var'VN))'
-        matrix list `var'VVN
-        scalar `var'seN=sqrt(`var'VVN[1,1])
-    }
-
-    sum    `var'  if  wave==5 & region==0
-    scalar `var'minrN=r(min)
-    scalar `var'maxrN=r(max)
-    scalar `var'nN=r(N)
-
-    qui sum region if  wave==5 & region==0
-    local obsrN=r(N)
-
-    matrix mat`var'N  = ( `var'meanrN, `var'seN, `var'minrN, `var'maxrN, `var'nN)
-
-    matrix list mat`var'N
-
-    matrix A1N = nullmat(A1N)\ mat`var'N
-
-    mat A2N=(., ., ., ., `obsrN')
-    mat BN=A1N\A2N
-
-    matrix colnames BN = "Mean" "SE" "Min" "Max" "N"
-
-}
-
-local rname ""
-foreach var in $int {
-    local lbl : variable label `var'
-    local rname `"  `rname'   "`lbl'" "'		
-}	
-
-
-mat C= B2, B5, B6, B12, B13, B15, BN
-
-#delimit;
-xml_tab C,  save("$table\ESS5_innovation_overlapNEW.xml")  append sheet("Table_1_ea_oth_regions", nogridlines)  ///
-rnames(`rname' "Total No. of obs. per region") cnames(`cnames') 
-ceq("Afar" "Afar" "Afar" "Afar" "Afar" "Somali"  "Somali" "Somali" "Somali" "Somali" 
-"Benshangul Gumuz" "Benshangul Gumuz" "Benshangul Gumuz" "Benshangul Gumuz"  "Benshangul Gumuz"  
-"Gambela" "Gambela"  "Gambela"    "Gambela"  "Gambela"  "Harar" "Harar" "Harar" "Harar" "Harar" 
-"Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Dire Dawa" "Other regions"   "Other regions" 
-"Other regions" "Other regions" "Other regions") showeq ///
-title(Table 1b: ESS5 - EA level, Other regions )  font("Times New Roman" 10) ///
-cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40, 
-6 55, 7 55, 8 30, 9 30, 10 40,
-11 55, 12 55, 13 30, 14 30, 15 40,
-16 55, 17 55, 18 30, 19 30, 20 40,
-21 55, 22 55, 23 30, 24 30, 25 40,
-26 55, 27 55, 28 30, 29 30, 30 40,
-) /// *Adjust the column width of the table, column 0 are the variable names* 1, 5 and 9 are the blank columns. 
-	format((SCLR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) (NBCR0) (NBCR0) (NBCR3) (NBCR3) (NBCR0) 
-    (NBCR0) (NBCR0))  /// * format the columns. Each parentheses represents one column*
-	star(.1 .05 .01)  /// Define your star values/signs here (which are stored in B_STARS)
-	lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 13)  /// Draws lines in specific format (Numeric Value)
-	notes(Point estimates are weighted sample means. CA1 = Crop rotation with legume - 
-    Crop residue cover, CA2 = Crop rotation with legume -Minimum tillage, 
-    CA3 = Crop rotation with legume - Zero  tillage, CA4 = Crop residue cover - Minimum tillage, 
-    CA5 = Crop residue cover - Zero tillage.) //Add your notes here
-; 
 # delimit cr
 
+// All EAs:	
+descr_tab $int, regions("2 3 4 5 6 7 12 13 15")  // unweighted means at EA level
+
+xml_tab C,  save("$table/09_4_ess5_synergies.xml") append sheet("EA_w5", nogridlines) ///
+    title("Table: ESS5 - Joint adoption rates and synergies") ///
+    $options2
+
+// panel EAs:
+descr_tab $int if ea_status==3, regions("2 3 4 5 6 7 12 13 15")
+
+xml_tab C,  save("$table/09_4_ess5_synergies.xml") append sheet("EA_w5_panel", nogridlines) ///
+    title("Table: ESS5 - Joint adoption rates and synergies - panel sample only")  ///
+    $options2
+
+
+* ESS4 (EA level) ----------------------
+
+use "${dataw4}/synergies_ea_ess4_new.dta", clear
+
+// merge with tracking file to id panel EAs
+merge 1:1 ea_id using "${tmp}/dynamics/06_1_track_ea.dta", keepusing(ea_status)
+keep if _merge==1 | _merge==3
+drop _merge
+
+
+// All EAs:	
+descr_tab $int, regions("2 3 4 5 6 7 12 13 15")  // unweighted means at EA level
+
+xml_tab C,  save("$table/09_4_ess4_synergies.xml") append sheet("EA_w4", nogridlines) ///
+    title("Table: ESS4 - Joint adoption rates and synergies") ///
+    $options2
+
+// panel EAs:
+descr_tab $int if ea_status==3, regions("2 3 4 5 6 7 12 13 15")
+
+xml_tab C,  save("$table/09_4_ess4_synergies.xml") append sheet("EA_w4_panel", nogridlines) ///
+    title("Table: ESS4 - Joint adoption rates and synergies - panel sample only")  ///
+    $options2
 
 
 
@@ -1519,117 +1343,6 @@ cw(0 110, 1 55, 2 55, 3 30, 4 30, 5 40,
 
 
 
-********************************************************************************
-* Only for panel households in ESPS4
-********************************************************************************
-
-use "${data}\synergies_hh_ess4_new", clear
-
-* retian only panel hhs from ESPS4
-merge 1:1 household_id using "${data}\synergies_hh_ess5_new", keepusing(household_id) keep(3)
-drop _m
-
-
-#delimit;
-global int 
-nrm       ca            nrm_ca 
-nrm       ca1           nrm_ca1 
-nrm       ca2           nrm_ca2 
-nrm       ca3           nrm_ca3 
-nrm       ca4           nrm_ca4 
-nrm       ca5           nrm_ca5
-nrm       crop          nrm_crop 
-nrm       tree          nrm_tree 
-nrm       animal        nrm_animal 
-nrm       breed         nrm_breed 
-nrm       breed2        nrm_breed2 
-nrm       psnp          nrm_psnp 
-nrm       rotlegume     nrm_rotlegume 
-nrm       cresidue      nrm_cresidue 
-nrm       mintillage    nrm_mintillage  
-nrm       zerotill      nrm_zerotill 
-
-ca        crop          ca_crop 
-ca        tree          ca_tree 
-ca        animal        ca_animal 
-ca        breed         ca_breed 
-ca        breed2        ca_breed2  
-ca        psnp          ca_psnp 
-crop      tree          crop_tree 
-crop      animal        crop_animal 
-crop      breed         crop_breed 
-crop      breed2        crop_breed2 
-crop      psnp          crop_psnp 
-crop      rotlegume     crop_rotlegume 
-crop      cresidue      crop_cresidue 
-crop      mintillage    crop_mintillage 
-crop      zerotill      crop_zerotill 
-crop      ca1           crop_ca1 
-crop      ca2           crop_ca2 
-crop      ca3           crop_ca3 
-crop      ca4           crop_ca4 
-crop      ca5           crop_ca5
-tree      animal        tree_animal 
-tree      breed         tree_breed 
-tree      breed2        tree_breed2 
-tree      psnp          tree_psnp 
-tree      rotlegume     tree_rotlegume 
-tree      cresidue      tree_cresidue 
-tree      mintillage    tree_mintillage 
-tree      zerotill      tree_zerotill 
-tree      ca1           tree_ca1 
-tree      ca2           tree_ca2 
-tree      ca3           tree_ca3 
-tree      ca4           tree_ca4 
-tree      ca5           tree_ca5
-animal    breed         animal_breed 
-animal    breed2        animal_breed2 
-animal    psnp          animal_psnp 
-animal    rotlegume     animal_rotlegume 
-animal    cresidue      animal_cresidue 
-animal    mintillage    animal_mintillage 
-animal    zerotill      animal_zerotill 
-animal    ca1           animal_ca1 
-animal    ca2           animal_ca2 
-animal    ca3           animal_ca3 
-animal    ca4           animal_ca4 
-animal    ca5           animal_ca5 
-breed     psnp          breed_psnp 
-breed     rotlegume     breed_rotlegume 
-breed     cresidue      breed_cresidue 
-breed     mintillage    breed_mintillage 
-breed     zerotill      breed_zerotill 
-breed     ca1           breed_ca1 
-breed     ca2           breed_ca2 
-breed     ca3           breed_ca3 
-breed     ca4           breed_ca4 
-breed     ca5           breed_ca5
-breed2    psnp          breed2_psnp  
-breed2    rotlegume     breed2_rotlegume 
-breed2    cresidue      breed2_cresidue 
-breed2    mintillage    breed2_mintillage 
-breed2    zerotill      breed2_zerotill 
-breed2    ca1           breed2_ca1 
-breed2    ca2           breed2_ca2 
-breed2    ca3           breed2_ca3 
-breed2    ca4           breed2_ca4 
-breed2    ca5           breed2_ca5 
-psnp      rotlegume     psnp_rotlegume 
-psnp      cresidue      psnp_cresidue 
-psnp      mintillage    psnp_mintillage 
-psnp      zerotill      psnp_zerotill 
-psnp      ca1           psnp_ca1 
-psnp      ca2           psnp_ca2 
-psnp      ca3           psnp_ca3 
-psnp      ca4           psnp_ca4 
-psnp      ca5           psnp_ca5 
-rotlegume cresidue      rotlegume_cresidue 
-rotlegume mintillage    rotlegume_mintillage 
-rotlegume zerotill      rotlegume_zerotill 
-cresidue  mintillage    cresidue_mintillage 
-cresidue  zerotill      cresidue_zerotill 
-;
-#delimit cr		
 
 
 matrix drop _all
