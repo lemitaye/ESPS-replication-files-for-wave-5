@@ -119,7 +119,7 @@ cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12
 
 
 
-/* EA level ----
+* EA level ----
 
 use "${data}/ess5_pp_cov_ea_new.dta", clear
 
@@ -136,12 +136,7 @@ ead_psnp maize_cg dtmz ead_impcr1 ead_impcr2 ead_impcr6 ead_impcr8
 #delimit cr
 
 #delimit;
-global eacov5 cs9q01 cs6q12_11 cs6q12_12 cs6q12_13 cs6q12_14 cs6q13_11 cs6q13_12 
-cs6q13_13 cs6q13_14 cs6q14_11 cs6q14_12 cs6q14_13 cs6q14_14 cs6q15_11 cs6q15_12 
-cs6q15_13 cs4q01_11 cs4q01_12 cs4q01_13 cs4q01_14 cs4q03 cs4q08 cs4q11 cs4q14 
-cs4q52 cs9q13 cs9q13_wiz cs9q14 cs6q01 cs6q10 cs4q02 cs4q02_wiz cs4q01 cs4q09 
-cs4q09_wiz cs4q11 cs4q12b cs4q12b_wiz  cs4q15 cs4q15_wiz cs3q02 cs3q02_wiz cs4q52 
-cs4q53 cs4q53_wiz 
+global eacov5 cs4q01_11 cs4q15 cs4q53 
 ;
 #delimit cr
 
@@ -171,7 +166,7 @@ cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12
 	notes("Each cell is a coefficient estimate from a separate regression of the column 
 	variable on the row variable."); 
 # delimit cr
-*/
+
 
 
 * ESS4 --------------------------------
