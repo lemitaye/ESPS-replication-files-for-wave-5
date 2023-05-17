@@ -27,6 +27,10 @@ dna_means_ea <- read_csv("dynamics_presentation/data/dna_means_ea.csv")
 append_seed_source <- read_dta(file.path(esps_dna_path, "tmp/03_3_append_seed_source.dta")) %>%
   mutate_if(is.labelled, as_factor)
 
+adopt_rates_panel_hh <- read_csv("dynamics_presentation/data/adopt_rates_panel_hh.csv")
+
+innov_ea_panel <- read_csv("dynamics_presentation/data/innov_ea_panel.csv")
+
 
 nat_adpt_panel <- bind_rows(
   filter(adopt_rates_panel_hh, region == "National") %>% 
