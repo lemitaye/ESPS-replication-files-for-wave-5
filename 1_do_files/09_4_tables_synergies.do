@@ -65,6 +65,9 @@ replace breed2=1 if hhd_crlr==1  | hhd_crsm==1   | hhd_livIA==1
 
 * psnp
 clonevar psnp=hhd_psnp
+generate psnp2=.
+replace psnp2=0 if hhd_psnp==0 & hhd_psnp_dir==0
+replace psnp2=1 if hhd_psnp==1 | hhd_psnp_dir==1
 
 
 *Different combinations of CA practices
@@ -77,10 +80,10 @@ replace cresidue=1 if hhd_cresidue2==1
 generate mintillage=hhd_mintillage==1  
 generate zerotill=hhd_zerotill==1  
 
-local vars nrm ca crop tree animal breed breed2 psnp rotlegume cresidue ///
+local vars nrm ca crop tree animal breed breed2 psnp psnp2 rotlegume cresidue ///
     mintillage zerotill ca1 ca2 ca3 ca4 ca5 
 
-local vars2  ca crop tree animal breed breed2 psnp rotlegume cresidue ///
+local vars2  ca crop tree animal breed breed2 psnp psnp2 rotlegume cresidue ///
     mintillage zerotill ca1 ca2 ca3 ca4 ca5
 
 
@@ -129,6 +132,11 @@ lab var psnp_ca2      "PSNP & CA2"
 lab var psnp_ca3      "PSNP & CA3"
 lab var psnp_ca4      "PSNP & CA4"
 lab var psnp_ca5      "PSNP & CA5"
+lab var psnp2_ca1      "PSNP (both) & CA1"
+lab var psnp2_ca2      "PSNP (both) & CA2"
+lab var psnp2_ca3      "PSNP (both) & CA3"
+lab var psnp2_ca4      "PSNP (both) & CA4"
+lab var psnp2_ca5      "PSNP (both) & CA5"
 
 lab var nrm                "NRM"
 lab var ca                 "CA"
@@ -138,6 +146,7 @@ lab var animal             "Feed and Forages"
 lab var breed              "Breeding"
 lab var breed2             "Breeding (excl. poultry)"
 lab var psnp               "PSNP"
+lab var psnp2              "PSNP (both)"
 lab var rotlegume          "Crop rotation with legume"
 lab var cresidue           "Crop residue cover" 
 lab var mintillage         "Minimum tillage"
@@ -156,26 +165,33 @@ lab var nrm_animal          "NRM & Feed and Forages"
 lab var nrm_breed           "NRM & Breeding"
 lab var nrm_breed2          "NRM & Breeding (excl. poultry)"
 lab var nrm_psnp            "NRM & PSNP"
+lab var nrm_psnp2           "NRM & PSNP (both)"
 lab var ca_crop             "CA & Crop varieties"
 lab var ca_tree             "CA & Trees"
 lab var ca_animal           "CA & Feed and Forages"
 lab var ca_breed            "CA & Breeding"
 lab var ca_breed2           "CA & Breeding (excl. poultry)"
 lab var ca_psnp             "CA & PSNP"  
+lab var ca_psnp2            "CA & PSNP (both)"  
 lab var crop_tree           "Crop varieties & Trees"
 lab var crop_animal         "Crop varieties & Feed and Forages"
 lab var crop_breed          "Crop varieties & Breeding"
 lab var crop_breed2         "Crop varieties & Breeding (excl. poultry)"
 lab var crop_psnp           "Crop varieties & PSNP"
+lab var crop_psnp2          "Crop varieties & PSNP (both)"
 lab var tree_animal         "Trees & Feed and Forages"
 lab var tree_breed          "Trees & Breeding"
 lab var tree_breed2         "Trees & Breeding (excl. poultry)" 
 lab var tree_psnp           "Trees & PSNP"
+lab var tree_psnp2          "Trees & PSNP (both)"
 lab var animal_breed        "Feed and Forages & Breeding"
 lab var animal_breed2       "Feed and Forages & Breeding (excl. poultry)" 
 lab var animal_psnp         "Feed and Forages &  PSNP"
 lab var breed_psnp          "Breeding &  PSNP"
+lab var breed_psnp2         "Breeding &  PSNP (both)"
 lab var breed2_psnp         "Breeding (excl. poultry) &  PSNP"
+lab var breed2_psnp2        "Breeding (excl. poultry) &  PSNP (both)"
+
 
 lab var nrm_rotlegume        "NRM & Crop rotation with legume"
 lab var nrm_cresidue         "NRM & Crop residue cover"
@@ -204,7 +220,11 @@ lab var breed2_zerotill      "Breeding (excl. poultry) & Zero tillage"
 lab var psnp_rotlegume       "PSNP & Crop rotation with legume"
 lab var psnp_cresidue        "PSNP & Crop residue cover"        
 lab var psnp_mintillage      "PSNP & Minimum tillage"            
-lab var psnp_zerotill        "PSNP & Zero tillage"               
+lab var psnp_zerotill        "PSNP & Zero tillage"        
+lab var psnp2_rotlegume      "PSNP (both) & Crop rotation with legume"
+lab var psnp2_cresidue       "PSNP (both) & Crop residue cover"        
+lab var psnp2_mintillage     "PSNP (both) & Minimum tillage"            
+lab var psnp2_zerotill       "PSNP (both) & Zero tillage"               
 lab var rotlegume_cresidue   "Crop rotation with legume & Crop residue cover"   
 lab var rotlegume_mintillage "Crop rotation with legume & Minimum tillage"      
 lab var rotlegume_zerotill   "Crop rotation with legume & Zero tillage"         
@@ -228,6 +248,7 @@ nrm       animal        nrm_animal
 nrm       breed         nrm_breed 
 nrm       breed2        nrm_breed2 
 nrm       psnp          nrm_psnp 
+nrm       psnp2         nrm_psnp2 
 nrm       rotlegume     nrm_rotlegume 
 nrm       cresidue      nrm_cresidue 
 nrm       mintillage    nrm_mintillage  
@@ -239,11 +260,14 @@ ca        animal        ca_animal
 ca        breed         ca_breed 
 ca        breed2        ca_breed2  
 ca        psnp          ca_psnp 
+ca        psnp2         ca_psnp2 
+
 crop      tree          crop_tree 
 crop      animal        crop_animal 
 crop      breed         crop_breed 
 crop      breed2        crop_breed2 
 crop      psnp          crop_psnp 
+crop      psnp2         crop_psnp2 
 crop      rotlegume     crop_rotlegume 
 crop      cresidue      crop_cresidue 
 crop      mintillage    crop_mintillage 
@@ -253,10 +277,12 @@ crop      ca2           crop_ca2
 crop      ca3           crop_ca3 
 crop      ca4           crop_ca4 
 crop      ca5           crop_ca5
+
 tree      animal        tree_animal 
 tree      breed         tree_breed 
 tree      breed2        tree_breed2 
 tree      psnp          tree_psnp 
+tree      psnp2         tree_psnp2 
 tree      rotlegume     tree_rotlegume 
 tree      cresidue      tree_cresidue 
 tree      mintillage    tree_mintillage 
@@ -266,9 +292,11 @@ tree      ca2           tree_ca2
 tree      ca3           tree_ca3 
 tree      ca4           tree_ca4 
 tree      ca5           tree_ca5
+
 animal    breed         animal_breed 
 animal    breed2        animal_breed2 
 animal    psnp          animal_psnp 
+animal    psnp2         animal_psnp2 
 animal    rotlegume     animal_rotlegume 
 animal    cresidue      animal_cresidue 
 animal    mintillage    animal_mintillage 
@@ -278,7 +306,9 @@ animal    ca2           animal_ca2
 animal    ca3           animal_ca3 
 animal    ca4           animal_ca4 
 animal    ca5           animal_ca5 
+
 breed     psnp          breed_psnp 
+breed     psnp2         breed_psnp2 
 breed     rotlegume     breed_rotlegume 
 breed     cresidue      breed_cresidue 
 breed     mintillage    breed_mintillage 
@@ -288,7 +318,9 @@ breed     ca2           breed_ca2
 breed     ca3           breed_ca3 
 breed     ca4           breed_ca4 
 breed     ca5           breed_ca5
+
 breed2    psnp          breed2_psnp  
+breed2    psnp2         breed2_psnp2  
 breed2    rotlegume     breed2_rotlegume 
 breed2    cresidue      breed2_cresidue 
 breed2    mintillage    breed2_mintillage 
@@ -298,6 +330,7 @@ breed2    ca2           breed2_ca2
 breed2    ca3           breed2_ca3 
 breed2    ca4           breed2_ca4 
 breed2    ca5           breed2_ca5 
+
 psnp      rotlegume     psnp_rotlegume 
 psnp      cresidue      psnp_cresidue 
 psnp      mintillage    psnp_mintillage 
@@ -307,6 +340,17 @@ psnp      ca2           psnp_ca2
 psnp      ca3           psnp_ca3 
 psnp      ca4           psnp_ca4 
 psnp      ca5           psnp_ca5 
+
+psnp2      rotlegume     psnp2_rotlegume 
+psnp2      cresidue      psnp2_cresidue 
+psnp2      mintillage    psnp2_mintillage 
+psnp2      zerotill      psnp2_zerotill 
+psnp2      ca1           psnp2_ca1 
+psnp2      ca2           psnp2_ca2 
+psnp2      ca3           psnp2_ca3 
+psnp2      ca4           psnp2_ca4 
+psnp2      ca5           psnp2_ca5 
+
 rotlegume cresidue      rotlegume_cresidue 
 rotlegume mintillage    rotlegume_mintillage 
 rotlegume zerotill      rotlegume_zerotill 
@@ -369,7 +413,7 @@ xml_tab C, save("$table/09_4_ess5_synergies.xml") replace sheet("HH_w5", nogridl
     $options1
 
 
-// only for panel households:
+/*/ only for panel households:
 
 // matrix:
 descr_tab $int if hh_status==3, regions("2 3 4 5 6 7 12 13 15") wt(pw_w5)
