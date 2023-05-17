@@ -12,6 +12,8 @@
 // Run programs for tables:
 do "${code}/programs/descr_tab.do"
 do "${code}/programs/covar_regress.do"
+do "${code}/programs/gen_synergy.do"
+
 
 // Run do files:
 *do ""
