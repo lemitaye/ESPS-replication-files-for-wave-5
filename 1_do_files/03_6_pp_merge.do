@@ -132,7 +132,7 @@ keep if _merge==1 | _merge==3
 drop _merge
 
 * Merge with psnp data ----
-merge 1:1 household_id using "${data}/ess5_hh_psnp.dta", keepusing(hhd_psnp hhd_psnp_dir)
+merge 1:1 household_id using "${data}/ess5_hh_psnp.dta", keepusing(hhd_psnp hhd_psnp_dir hhd_psnp_any)
 keep if _merge==1 | _merge==3
 drop _merge 
 

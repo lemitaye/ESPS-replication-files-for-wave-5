@@ -8,7 +8,7 @@ capture program drop gen_synergy
 program gen_synergy
     version 17.0
     args lvl
-    
+
     // NRM
     cap generate nrm=0
     cap replace nrm=1 if `lvl'_treadle==1 | `lvl'_motorpump==1 | `lvl'_rdisp==1 | `lvl'_swc==1 ///
@@ -51,10 +51,7 @@ program gen_synergy
 
     * psnp
     cap clonevar psnp=`lvl'_psnp
-    cap generate psnp2=.
-    cap replace psnp2=0 if `lvl'_psnp==0 & `lvl'_psnp_dir==0
-    cap replace psnp2=1 if `lvl'_psnp==1 | `lvl'_psnp_dir==1
-
+    cap generate psnp2=`lvl'_psnp_any
 
     *Different combinations of CA practices
     cap generate rotlegume=0

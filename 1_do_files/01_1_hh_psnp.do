@@ -81,32 +81,51 @@ merge 1:1 household_id using `psnp_direct'
 */
 drop _merge
 
+generate hhd_psnp_any=.
+replace hhd_psnp_any=0 if hhd_psnp==0 & hhd_psnp_dir==0
+replace hhd_psnp_any=1 if hhd_psnp==1 | hhd_psnp_dir==1
 
-label var hhd_psnp    "At least 1 member benefitting from PSNP" 
-label var hhm_psnp    "No. of members per hh benefitting from PSNP"
-label var hh_dpsnp    "No. of days per year hh benefitting from PSNP"
-label var hh_dpsnppc  "No. of days per year hh benefitting from PSNP - per member"
+
+label var hhd_psnp    "At least 1 member benefits from PSNP - Temporary labor" 
+label var hhm_psnp    "No. of members per hh benefits from PSNP"
+label var hh_dpsnp    "No. of days per year hh benefits from PSNP"
+label var hh_dpsnppc  "No. of days per year hh benefits from PSNP - per member"
 label var hh_ipsnp    "Total income per hh per year from PSNP - USD"
 label var hh_dwpsnp   "Avg. daily income per hh-member from PSNP"
 label var ea_id       "ea id"
 label var pw_w5       "Sampling weight - wave 5" 
-label var hhd_psnp_dir "Direct support through PSNP"
+label var hhd_psnp_dir "Direct support through PSNP - Direct support"
+label var hhd_psnp_any   "At least 1 member benefits from PSNP - Either"
+
 
 * save ----
 save "${data}/ess5_hh_psnp.dta", replace
 
 
-* EA - level -------------
+* Collapse at EA level -------------
 
 egen ead_psnp=max(hhd_psnp), by(ea_id)
-gen sh_ea_psnp=hhea_psnp/hh_ea
+egen ead_psnp_dir=max(hhd_psnp_dir), by(ea_id)
+egen ead_psnp_any=max(hhd_psnp_any), by(ea_id)
 
-collapse (max) ead_psnp sh_ea_psnp (firstnm) saq14 saq01 pw_w5, by(ea_id)
+egen sh_ea_psnp=mean(hhd_psnp), by(ea_id)
+egen sh_ea_psnp_dir=mean(hhd_psnp_dir), by(ea_id)
+egen sh_ea_psnp_any=mean(hhd_psnp_any), by(ea_id)
 
-label var ead_psnp   "At least 1 hh benefitting from PSNP"
-label var sh_ea_psnp "Perc. of hh per EA benefitting from PSNP"
-label var pw_w5      "Sampling weight - wave 5" 
+keep ea_id saq14 saq01 ead_* sh_ea_*
+duplicates drop ea_id, force
+order ea_id
+
+label var ead_psnp       "At least 1 hh benefits from PSNP - Temporary labor"
+label var ead_psnp_dir   "At least 1 hh benefits from PSNP - Direct support"
+label var ead_psnp_any   "At least 1 hh benefits from PSNP - Either"
+
+label var sh_ea_psnp      "Perc. of hhs per EA benefitting from PSNP - Temporary labor"
+label var sh_ea_psnp_dir  "Perc. of hhs per EA benefitting from PSNP - Direct support"
+label var sh_ea_psnp_any  "Perc. of hhs per EA benefitting from PSNP - Either"
+
 label var saq14      "Rural/Urban"
 label var saq01      "Region code"
+
 
 save "${data}/ess5_ea_psnp.dta", replace
