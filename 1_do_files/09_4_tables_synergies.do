@@ -413,7 +413,7 @@ xml_tab C, save("$table/09_4_ess5_synergies.xml") replace sheet("HH_w5", nogridl
     $options1
 
 
-/*/ only for panel households:
+// only for panel households:
 
 // matrix:
 descr_tab $int if hh_status==3, regions("2 3 4 5 6 7 12 13 15") wt(pw_w5)
@@ -432,6 +432,31 @@ use "${dataw4}/synergies_hh_ess4_new.dta", clear
 merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh.dta", keepusing(hh_status)
 keep if _merge==1 | _merge==3
 drop _merge
+
+// Add direct assistance PSNP for wave 4
+preserve
+    use "${raw4}/sect14_hh_w4.dta", clear
+
+    keep if assistance_cd==1
+
+    gen hhd_psnp_dir=.
+    replace hhd_psnp_dir=0 if s14q01==2
+    replace hhd_psnp_dir=1 if s14q01==1
+
+    keep household_id hhd_psnp_dir
+    label var hhd_psnp_dir "Direct support through PSNP"
+
+    tempfile psnp_direct
+    save `psnp_direct'
+restore
+
+merge 1:1 household_id using `psnp_direct'
+
+* psnp
+clonevar psnp=hhd_psnp
+generate psnp2=.
+replace psnp2=0 if hhd_psnp==0 & hhd_psnp_dir==0
+replace psnp2=1 if hhd_psnp==1 | hhd_psnp_dir==1
 
 
 // All households:

@@ -24,6 +24,8 @@ global supp     "${root}/supplemental"
 global tmp      "${root}/tmp"
 
 global dataw4   "${supp}/replication_files/3_report_data"
+global raw4     "${supp}/replication_files/2_raw_data/ESS4_2018-19/Data"
+
 
 /*
 * Call all do files:
