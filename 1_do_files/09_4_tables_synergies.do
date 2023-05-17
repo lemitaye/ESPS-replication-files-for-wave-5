@@ -23,6 +23,7 @@ rename largerum_cross hhd_crlr
 rename smallrum_cross hhd_crsm
 rename poultry_cross  hhd_crpo
 
+// run program to create interactions 
 gen_synergy hhd 
   
 #delimit;
@@ -244,10 +245,12 @@ restore
 merge 1:1 household_id using `psnp_direct'
 
 * psnp
-clonevar psnp=hhd_psnp
 generate psnp2=.
 replace psnp2=0 if hhd_psnp==0 & hhd_psnp_dir==0
 replace psnp2=1 if hhd_psnp==1 | hhd_psnp_dir==1
+
+// run program to create interactions 
+gen_synergy hhd 
 
 
 // All households:
@@ -289,198 +292,9 @@ rename ead_cross_largerum ead_crlr
 rename ead_cross_smallrum ead_crsm
 rename ead_cross_poultry  ead_crpo
 
+// run program to create interactions (EA level)
 gen_synergy ead
 
-generate nrm=0
-replace nrm=1 if ead_treadle==1 | ead_motorpump==1 | ead_rdisp==1 |  ead_swc==1 ///
-    | ead_terr==1 | ead_wcatch==1 | ead_affor==1 | ead_ploc==1 
-
-generate ca=0
-replace ca=1 if ead_consag1==1 | ead_consag2==1
-
-generate ca1=0
-replace ca1=1 if ead_rotlegume==1  | ead_cresidue2==1 
-
-generate ca2=0
-replace ca2=1 if ead_rotlegume==1 | ead_mintillage==1 
-
-generate ca3=0
-replace ca3=1 if ead_rotlegume==1 | ead_zerotill==1
-
-generate ca4=0
-replace ca4=1 if ead_cresidue2==1 | ead_mintillage==1
-
-generate ca5=0
-replace ca5=1 if ead_cresidue2==1 | ead_zerotill==1
-
-
-generate crop=0
-replace crop=1 if ead_ofsp==1 | ead_awassa83==1 |  ead_fieldp==1 | ead_sweetpotato==1 
-
-generate tree=0
-replace tree=1 if ead_avocado==1 | ead_papaya==1 | ead_mango==1 
-
-generate animal=0
-replace animal=1 if  ead_elepgrass==1 | ead_sesbaniya==1 |  ead_alfalfa==1 | ead_agroind==1
- 
-generate breed=0
-replace breed=1 if ead_cross==1 | ead_crlr==1 | ead_crsm==1 | ead_crpo==1 | ead_livIA==1
-
-generate breed2=0
-replace breed2=1 if ead_crlr==1 | ead_crsm==1  | ead_livIA==1
-
-*psnp
-clonevar psnp=ead_psnp
-
-*Different combinations of CA practices
-generate       rotlegume=0
-replace rotlegume=1 if ead_rotlegume==1
-
-generate cresidue=0
-replace cresidue=1 if ead_cresidue2==1 
-
-generate mintillage=ead_mintillage==1 
-generate zerotill=ead_zerotill==1 
-
-
-local vars nrm ca crop tree animal breed breed2 psnp rotlegume cresidue ///
-    mintillage zerotill ca1 ca2 ca3 ca4 ca5 
-
-local vars2  ca crop tree animal breed breed2 psnp rotlegume cresidue ///
-    mintillage zerotill ca1 ca2 ca3 ca4 ca5
-
-
-foreach var of local vars {
-    local lbl : variable label `var'
-
-    foreach i of local vars2 {
-        local lbl2 : variable label `i'
-        generate `var'_`i'=(`var'*`i')      // interaction
-        label variable `var'_`i' `" `lbl' - `lbl2'"'
-    }
-}
-
-lab var nrm_ca1       "NRM & CA1"
-lab var nrm_ca2       "NRM & CA2"
-lab var nrm_ca3       "NRM & CA3"
-lab var nrm_ca4       "NRM & CA4"
-lab var nrm_ca5       "NRM & CA5"
-lab var crop_ca1      "Crop varieties & CA1"
-lab var crop_ca2      "Crop varieties & CA2"
-lab var crop_ca3      "Crop varieties & CA3"
-lab var crop_ca4      "Crop varieties & CA4"
-lab var crop_ca5      "Crop varieties & CA5"
-lab var tree_ca1      "Trees & CA1"
-lab var tree_ca2      "Trees & CA2"
-lab var tree_ca3      "Trees & CA3"
-lab var tree_ca4      "Trees & CA4"
-lab var tree_ca5      "Trees & CA5"
-lab var animal_ca1    "Feed and Forages & CA1"
-lab var animal_ca2    "Feed and Forages & CA2"
-lab var animal_ca3    "Feed and Forages & CA3"
-lab var animal_ca4    "Feed and Forages & CA4"
-lab var animal_ca5    "Feed and Forages & CA5"
-lab var breed_ca1     "Breeding & CA1"
-lab var breed_ca2     "Breeding & CA2"
-lab var breed_ca3     "Breeding & CA3"
-lab var breed_ca4     "Breeding & CA4"
-lab var breed_ca5     "Breeding & CA5"
-lab var breed2_ca1    "Breeding excl. poultry & CA1"
-lab var breed2_ca2    "Breeding excl. poultry & CA2"
-lab var breed2_ca3    "Breeding excl. poultry & CA3"
-lab var breed2_ca4    "Breeding excl. poultry & CA4"
-lab var breed2_ca5    "Breeding excl. poultry & CA5"
-lab var psnp_ca1      "PSNP & CA1"
-lab var psnp_ca2      "PSNP & CA2"
-lab var psnp_ca3      "PSNP & CA3"
-lab var psnp_ca4      "PSNP & CA4"
-lab var psnp_ca5      "PSNP & CA5"
-
-lab var nrm                "NRM"
-lab var ca                 "CA"
-lab var crop               "Crop varieties"
-lab var tree               "Trees"
-lab var animal             "Feed and Forages"
-lab var breed              "Breeding"
-lab var breed2             "Breeding (excl. poultry)"
-lab var psnp               "PSNP"
-lab var rotlegume          "Crop rotation with legume"
-lab var cresidue           "Crop residue cover" 
-lab var mintillage         "Minimum tillage"
-lab var zerotill           "Zero tillage"  
-
-lab var ca1                 "CA1 = Crop rotation with legume - Crop residue cover"
-lab var ca2                 "CA2 = Crop rotation with legume -Minimum tillage "
-lab var ca3                 "CA3 = Crop rotation with legume - Zero tillage"
-lab var ca4                 "CA4 = Crop residue cover - Minimum tillage"
-lab var ca5                 "CA5 = Crop residue cover - Zero tillage"
-
-lab var nrm_ca              "NRM - CA"
-lab var nrm_crop            "NRM & Crop varieties"
-lab var nrm_tree            "NRM & Trees"
-lab var nrm_animal          "NRM & Feed and Forages"
-lab var nrm_breed           "NRM & Breeding"
-lab var nrm_breed2          "NRM & Breeding (excl. poultry)"
-lab var nrm_psnp            "NRM & PSNP"
-lab var ca_crop             "CA & Crop varieties"
-lab var ca_tree             "CA & Trees"
-lab var ca_animal           "CA & Feed and Forages"
-lab var ca_breed            "CA & Breeding"
-lab var ca_breed2           "CA & Breeding (excl. poultry)"
-lab var ca_psnp             "CA & PSNP"  
-lab var crop_tree           "Crop varieties & Trees"
-lab var crop_animal         "Crop varieties & Feed and Forages"
-lab var crop_breed          "Crop varieties & Breeding"
-lab var crop_breed2         "Crop varieties & Breeding (excl. poultry)"
-lab var crop_psnp           "Crop varieties & PSNP"
-lab var tree_animal         "Trees & Feed and Forages"
-lab var tree_breed          "Trees & Breeding"
-lab var tree_breed2         "Trees & Breeding (excl. poultry)" 
-lab var tree_psnp           "Trees & PSNP"
-lab var animal_breed        "Feed and Forages & Breeding"
-lab var animal_breed2       "Feed and Forages & Breeding (excl. poultry)" 
-lab var animal_psnp         "Feed and Forages &  PSNP"
-lab var breed_psnp          "Breeding &  PSNP"
-lab var breed2_psnp         "Breeding (excl. poultry) &  PSNP"
-
-
-lab var nrm_rotlegume        "NRM & Crop rotation with legume"
-lab var nrm_cresidue         "NRM & Crop residue cover"
-lab var nrm_mintillage       "NRM & Minimum tillage"
-lab var nrm_zerotill         "NRM & Zero tillage"
-lab var crop_rotlegume       "Crop varieties & Crop rotation with legume"
-lab var crop_cresidue        "Crop varieties & Crop residue cover"        
-lab var crop_mintillage      "Crop varieties & Minimum tillage"            
-lab var crop_zerotill        "Crop varieties & Zero tillage"               
-lab var tree_rotlegume       "Trees & Crop rotation with legume"
-lab var tree_cresidue        "Trees & Crop residue cover"        
-lab var tree_mintillage      "Trees & Minimum tillage"            
-lab var tree_zerotill        "Trees & Zero tillage"               
-lab var animal_rotlegume     "Feed and Forages & Crop rotation with legume"
-lab var animal_cresidue      "Feed and Forages & Crop residue cover"        
-lab var animal_mintillage    "Feed and Forages & Minimum tillage"            
-lab var animal_zerotill      "Feed and Forages & Zero tillage"               
-lab var breed_rotlegume      "Breeding & Crop rotation with legume"
-lab var breed_cresidue       "Breeding & Crop residue cover"        
-lab var breed_mintillage     "Breeding & Minimum tillage"            
-lab var breed_zerotill       "Breeding & Zero tillage"               
-lab var breed2_rotlegume     "Breeding (excl. poultry) & Crop rotation with legume"
-lab var breed2_cresidue      "Breeding (excl. poultry) & Crop residue cover"        
-lab var breed2_mintillage    "Breeding (excl. poultry) & Minimum tillage"            
-lab var breed2_zerotill      "Breeding (excl. poultry) & Zero tillage"               
-lab var psnp_rotlegume       "PSNP & Crop rotation with legume"
-lab var psnp_cresidue        "PSNP & Crop residue cover"        
-lab var psnp_mintillage      "PSNP & Minimum tillage"            
-lab var psnp_zerotill        "PSNP & Zero tillage"               
-lab var rotlegume_cresidue   "Crop rotation with legume & Crop residue cover"   
-lab var rotlegume_mintillage "Crop rotation with legume & Minimum tillage"      
-lab var rotlegume_zerotill   "Crop rotation with legume & Zero tillage"         
-lab var cresidue_mintillage  "Crop residue cover & Minimum tillage" 
-lab var cresidue_zerotill    "Crop residue cover & Zero tillage"  
-
-save "${data}/synergies_ea_ess5_new.dta", replace
-
-  
 #delimit;
 global int 
 nrm       ca            nrm_ca 
