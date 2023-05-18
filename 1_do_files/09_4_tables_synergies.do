@@ -8,24 +8,8 @@
 ********************************************************************************
 
 
-* Household level ---------------------------------------------------------
+* Declare global (see program "gen_synergy") --------
 
-* ESS5 -----------------------------------
-
-use "${data}/wave5_hh_new.dta", clear
-
-// merge with tracking file to id panel hhs
-merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh.dta", keepusing(hh_status)
-keep if _merge==1 | _merge==3
-drop _merge
-
-rename largerum_cross hhd_crlr
-rename smallrum_cross hhd_crsm
-rename poultry_cross  hhd_crpo
-
-// run program to create interactions 
-gen_synergy hhd 
-  
 #delimit;
 global int 
 nrm       ca            nrm_ca 
@@ -150,7 +134,23 @@ cresidue  mintillage    cresidue_mintillage
 cresidue  zerotill      cresidue_zerotill 
 ;
 #delimit cr		
+* Household level ---------------------------------------------------------
 
+* ESS5 -----------------------------------
+
+use "${data}/wave5_hh_new.dta", clear
+
+// merge with tracking file to id panel hhs
+merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh.dta", keepusing(hh_status)
+keep if _merge==1 | _merge==3
+drop _merge
+
+rename largerum_cross hhd_crlr
+rename smallrum_cross hhd_crsm
+rename poultry_cross  hhd_crpo
+
+// run program to create interactions 
+gen_synergy hhd 
 
 // prep:
 local rname ""
@@ -214,6 +214,10 @@ descr_tab $int if hh_status==3, regions("2 3 4 5 6 7 12 13 15") wt(pw_panel)
 xml_tab C, save("$table/09_4_ess5_synergies.xml") append sheet("HH_w5_panel", nogridlines) ///
     title("Table: ESS5 - Joint adoption rates and synergies, only panel sample") ///
     $options1
+
+* save ---------------
+drop sh_* hhd_* sr_* po_* lr_* ead_* impcr*   
+save "${data}/synergies_hh_ess5_new.dta", replace    
 
 
 * ESS4: Household level ----------------------------------------------
@@ -294,108 +298,6 @@ rename ead_cross_poultry  ead_crpo
 
 // run program to create interactions (EA level)
 gen_synergy ead
-
-#delimit;
-global int 
-nrm       ca            nrm_ca 
-nrm       ca1           nrm_ca1 
-nrm       ca2           nrm_ca2 
-nrm       ca3           nrm_ca3 
-nrm       ca4           nrm_ca4 
-nrm       ca5           nrm_ca5
-nrm       crop          nrm_crop 
-nrm       tree          nrm_tree 
-nrm       animal        nrm_animal 
-nrm       breed         nrm_breed 
-nrm       breed2        nrm_breed2 
-nrm       psnp          nrm_psnp 
-nrm       rotlegume     nrm_rotlegume 
-nrm       cresidue      nrm_cresidue 
-nrm       mintillage    nrm_mintillage  
-nrm       zerotill      nrm_zerotill 
-
-ca        crop          ca_crop 
-ca        tree          ca_tree 
-ca        animal        ca_animal 
-ca        breed         ca_breed 
-ca        breed2        ca_breed2  
-ca        psnp          ca_psnp 
-crop      tree          crop_tree 
-crop      animal        crop_animal 
-crop      breed         crop_breed 
-crop      breed2        crop_breed2 
-crop      psnp          crop_psnp 
-crop      rotlegume     crop_rotlegume 
-crop      cresidue      crop_cresidue 
-crop      mintillage    crop_mintillage 
-crop      zerotill      crop_zerotill 
-crop      ca1           crop_ca1 
-crop      ca2           crop_ca2 
-crop      ca3           crop_ca3 
-crop      ca4           crop_ca4 
-crop      ca5           crop_ca5
-tree      animal        tree_animal 
-tree      breed         tree_breed 
-tree      breed2        tree_breed2 
-tree      psnp          tree_psnp 
-tree      rotlegume     tree_rotlegume 
-tree      cresidue      tree_cresidue 
-tree      mintillage    tree_mintillage 
-tree      zerotill      tree_zerotill 
-tree      ca1           tree_ca1 
-tree      ca2           tree_ca2 
-tree      ca3           tree_ca3 
-tree      ca4           tree_ca4 
-tree      ca5           tree_ca5
-animal    breed         animal_breed 
-animal    breed2        animal_breed2 
-animal    psnp          animal_psnp 
-animal    rotlegume     animal_rotlegume 
-animal    cresidue      animal_cresidue 
-animal    mintillage    animal_mintillage 
-animal    zerotill      animal_zerotill 
-animal    ca1           animal_ca1 
-animal    ca2           animal_ca2 
-animal    ca3           animal_ca3 
-animal    ca4           animal_ca4 
-animal    ca5           animal_ca5 
-breed     psnp          breed_psnp 
-breed     rotlegume     breed_rotlegume 
-breed     cresidue      breed_cresidue 
-breed     mintillage    breed_mintillage 
-breed     zerotill      breed_zerotill 
-breed     ca1           breed_ca1 
-breed     ca2           breed_ca2 
-breed     ca3           breed_ca3 
-breed     ca4           breed_ca4 
-breed     ca5           breed_ca5
-breed2    psnp          breed2_psnp  
-breed2    rotlegume     breed2_rotlegume 
-breed2    cresidue      breed2_cresidue 
-breed2    mintillage    breed2_mintillage 
-breed2    zerotill      breed2_zerotill 
-breed2    ca1           breed2_ca1 
-breed2    ca2           breed2_ca2 
-breed2    ca3           breed2_ca3 
-breed2    ca4           breed2_ca4 
-breed2    ca5           breed2_ca5 
-psnp      rotlegume     psnp_rotlegume 
-psnp      cresidue      psnp_cresidue 
-psnp      mintillage    psnp_mintillage 
-psnp      zerotill      psnp_zerotill 
-psnp      ca1           psnp_ca1 
-psnp      ca2           psnp_ca2 
-psnp      ca3           psnp_ca3 
-psnp      ca4           psnp_ca4 
-psnp      ca5           psnp_ca5 
-rotlegume cresidue      rotlegume_cresidue 
-rotlegume mintillage    rotlegume_mintillage 
-rotlegume zerotill      rotlegume_zerotill 
-cresidue  mintillage    cresidue_mintillage 
-cresidue  zerotill      cresidue_zerotill 
-;
-#delimit cr	
-
 
 // prep:
 local rname ""
@@ -497,51 +399,36 @@ merge 1:1 household_id using "${data}/synergies_hh_ess5_new.dta"
 keep if _merge==3
 drop _merge
 
-local vars nrm ca crop tree animal breed breed2 psnp rotlegume cresidue mintillage zerotill  
+local vars nrm ca crop tree animal breed breed2 psnp psnp2 rotlegume cresidue mintillage zerotill  
 
 rename maize_cg maize
-lab var maize "Maize - CG germplasm"
+lab var maize "Maize-CG germplasm"
 
 foreach var of local vars {
     local lbl : variable label `var'
     local lbl2 : variable label maize
 
     generate `var'_maize=(`var'*maize) 
-    label variable `var'_maize `" `lbl' - `lbl2'"'
+    label variable `var'_maize `" `lbl' & `lbl2'"'
 }
-
-foreach x in nrm ca crop tree animal breed breed2 psnp rotlegume cresidue mintillage zerotill {
-    generate `x'maize=.
-    replace `x'maize =`x' if maize!=.
-}
-
-local vars nrm ca crop tree animal breed breed2 psnp rotlegume cresidue mintillage zerotill
-
-foreach var of local vars {
-    local lbl : variable label `var'
-    label variable `var'maize `" `lbl'"'
-}
-
-save "${data}/synergies_dna_hh_ess5.dta", replace
-
 
 #delimit;
 global intdna 
-nrmmaize         maize nrm_maize
-camaize          maize ca_maize 
-cropmaize        maize crop_maize 
-treemaize        maize tree_maize 
-animalmaize      maize animal_maize 
-breedmaize       maize breed_maize 
-breed2maize      maize breed2_maize 
-psnpmaize        maize psnp_maize 
-rotlegumemaize   maize rotlegume_maize 
-cresiduemaize    maize cresidue_maize 
-mintillagemaize  maize mintillage_maize 
-zerotillmaize    maize zerotill_maize 
+nrm         maize   nrm_maize
+ca          maize   ca_maize 
+crop        maize   crop_maize 
+tree        maize   tree_maize 
+animal      maize   animal_maize 
+breed       maize   breed_maize 
+breed2      maize   breed2_maize 
+psnp        maize   psnp_maize 
+psnp2       maize   psnp2_maize 
+rotlegume   maize   rotlegume_maize 
+cresidue    maize   cresidue_maize 
+mintillage  maize   mintillage_maize 
+zerotill    maize   zerotill_maize 
 ;
 #delimit cr		
-
 
 local rname ""
 foreach var in $intdna {
@@ -583,6 +470,8 @@ xml_tab C, save("$table/09_4_ess5_synergies.xml") append sheet("HH_DNA_w5", nogr
     title("Table: ESS5 - Joint adoption rates and synergies, maize DNA germplasm") ///
     $options2
 
+* save
+save "${data}/synergies_dna_hh_ess5.dta", replace
 
 
 * ESS4 (HH level) --------------------------
