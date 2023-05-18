@@ -16,4 +16,8 @@ do "${code}/programs/gen_synergy.do"
 
 
 // Run do files:
-*do ""
+do "${code}/09_1_tables_adopt_rates.do"
+do "${code}/09_2_tables_covar_dstats.do"
+do "${code}/09_3_tables_covar_regs.do"
+do "${code}/09_4a_tables_synergies.do"
+do "${code}/09_4b_tables_synergies_dna.do"

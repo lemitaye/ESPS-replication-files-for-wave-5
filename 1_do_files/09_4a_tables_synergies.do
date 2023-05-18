@@ -229,6 +229,12 @@ merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh.dta", keepusing(hh_s
 keep if _merge==1 | _merge==3
 drop _merge
 
+// merge to get panel weights:
+merge 1:1 household_id using "${rawdata}/HH/ESS5_weights_hh.dta", keepusing(pw_panel)
+keep if _merge==1 | _merge==3
+drop _merge
+
+
 // Add direct assistance PSNP for wave 4
 preserve
     use "${raw4}/sect14_hh_w4.dta", clear
