@@ -104,7 +104,7 @@ notes(Point estimates are weighted sample means.)
 descr_tab $intdna, regions("3 4 7 13 15") wt(pw_w5)
 
 // export
-xml_tab C, save("$table/09_4_ess5_synergies.xml") append sheet("HH_DNA_w5", nogridlines) ///
+xml_tab C, save("$table/09_4_ess5_synergies_dna.xml") replace sheet("HH_DNA_w5", nogridlines) ///
     title("Table: ESS5 - Joint adoption rates and synergies, maize DNA germplasm") ///
     $options2
 
@@ -115,7 +115,7 @@ xml_tab C, save("$table/09_4_ess5_synergies.xml") append sheet("HH_DNA_w5", nogr
 descr_tab $intdna if hh_status_dna==3, regions("3 4 7 13 15") wt(pw_panel)
 
 // export
-xml_tab C, save("$table/09_4_ess5_synergies.xml") append sheet("HH_DNA_w5_panel", nogridlines) ///
+xml_tab C, save("$table/09_4_ess5_synergies_dna.xml") append sheet("HH_DNA_w5_panel", nogridlines) ///
     title("Table: ESS5 - Joint adoption rates and synergies, maize DNA germplasm (only panel DNA sample)") ///
     $options2
 
@@ -199,7 +199,7 @@ foreach var of local vars {
 descr_tab $intdna, regions("3 4 7 13 15") wt(pw_w4)
 
 // export
-xml_tab C, save("$table/09_4_ess4_synergies.xml") append sheet("HH_DNA_w4", nogridlines) ///
+xml_tab C, save("$table/09_4_ess4_synergies_dna.xml") replace sheet("HH_DNA_w4", nogridlines) ///
     title("Table: ESS4 - Joint adoption rates and synergies, maize DNA germplasm") ///
     $options2
 
@@ -209,7 +209,7 @@ xml_tab C, save("$table/09_4_ess4_synergies.xml") append sheet("HH_DNA_w4", nogr
 descr_tab $intdna if hh_status_dna==3, regions("3 4 7 13 15") wt(pw_panel)
 
 // export
-xml_tab C, save("$table/09_4_ess4_synergies.xml") append sheet("HH_DNA_w4_panel", nogridlines) ///
+xml_tab C, save("$table/09_4_ess4_synergies_dna.xml") append sheet("HH_DNA_w4_panel", nogridlines) ///
     title("Table: ESS4 - Joint adoption rates and synergies, maize DNA germplasm (only panel DNA sample)") ///
     $options2
 
@@ -218,7 +218,7 @@ xml_tab C, save("$table/09_4_ess4_synergies.xml") append sheet("HH_DNA_w4_panel"
 
 
 
-* EA level ------------------------------------
+/* EA level ------------------------------------
 
 use "${data}/ess5_dna_ea_new.dta", clear
 

@@ -365,7 +365,7 @@ xml_tab C,  save("$table/09_4_ess5_synergies.xml") append sheet("EA_w5_panel", n
     $options2
 
 
-* ESS4 (EA level) ----------------------
+/* ESS4 (EA level) ----------------------
 
 use "${dataw4}/synergies_ea_ess4_new.dta", clear
 
