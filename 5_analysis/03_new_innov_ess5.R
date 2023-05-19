@@ -1303,7 +1303,9 @@ sect11_hh_w5 <- read_dta(file.path(root, "2_raw_data/data/HH", "sect11_hh_w5.dta
 sect11_hh_w4 <- read_dta(file.path(root, "supplemental/replication_files/2_raw_data/ESS4_2018-19/Data", 
                                    "sect11_hh_w4.dta"))
 
-map(
+track_hh <- read_dta(file.path(root, "tmp/dynamics/06_1_track_hh.dta"))
+
+prod_assets <- map(
   list(
     mutate(sect11_hh_w5, wave = "Wave 5"), 
     mutate(sect11_hh_w4, wave = "Wave 4")
@@ -1318,10 +1320,23 @@ map(
       mutate_if(is.labelled, as_factor)
       
   }
-)
+) %>% 
+  bind_rows()
 
+prod_assets_rural <- prod_assets %>% 
+  # retain only rural households (vs. all hhs, i.e., urban included)
+  inner_join( 
+    select(track_hh, household_id, hh_status, starts_with("pw")),
+    by = "household_id"
+    ) 
 
-
+prod_assets_rural %>% 
+  filter(wave == "Wave 4") %>% filter(is.na(pw_w4))
+  group_by(asset_cd) %>% 
+  summarize(
+    wave4_mean = mean(HHown_item, na.rm = T),
+    wave4_mean2 = weighted.mean(HHown_item, w = pw_w4, na.rm = T)
+    )
 
 
 
