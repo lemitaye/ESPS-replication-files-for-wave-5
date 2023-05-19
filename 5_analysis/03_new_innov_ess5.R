@@ -1296,14 +1296,29 @@ adopt_rates_panel_hh_dna %>%
        subtitle = "Panel DNA sample only")
 
 
+# Productive asset indices -------------
 
+sect11_hh_w5 <- read_dta(file.path(root, "2_raw_data/data/HH", "sect11_hh_w5.dta"))
 
+sect11_hh_w4 <- read_dta(file.path(root, "supplemental/replication_files/2_raw_data/ESS4_2018-19/Data", 
+                                   "sect11_hh_w4.dta"))
 
-
-
-
-
-
+map(
+  list(
+    mutate(sect11_hh_w5, wave = "Wave 5"), 
+    mutate(sect11_hh_w4, wave = "Wave 4")
+    ),
+  function (tbl) {
+    tbl %>% 
+      mutate(HHown_item = case_when(
+        s11q00 == 2 ~ 0, is.na(s11q00) ~ 0, .default = as.numeric(s11q00))
+      ) %>% 
+      select(wave, household_id, asset_cd, HHown_item) %>% 
+      filter(asset_cd >= 29) %>% 
+      mutate_if(is.labelled, as_factor)
+      
+  }
+)
 
 
 
