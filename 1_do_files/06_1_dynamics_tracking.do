@@ -12,8 +12,8 @@
 use "${supp}/replication_files/2_raw_data/ESS4_2018-19/Data/sect_cover_pp_w4.dta", clear
 
 duplicates drop household_id, force
-keep household_id ea_id saq01
-gen wave=4
+keep household_id ea_id saq01 pw_w4
+gen wave4=1
 
 save "${tmp}/dynamics/cover_pp_w4.dta", replace
 
@@ -21,8 +21,8 @@ save "${tmp}/dynamics/cover_pp_w4.dta", replace
 use "${rawdata}/PP/sect_cover_pp_w5.dta", clear
 
 duplicates drop household_id, force
-keep household_id ea_id saq01
-gen wave=5
+keep household_id ea_id saq01 pw_w5
+gen wave5=1
 
 save "${tmp}/dynamics/cover_pp_w5.dta", replace
 
@@ -31,9 +31,16 @@ merge 1:1 household_id using "${tmp}/dynamics/cover_pp_w4.dta", force
 
 rename _merge hh_status
 
+label var hh_status "Household panel status"
+
 label define _merge 1 "1. Newly added in ESPS5", modify
 label define _merge 2 "2. Dropped in ESPS5", modify
 label define _merge 3 "3. Matched ", modify
+
+// merge to get panel weights:
+merge 1:1 household_id using "${rawdata}/HH/ESS5_weights_hh.dta", keepusing(pw_panel)
+keep if _merge==1 | _merge==3
+drop _merge
 
 save "${tmp}/dynamics/06_1_track_hh.dta", replace
 
