@@ -1331,12 +1331,22 @@ prod_assets_rural <- prod_assets %>%
     ) 
 
 prod_assets_rural %>% 
-  filter(wave == "Wave 4") %>% filter(is.na(pw_w4))
-  group_by(asset_cd) %>% 
+  group_by(wave, asset_cd) %>% 
   summarize(
-    wave4_mean = mean(HHown_item, na.rm = T),
-    wave4_mean2 = weighted.mean(HHown_item, w = pw_w4, na.rm = T)
-    )
+    mean = mean(HHown_item, na.rm = T),
+    n = sum(!is.na(HHown_item)),
+    .groups = "drop"
+    ) %>% 
+  pivot_wider(names_from = wave, values_from = c(mean, n))
+
+prod_assets_rural %>% 
+  filter(hh_status==3) %>% 
+  group_by(wave, asset_cd) %>% 
+  summarize(
+    mean = mean(HHown_item, na.rm = T),
+    n = sum(!is.na(HHown_item)),
+  ) %>% 
+  pivot_wider(names_from = wave, values_from = c(mean, n))
 
 
 
