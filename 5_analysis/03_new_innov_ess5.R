@@ -1305,6 +1305,8 @@ sect11_hh_w4 <- read_dta(file.path(root, "supplemental/replication_files/2_raw_d
 
 track_hh <- read_dta(file.path(root, "tmp/dynamics/06_1_track_hh.dta"))
 
+tab_path <- "C:/Users/l.daba/SPIA Dropbox/Lemi Daba/Apps/Overleaf/ESS_adoption_matrices/tables"
+
 prod_assets <- map(
   list(
     mutate(sect11_hh_w5, wave = "Wave 5"), 
@@ -1362,6 +1364,7 @@ pset_tab_panel <- prod_assets_rural %>%
 
 kbl(
   pset_tab_all,
+  format = "latex",
   caption = "Percentage of households with productive assets - all houesholds in both waves",
   booktabs = TRUE,
   linesep = "",
@@ -1371,11 +1374,12 @@ kbl(
   add_header_above(c(" ", "Wave 4" = 2, "Wave 5" = 2)) %>% 
   # column_spec(2:7, width = "5em", latex_valign = "b") %>% 
   kable_styling(latex_options = c("striped", "hold_position")) %>% 
-  save_kable("tables/15_SR_names_unidentified_clusters.tex")
+  save_kable(file.path(tab_path, "passet_tab_all.tex"))
 
 
 kbl(
   pset_tab_panel,
+  format = "latex",
   caption = "Percentage of households with productive assets - panel houesholds",
   booktabs = TRUE,
   linesep = "",
@@ -1385,7 +1389,7 @@ kbl(
   add_header_above(c(" ", "Wave 4" = 2, "Wave 5" = 2)) %>% 
   # column_spec(2:7, width = "5em", latex_valign = "b") %>% 
   kable_styling(latex_options = c("striped", "hold_position")) %>% 
-  save_kable("tables/15_SR_names_unidentified_clusters.tex")
+  save_kable(file.path(tab_path, "passet_tab_panel.tex"))
 
 
 
