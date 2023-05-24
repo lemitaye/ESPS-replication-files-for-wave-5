@@ -261,9 +261,6 @@ generate psnp2=.
 replace psnp2=0 if hhd_psnp==0 & hhd_psnp_dir==0
 replace psnp2=1 if hhd_psnp==1 | hhd_psnp_dir==1
 
-// drop already created interactions
-drop nrm-ca5_ca5
-
 // run program to create interactions 
 gen_synergy hhd 
 
