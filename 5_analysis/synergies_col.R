@@ -27,30 +27,12 @@ for (i in 1:nrow(innov_int_tbl)) {
   m2 <- weighted.mean(innov_w4[[y]], w = innov_w4$pw_w4, na.rm = T)
   m3 <- weighted.mean(innov_w4[[x]]*innov_w4[[y]], w = innov_w4$pw_w4, na.rm = T)
   
-  innov_int_tbl$mean_var1[i] <- m1
-  innov_int_tbl$mean_var2[i] <- m2
-  innov_int_tbl$mean_int[i]  <- m3
+  innov_int_tbl$mean_var1[i] <- if_else(x!=y, m1, NA)
+  innov_int_tbl$mean_var2[i] <- if_else(x!=y, m2, NA)
+  innov_int_tbl$mean_int[i]  <- if_else(x!=y, m3, NA)
   
 }
 
-
-innov_w4_means <- innov_w4 %>% 
-  summarise(
-    across(nrm:zerotill, ~weighted.mean(., w = pw_w4, na.rm = T))
-  ) %>% 
-  pivot_longer(everything()) 
-
-int_w4 <- synergies_hh_ess4 %>% 
-  select(household_id, pw_w4, pw_panel, hh_status, nrm_ca:ca5_psnp2) %>% 
-  summarise(across(nrm_ca:ca5_psnp2, ~weighted.mean(., w = pw_w4, na.rm = T))) %>% 
-  pivot_longer(everything()) %>% 
-  filter(str_detect(name, "_")) %>% 
-  filter(name != "hhd_psnp_dir") %>% 
-  separate(name, into = c("var1", "var2"), sep = "_", extra = "merge", remove = F) %>% 
-  filter(var1 != var2) %>% 
-  left_join(rename(innov_w4_means, mean_var1 = value), by = c("var1" = "name")) %>% 
-  left_join(rename(innov_w4_means, mean_var2 = value), by = c("var2" = "name")) %>% 
-  rename(mean_int = value)
 
 syn_int_w4 <- innov_int_tbl %>% 
   mutate(
@@ -75,7 +57,10 @@ syn_int_w4 <- innov_int_tbl %>%
 
 int_w4_var1 <- syn_int_w4 %>% 
   select(var1, var2, mean_int) %>% 
-  mutate(mean_int = paste0(round(mean_int, 3) * 100, "%")) %>%
+  mutate(mean_int = case_when(
+    !is.na(mean_int) ~ paste0(round(mean_int, 3) * 100, "%"),
+    is.na(mean_int)  ~ "---"
+    )) %>%
   pivot_wider(names_from = var2, values_from = mean_int)  
 
 int_w4_piv <- int_w4_var1 %>% 
@@ -84,8 +69,6 @@ int_w4_piv <- int_w4_var1 %>%
 
 int_w4_col <- syn_int_w4 %>% 
   select(var1, var2, clr_var1) %>% 
-  filter(!str_detect(var1, "ca\\d+")) %>% 
-  filter(!str_detect(var2, "ca\\d+")) %>% 
   pivot_wider(names_from = var2, values_from = clr_var1) %>% 
   select(-var1) %>%
   as.list()
@@ -132,18 +115,6 @@ data %>%
 data_html %>% 
   kable(escape = F, align = "c") %>%
   kable_styling(full_width = FALSE) 
-
-
-
-
-# Or dplyr ver
-iris[1:10, ] %>%
-  mutate(Species = cell_spec(
-    Species, color = "white", bold = T,
-    background = spec_color(1:10, end = 0.9, option = "A", direction = -1)
-  )) %>%
-  kable(escape = F, align = "c") %>%
-  kable_styling(c("striped", "condensed"), full_width = F)
 
 
 
