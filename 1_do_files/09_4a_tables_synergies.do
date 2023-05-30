@@ -286,7 +286,8 @@ xml_tab C, save("$table/09_4_ess4_synergies.xml") append sheet("HH_w4_panel", no
     title("Table: ESS4 - Joint adoption rates and synergies, only panel sample") ///
     $options1
 
-
+* save
+save "${data}/synergies_hh_ess4_new.dta", replace
 
 
 * EA level ----------------------------------------------
