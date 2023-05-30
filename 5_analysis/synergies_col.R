@@ -4,9 +4,35 @@ library(tidyverse)
 
 synergies_hh_ess4 <- read_dta("C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Country teams/Ethiopia/LSMS_W5/3_report_data/synergies_hh_ess4_new.dta")
 
+innovs <- c("nrm", "ca", "crop", "tree", "animal", "breed", "breed2", "psnp",
+            "psnp2", "rotlegume", "cresidue", "mintillage", "zerotill")
+
+
+
+innov_int_tbl <- expand_grid(var1 = innovs, var2 = innovs, .name_repair = "universal") %>% 
+  # filter(var1 != var2) %>% 
+  mutate(
+    mean_var1 = NA_real_, mean_var2 = NA_real_, mean_int = NA_real_ 
+    )
 
 innov_w4 <- synergies_hh_ess4 %>% 
-  select(household_id, pw_w4, pw_panel, hh_status, nrm:zerotill)
+  select(household_id, pw_w4, pw_panel, hh_status, all_of(innovs))
+
+for (i in 1:nrow(innov_int_tbl)) {
+  
+  x <- innov_int_tbl$var1[i]
+  y <- innov_int_tbl$var2[i]
+  
+  m1 <- weighted.mean(innov_w4[[x]], w = innov_w4$pw_w4, na.rm = T)
+  m2 <- weighted.mean(innov_w4[[y]], w = innov_w4$pw_w4, na.rm = T)
+  m3 <- weighted.mean(innov_w4[[x]]*innov_w4[[y]], w = innov_w4$pw_w4, na.rm = T)
+  
+  innov_int_tbl$mean_var1[i] <- m1
+  innov_int_tbl$mean_var2[i] <- m2
+  innov_int_tbl$mean_int[i]  <- m3
+  
+}
+
 
 innov_w4_means <- innov_w4 %>% 
   summarise(
@@ -26,7 +52,7 @@ int_w4 <- synergies_hh_ess4 %>%
   left_join(rename(innov_w4_means, mean_var2 = value), by = c("var2" = "name")) %>% 
   rename(mean_int = value)
 
-syn_int_w4 <- int_w4 %>% 
+syn_int_w4 <- innov_int_tbl %>% 
   mutate(
     syn_var1 = (mean_int / mean_var2) - mean_var1,
     syn_var2 = (mean_int / mean_var1) - mean_var2
@@ -49,8 +75,6 @@ syn_int_w4 <- int_w4 %>%
 
 int_w4_var1 <- syn_int_w4 %>% 
   select(var1, var2, mean_int) %>% 
-  filter(!str_detect(var1, "ca\\d+")) %>% 
-  filter(!str_detect(var2, "ca\\d+")) %>% 
   mutate(mean_int = paste0(round(mean_int, 3) * 100, "%")) %>%
   pivot_wider(names_from = var2, values_from = mean_int)  
 
@@ -122,8 +146,6 @@ iris[1:10, ] %>%
   kable_styling(c("striped", "condensed"), full_width = F)
 
 
-
-c(, "#FFFFFF", "#FFFFFF")
 
 
 
