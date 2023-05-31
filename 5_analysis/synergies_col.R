@@ -86,56 +86,67 @@ syn_w5_all <- make_syn_int(int_w5_all)
 syn_w4_pnl <- make_syn_int(int_w4_pnl)
 syn_w5_pnl <- make_syn_int(int_w5_pnl)
 
-
-int_w4_var1 <- syn_int_w4 %>% 
-  select(var1, var2, mean_int) %>% 
-  mutate(mean_int = case_when(
-    !is.na(mean_int) ~ paste0(round(mean_int, 3) * 100, "%"),
-    is.na(mean_int)  ~ "---"
+cell_spec_tbl <- function(tbl) {
+  
+  int_var1 <- tbl %>% 
+    select(var1, var2, mean_int) %>% 
+    mutate(mean_int = case_when(
+      !is.na(mean_int) ~ paste0(round(mean_int, 3) * 100, "%"),
+      is.na(mean_int)  ~ "---"
     )) %>%
-  pivot_wider(names_from = var2, values_from = mean_int)  
-
-int_w4_piv <- int_w4_var1 %>% 
-  select(-var1) %>% 
-  as.list()
-
-int_w4_col <- syn_int_w4 %>% 
-  select(var1, var2, clr_var1) %>% 
-  pivot_wider(names_from = var2, values_from = clr_var1) %>% 
-  select(-var1) %>%
-  as.list()
-
-
-int_w4_celspc <- list()
-int_w4_celspc_html <- list()
-
-for (i in seq_along(int_w4_piv)) {
+    pivot_wider(names_from = var2, values_from = mean_int)  
   
-  x <- int_w4_piv[[i]]
+  int_piv <- int_var1 %>% 
+    select(-var1) %>% 
+    as.list()
   
-  col <- int_w4_col[[i]]
+  int_col <- tbl %>% 
+    select(var1, var2, clr_var1) %>% 
+    pivot_wider(names_from = var2, values_from = clr_var1) %>% 
+    select(-var1) %>%
+    as.list()
   
-  y <- cell_spec(
-    x,
-    format = "latex",
-    background = if_else(is.na(col), "#FFFFFF", col)
-  )
   
-  z <- cell_spec(
-    x,
-    format = "html",
-    background = if_else(is.na(col), "#FFFFFF", col)
-  )
+  int_celspc_tex  <- list()
+  int_celspc_html <- list()
   
-  int_w4_celspc <- rlist::list.append(int_w4_celspc, y)
-  int_w4_celspc_html <- rlist::list.append(int_w4_celspc_html, z)
+  for (i in seq_along(int_piv)) {
+    
+    x <- int_piv[[i]]
+    
+    col <- int_col[[i]]
+    
+    y <- cell_spec(
+      x,
+      format = "latex",
+      background = if_else(is.na(col), "#FFFFFF", col)
+    )
+    
+    z <- cell_spec(
+      x,
+      format = "html",
+      background = if_else(is.na(col), "#FFFFFF", col)
+    )
+    
+    int_celspc_tex <- rlist::list.append(int_celspc_tex, y)
+    int_celspc_html <- rlist::list.append(int_celspc_html, z)
+  }
+  
+  names(int_celspc_tex) <- names(int_piv)
+  names(int_celspc_html) <- names(int_piv)
+  
+  data_tex <- bind_cols(select(int_var1, var1), bind_rows(int_celspc_tex))
+  data_html <- bind_cols(select(int_var1, var1), bind_rows(int_celspc_html))
+  
+  return(list(tex = data_tex, html = data_html))
+  
 }
 
-names(int_w4_celspc) <- names(int_w4_piv)
-names(int_w4_celspc_html) <- names(int_w4_piv)
+cell_spec_tbl(syn_w4_all)
+cell_spec_tbl(syn_w5_all)
 
-data <- bind_cols(select(int_w4_var1, var1), bind_rows(int_w4_celspc))
-data_html <- bind_cols(select(int_w4_var1, var1), bind_rows(int_w4_celspc_html))
+cell_spec_tbl(syn_w4_pnl)
+cell_spec_tbl(syn_w5_pnl)
 
 
 data %>% 
@@ -144,7 +155,7 @@ data %>%
   landscape() %>% 
   save_kable("color_col.tex")
 
-data_html %>% 
+cell_spec_tbl(syn_w4_all)$html %>% 
   kable(escape = F, align = "c") %>%
   kable_styling(full_width = FALSE) 
 
