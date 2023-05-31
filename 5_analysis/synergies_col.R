@@ -69,13 +69,15 @@ int_w4_all <- make_innov_int(innov_w4, "pw_w4")
 int_w5_all <- make_innov_int(innov_w5, "pw_w5")
 
 int_w4_pnl <- bind_rows(
-  make_innov_int(filter(innov_w4, hh_status == 3), "pw_panel"),
+  make_innov_int(filter(innov_w4, hh_status == 3), "pw_panel") %>% 
+    filter(var1 != "maize" & var2 != "maize"),
   make_innov_int(filter(innov_w4, hh_status_dna == 3), "pw_panel") %>% 
     filter(var1 == "maize" | var2 == "maize")
 )
 
 int_w5_pnl <- bind_rows(
-  make_innov_int(filter(innov_w5, hh_status == 3), "pw_panel"),
+  make_innov_int(filter(innov_w5, hh_status == 3), "pw_panel") %>% 
+    filter(var1 != "maize" & var2 != "maize"),
   make_innov_int(filter(innov_w5, hh_status_dna == 3), "pw_panel") %>% 
     filter(var1 == "maize" | var2 == "maize")
 )
@@ -173,8 +175,30 @@ cell_spec_tbl <- function(tbl) {
 cell_ht_w4_all <- cell_spec_tbl(syn_w4_all)$html
 cell_ht_w5_all <- cell_spec_tbl(syn_w5_all)$html
 
-cell_spec_tbl(syn_w4_pnl)
-cell_spec_tbl(syn_w5_pnl)
+cell_ht_w4_pnl <- cell_spec_tbl(syn_w4_pnl)$html
+cell_ht_w5_pnl <- cell_spec_tbl(syn_w5_pnl)$html
+
+
+lbls <- as_tibble_col(innovs, column_name = "var1") %>%
+  mutate(
+    label = case_match(
+      var1,
+      "nrm" ~"AWM & SWC practices",
+      "ca" ~"Conservation Agriculture",
+      "tree" ~"Agroforestry practices",
+      "animal" ~"Forages",
+      "breed" ~"Animal crossbreeds",
+      "breed2" ~"Animal crossbreeds (excl. poultry)",
+      "psnp" ~"PSNP (temp. labor)",
+      "psnp2" ~"PSNP (temp. labor & direct assist.)",
+      "rotlegume" ~"Crop rotation with legume",
+      "cresidue" ~"Crop residue cover",
+      "mintillage" ~"Minimum tillage",
+      "zerotill" ~"Zero tillage",
+      "maize" ~ "Maize - CG germplasm",
+      "crop" ~ "Crop varieties (OFSP, Awassa83, etc.)"
+    )
+  )
 
 cell_ht_all <- inner_join(
   cell_ht_w4_all %>% 
@@ -186,7 +210,28 @@ cell_ht_all <- inner_join(
   by = "var1"
 ) %>% 
   select(var1, sort(names(.))) %>% 
-  arrange(var1)
+  arrange(var1) %>% 
+  left_join(lbls, by = "var1") %>% 
+  select(-1) %>% 
+  select(label, everything())
+
+cell_ht_pnl <- inner_join(
+  cell_ht_w4_pnl %>% 
+    rename_with(~paste0(., "_w4"), -var1),
+  
+  cell_ht_w5_pnl %>% 
+    rename_with(~paste0(., "_w5"), -var1),
+  
+  by = "var1"
+) %>% 
+  select(var1, sort(names(.))) %>% 
+  arrange(var1) %>% 
+  left_join(lbls, by = "var1") %>% 
+  select(-1) %>% 
+  select(label, everything())
+
+write_csv(cell_ht_all, "cell_ht_all.csv")
+write_csv(cell_ht_pnl, "cell_ht_pnl.csv")
 
 
 data %>% 
@@ -195,17 +240,27 @@ data %>%
   landscape() %>% 
   save_kable("color_col.tex")
 
-cell_ht_all %>% 
-  kable(escape = F, align = "c") %>%
-  add_header_above(c(" ", "Forages" = 2, "Animal Crossbreeds" = 2, "Animal Crossbreeds II" = 2, "All others" =22)) %>%
+x <- rep(2, length(cell_ht_all$label))
+
+names(x) <- cell_ht_all$label
+
+col_hd <- rep(c("Wave 4", "Wave 5"), length(cell_ht_all$label))
+
+cell_ht_all  %>% 
+  kable(escape = F, align = "c", col.names = c("", col_hd)) %>%
+  add_header_above(c("", x)) %>%
   column_spec(seq(1, 27, by = 2), border_right = T) %>% 
-  kable_styling(full_width = FALSE) 
+  column_spec(2:28, width_min = "2cm") %>% 
+  column_spec(1, width_min = "4cm") %>% 
+  kable_styling(full_width = FALSE, fixed_thead = TRUE) 
 
-
-
-
-
-
+cell_ht_pnl  %>% 
+  kable(escape = F, align = "c", col.names = c("", col_hd)) %>%
+  add_header_above(c("", x)) %>%
+  column_spec(seq(1, 27, by = 2), border_right = T) %>% 
+  column_spec(2:28, width_min = "2cm") %>% 
+  column_spec(1, width_min = "4cm") %>% 
+  kable_styling(full_width = FALSE, fixed_thead = TRUE) 
 
 
 
