@@ -48,33 +48,44 @@ make_innov_int <- function(tbl, pw) {
   
 }
 
-make_innov_int(innov_w4, "pw_w4")
-make_innov_int(innov_w5, "pw_w5")
+int_w4_all <- make_innov_int(innov_w4, "pw_w4")
+int_w5_all <- make_innov_int(innov_w5, "pw_w5")
 
-make_innov_int(filter(innov_w4, hh_status == 3), "pw_panel")
-make_innov_int(filter(innov_w5, hh_status == 3), "pw_panel")
+int_w4_pnl <- make_innov_int(filter(innov_w4, hh_status == 3), "pw_panel")
+int_w5_pnl <- make_innov_int(filter(innov_w5, hh_status == 3), "pw_panel")
 
 
-syn_int_w4 <- innov_int_tbl %>% 
-  mutate(
-    syn_var1 = (mean_int / mean_var2) - mean_var1,
-    syn_var2 = (mean_int / mean_var1) - mean_var2
+make_syn_int <- function(tbl) {
+  
+  tbl %>% 
+    mutate(
+      syn_var1 = (mean_int / mean_var2) - mean_var1,
+      syn_var2 = (mean_int / mean_var1) - mean_var2
     ) %>% 
-  mutate(
-    clr_var1 = case_when(
-      syn_var1 >= .1                        ~ "#008B45",
-      (syn_var1 >= .01) & (syn_var1 < .1)   ~ "#90EE90",
-      syn_var1 <= -.1                       ~ "#CD0000",
-      (syn_var1 <= -.01) & (syn_var1 > -.1) ~ "#FF6A6A"
-    ),
-    
-    clr_var2 = case_when(
-      syn_var2 >= .1                        ~ "#008B45",
-      (syn_var2 >= .01) & (syn_var2 < .1)   ~ "#90EE90",
-      syn_var2 <= -.1                       ~ "#CD0000",
-      (syn_var2 <= -.01) & (syn_var2 > -.1) ~ "#FF6A6A"
+    mutate(
+      clr_var1 = case_when(
+        syn_var1 >= .1                        ~ "#008B45",
+        (syn_var1 >= .01) & (syn_var1 < .1)   ~ "#90EE90",
+        syn_var1 <= -.1                       ~ "#CD0000",
+        (syn_var1 <= -.01) & (syn_var1 > -.1) ~ "#FF6A6A"
+      ),
+      
+      clr_var2 = case_when(
+        syn_var2 >= .1                        ~ "#008B45",
+        (syn_var2 >= .01) & (syn_var2 < .1)   ~ "#90EE90",
+        syn_var2 <= -.1                       ~ "#CD0000",
+        (syn_var2 <= -.01) & (syn_var2 > -.1) ~ "#FF6A6A"
+      )
     )
-  )
+  
+}
+
+syn_w4_all <- make_syn_int(int_w4_all)
+syn_w5_all <- make_syn_int(int_w5_all)
+
+syn_w4_pnl <- make_syn_int(int_w4_pnl)
+syn_w5_pnl <- make_syn_int(int_w5_pnl)
+
 
 int_w4_var1 <- syn_int_w4 %>% 
   select(var1, var2, mean_int) %>% 
