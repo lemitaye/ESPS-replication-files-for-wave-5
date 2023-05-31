@@ -1,37 +1,58 @@
 
+# load packages -----
 library(haven)
 library(tidyverse)
 
-synergies_hh_ess4 <- read_dta("C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Country teams/Ethiopia/LSMS_W5/3_report_data/synergies_hh_ess4_new.dta")
+# read data ------
+root <- "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Country teams/Ethiopia/LSMS_W5"
 
-innovs <- c("nrm", "ca", "crop", "tree", "animal", "breed", "breed2", "psnp",
-            "psnp2", "rotlegume", "cresidue", "mintillage", "zerotill")
+synergies_hh_ess4 <- read_dta(file.path(root, "3_report_data/synergies_hh_ess4_new.dta"))
+
+synergies_hh_ess5 <- read_dta(file.path(root, "3_report_data/synergies_hh_ess5_new.dta"))
 
 
-
-innov_int_tbl <- expand_grid(var1 = innovs, var2 = innovs, .name_repair = "universal") %>% 
-  # filter(var1 != var2) %>% 
-  mutate(
-    mean_var1 = NA_real_, mean_var2 = NA_real_, mean_int = NA_real_ 
-    )
 
 innov_w4 <- synergies_hh_ess4 %>% 
   select(household_id, pw_w4, pw_panel, hh_status, all_of(innovs))
 
-for (i in 1:nrow(innov_int_tbl)) {
+innov_w5 <- synergies_hh_ess5 %>% 
+  select(household_id, pw_w5, pw_panel, hh_status, all_of(innovs))
+
+make_innov_int <- function(tbl, pw) {
   
-  x <- innov_int_tbl$var1[i]
-  y <- innov_int_tbl$var2[i]
+  innovs <- c("nrm", "ca", "crop", "tree", "animal", "breed", "breed2", "psnp",
+              "psnp2", "rotlegume", "cresidue", "mintillage", "zerotill")
   
-  m1 <- weighted.mean(innov_w4[[x]], w = innov_w4$pw_w4, na.rm = T)
-  m2 <- weighted.mean(innov_w4[[y]], w = innov_w4$pw_w4, na.rm = T)
-  m3 <- weighted.mean(innov_w4[[x]]*innov_w4[[y]], w = innov_w4$pw_w4, na.rm = T)
+  innov_int_tbl <- expand_grid(var1 = innovs, var2 = innovs, 
+                               .name_repair = "universal") %>% 
+    mutate(
+      mean_var1 = NA_real_, mean_var2 = NA_real_, mean_int = NA_real_ 
+    )
+    
+  for (i in 1:nrow(innov_int_tbl)) {
+    
+    x <- innov_int_tbl$var1[i]
+    y <- innov_int_tbl$var2[i]
+    
+    m1 <- weighted.mean(tbl[[x]], w = tbl[[pw]], na.rm = T)
+    m2 <- weighted.mean(tbl[[y]], w = tbl[[pw]], na.rm = T)
+    m3 <- weighted.mean(tbl[[x]]*tbl[[y]], w = tbl[[pw]], na.rm = T)
+    
+    innov_int_tbl$mean_var1[i] <- if_else(x!=y, m1, NA)
+    innov_int_tbl$mean_var2[i] <- if_else(x!=y, m2, NA)
+    innov_int_tbl$mean_int[i]  <- if_else(x!=y, m3, NA)
+    
+  }
   
-  innov_int_tbl$mean_var1[i] <- if_else(x!=y, m1, NA)
-  innov_int_tbl$mean_var2[i] <- if_else(x!=y, m2, NA)
-  innov_int_tbl$mean_int[i]  <- if_else(x!=y, m3, NA)
+  return(innov_int_tbl)
   
 }
+
+make_innov_int(innov_w4, "pw_w4")
+make_innov_int(innov_w5, "pw_w5")
+
+make_innov_int(filter(innov_w4, hh_status == 3), "pw_panel")
+make_innov_int(filter(innov_w5, hh_status == 3), "pw_panel")
 
 
 syn_int_w4 <- innov_int_tbl %>% 
