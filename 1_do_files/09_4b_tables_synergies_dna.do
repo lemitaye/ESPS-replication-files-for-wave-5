@@ -213,7 +213,8 @@ xml_tab C, save("$table/09_4_ess4_synergies_dna.xml") append sheet("HH_DNA_w4_pa
     title("Table: ESS4 - Joint adoption rates and synergies, maize DNA germplasm (only panel DNA sample)") ///
     $options2
 
-
+* save -----------
+save "${data}/synergies_dna_hh_ess4.dta", replace
 
 
 

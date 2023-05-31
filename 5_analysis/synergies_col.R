@@ -8,20 +8,37 @@ root <- "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Co
 
 synergies_hh_ess4 <- read_dta(file.path(root, "3_report_data/synergies_hh_ess4_new.dta"))
 
+synergies_dna_ess4 <- read_dta(file.path(root, "3_report_data/synergies_dna_hh_ess4.dta"))
+
+
 synergies_hh_ess5 <- read_dta(file.path(root, "3_report_data/synergies_hh_ess5_new.dta"))
 
+synergies_dna_ess5 <- read_dta(file.path(root, "3_report_data/synergies_dna_hh_ess5.dta"))
 
 
-innov_w4 <- synergies_hh_ess4 %>% 
-  select(household_id, pw_w4, pw_panel, hh_status, all_of(innovs))
 
-innov_w5 <- synergies_hh_ess5 %>% 
-  select(household_id, pw_w5, pw_panel, hh_status, all_of(innovs))
+
+innovs <- c("nrm", "ca", "crop", "tree", "animal", "breed", "breed2", "psnp",
+            "psnp2", "rotlegume", "cresidue", "mintillage", "zerotill", "maize")
+
+
+innov_w4 <- inner_join(
+  synergies_hh_ess4 %>% 
+    select(household_id, pw_w4, pw_panel, hh_status, all_of(innovs[-which(innovs=="maize")])),
+  synergies_dna_ess4 %>% 
+    select(household_id, hh_status_dna, maize),
+  by = "household_id"
+)
+
+innov_w5 <- inner_join(
+  synergies_hh_ess5 %>% 
+    select(household_id, pw_w5, pw_panel, hh_status, all_of(innovs[-which(innovs=="maize")])),
+  synergies_dna_ess5 %>% 
+    select(household_id, hh_status_dna, maize),
+  by = "household_id"
+)
 
 make_innov_int <- function(tbl, pw) {
-  
-  innovs <- c("nrm", "ca", "crop", "tree", "animal", "breed", "breed2", "psnp",
-              "psnp2", "rotlegume", "cresidue", "mintillage", "zerotill")
   
   innov_int_tbl <- expand_grid(var1 = innovs, var2 = innovs, 
                                .name_repair = "universal") %>% 
@@ -51,8 +68,19 @@ make_innov_int <- function(tbl, pw) {
 int_w4_all <- make_innov_int(innov_w4, "pw_w4")
 int_w5_all <- make_innov_int(innov_w5, "pw_w5")
 
-int_w4_pnl <- make_innov_int(filter(innov_w4, hh_status == 3), "pw_panel")
-int_w5_pnl <- make_innov_int(filter(innov_w5, hh_status == 3), "pw_panel")
+int_w4_pnl <- bind_rows(
+  make_innov_int(filter(innov_w4, hh_status == 3), "pw_panel"),
+  make_innov_int(filter(innov_w4, hh_status_dna == 3), "pw_panel") %>% 
+    filter(var1 == "maize" | var2 == "maize")
+)
+
+int_w5_pnl <- bind_rows(
+  make_innov_int(filter(innov_w5, hh_status == 3), "pw_panel"),
+  make_innov_int(filter(innov_w5, hh_status_dna == 3), "pw_panel") %>% 
+    filter(var1 == "maize" | var2 == "maize")
+)
+
+
 
 
 make_syn_int <- function(tbl) {
@@ -142,11 +170,23 @@ cell_spec_tbl <- function(tbl) {
   
 }
 
-cell_spec_tbl(syn_w4_all)
-cell_spec_tbl(syn_w5_all)
+cell_ht_w4_all <- cell_spec_tbl(syn_w4_all)$html
+cell_ht_w5_all <- cell_spec_tbl(syn_w5_all)$html
 
 cell_spec_tbl(syn_w4_pnl)
 cell_spec_tbl(syn_w5_pnl)
+
+cell_ht_all <- inner_join(
+  cell_ht_w4_all %>% 
+    rename_with(~paste0(., "_w4"), -var1),
+  
+  cell_ht_w5_all %>% 
+    rename_with(~paste0(., "_w5"), -var1),
+  
+  by = "var1"
+) %>% 
+  select(var1, sort(names(.))) %>% 
+  arrange(var1)
 
 
 data %>% 
@@ -155,8 +195,10 @@ data %>%
   landscape() %>% 
   save_kable("color_col.tex")
 
-cell_spec_tbl(syn_w4_all)$html %>% 
+cell_ht_all %>% 
   kable(escape = F, align = "c") %>%
+  add_header_above(c(" ", "Forages" = 2, "Animal Crossbreeds" = 2, "Animal Crossbreeds II" = 2, "All others" =22)) %>%
+  column_spec(seq(1, 27, by = 2), border_right = T) %>% 
   kable_styling(full_width = FALSE) 
 
 
