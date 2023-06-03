@@ -126,3 +126,71 @@ drop _merge
 
 save "${tmp}/dynamics/06_1_track_ea_dropped.dta", replace
 
+
+* Tracking file for all households (from household roster)
+
+use "${supp}/replication_files/2_raw_data/ESS4_2018-19/Data/sect_cover_hh_w4.dta", clear
+
+*duplicates drop household_id, force
+keep household_id ea_id saq14 saq01 pw_w4
+rename saq14 locality_w4
+rename saq01 region_w4
+gen wave4=1
+
+save "${tmp}/dynamics/cover_hh_w4.dta", replace
+
+* using this until hh cover data is available for ESS5
+use "${rawdata}/HH/ESS5_weights_hh.dta", clear
+
+*duplicates drop household_id, force
+keep household_id ea_id region rururb pw_w5 pw_panel
+rename rururb locality_w5
+rename region region_w5
+gen wave5=1
+
+save "${tmp}/dynamics/cover_hh_w5.dta", replace
+
+
+merge 1:1 household_id using "${tmp}/dynamics/cover_hh_w4.dta", force
+
+rename _merge hh_status
+
+label var hh_status "Household panel status"
+
+label define _merge 1 "1. Newly added in ESPS5", modify
+label define _merge 2 "2. Dropped in ESPS5", modify
+label define _merge 3 "3. Matched ", modify
+
+* harmonize region and locality:
+* region
+tab region_w4 region_w5    // to check no change in region
+
+decode region_w4, generate(region)
+replace region = proper(region) if region!="SNNP"
+
+replace region_w5 = "Benishangul Gumuz" if region_w5 == "Benishangul-gumuz"
+replace region_w5 = "Dire Dawa"         if region_w5 == "Diredawa"
+replace region_w5 = "Gambela"           if region_w5 == "Gambella"
+replace region_w5 = "Harar"             if region_w5 == "Hareri"
+replace region_w5 = "SNNP"              if region_w5 == "SNNPR"
+replace region_w5 = "Somali"            if region_w5 == "Somalia"
+
+replace region = region_w5 if missing(region)
+
+* locality
+tab locality_w4 locality_w5    // to check no change in locality
+
+decode locality_w4, generate(locality)
+replace locality = proper(locality) 
+
+replace locality = locality_w5 if missing(locality)
+
+// drop
+drop region_w5 locality_w5 locality_w4 region_w4
+
+for var wave5 wave4: replace X=0 if missing(X)
+
+order household_id ea_id region locality wave4 wave5 hh_status pw_w4 pw_w5 pw_panel
+
+
+save "${tmp}/dynamics/06_1_track_hh.dta", replace
