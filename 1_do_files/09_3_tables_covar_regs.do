@@ -34,7 +34,7 @@ drop _merge
 for var cs4q15 cs4q53: replace X=0 if X==.
 
 // merge with tracking file to id panel hhs:
-merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh.dta", keepusing(hh_status)
+merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh_pp.dta", keepusing(hh_status)
 keep if _merge==1 | _merge==3
 drop _merge
 
@@ -53,6 +53,7 @@ rename nom_totcons_aeq nmtotcons
 global hhcov      
 hhd_flab flivman parcesizeHA asset_index pssetindex income_offfarm total_cons_ann 
 totconswin nmtotcons consq1 consq2 adulteq age_head cs4q01_11 cs4q15 cs4q53
+dist_road dist_market dist_popcenter
 ;
 #delimit cr
 
@@ -224,7 +225,7 @@ variable on the row variable.");
 use "${dataw4}/ess4_pp_cov_new.dta", clear
 
 // merge with tracking file to id panel hhs:
-merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh.dta", keepusing(hh_status)
+merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh_pp.dta", keepusing(hh_status)
 keep if _merge==1 | _merge==3
 drop _merge
 

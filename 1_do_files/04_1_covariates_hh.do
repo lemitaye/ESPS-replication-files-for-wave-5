@@ -215,6 +215,14 @@ drop if _m==2
 drop _m
 */
 
+* adding geo-spatial covariates at hh level (NEW)
+use "${rawdata}/HH/Pub_ETH_HouseholdGeovariables_Y5.dta", clear
+
+// retaining variables that Karen is interested in
+keep household_id dist_road dist_market dist_popcenter h2021_tot af_bio_12_x wetQ_avg af_bio_16_x
+
+
+save "${tmp}/covariates/geo_hh.dta", replace
 
 * Merging ----------------------------------------------------------------------
 
@@ -232,6 +240,10 @@ merge 1:1 household_id using "${tmp}/covariates/hh_income_off.dta"
 drop _merge
 
 merge 1:1 household_id using "${tmp}/covariates/cons_agg.dta"
+drop _merge
+
+merge 1:1 household_id using "${tmp}/covariates/geo_hh.dta"
+keep if _merge==1 | _merge==3
 drop _merge
 
 

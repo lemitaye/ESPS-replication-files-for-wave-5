@@ -16,7 +16,7 @@
 use "${tmp}/covariates/04_2_covars_hh_pp.dta", clear
 
 // merge with tracking file to id panel hhs:
-merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh.dta", keepusing(hh_status)
+merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh_pp.dta", keepusing(hh_status)
 keep if _merge==1 | _merge==3
 drop _merge
 
@@ -24,7 +24,7 @@ drop _merge
 #delimit;
 global hhcov5   
 parcesizeHA fem_head fowner flivman hhd_flab age_head nom_totcons_aeq consq1 
-consq2 asset_index pssetindex income_offfarm
+consq2 asset_index pssetindex income_offfarm dist_road dist_market dist_popcenter
 ;
 #delimit cr
 
@@ -156,7 +156,7 @@ xml_tab C,  save("$table/09_2_ess5_covar_dstats.xml") append sheet("Table13_EA_p
 use "${dataw4}/ess4_pp_cov_new.dta", clear
 
 // merge to id panel hhs:
-merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh.dta", keepusing(hh_status)
+merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh_pp.dta", keepusing(hh_status)
 keep if _merge==1 | _merge==3
 drop _merge
 
