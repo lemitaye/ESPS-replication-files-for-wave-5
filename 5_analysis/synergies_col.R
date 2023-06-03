@@ -18,8 +18,8 @@ synergies_dna_ess5 <- read_dta(file.path(root, "3_report_data/synergies_dna_hh_e
 
 
 
-innovs <- c("nrm", "ca", "crop", "tree", "animal", "breed", "breed2", "psnp",
-            "psnp2", "rotlegume", "cresidue", "mintillage", "zerotill", "maize")
+innovs <- c("nrm", "ca", "tree", "animal", "breed",
+            "psnp2", "maize")
 
 
 innov_w4 <- inner_join(
@@ -240,25 +240,34 @@ data %>%
   landscape() %>% 
   save_kable("color_col.tex")
 
-x <- rep(2, length(cell_ht_all$label))
+
+col_n <- length(cell_ht_all$label)
+
+row_n <- length(colnames(cell_ht_all))
+
+x <- rep(2, col_n)
 
 names(x) <- cell_ht_all$label
 
 col_hd <- rep(c("Wave 4", "Wave 5"), length(cell_ht_all$label))
 
 cell_ht_all  %>% 
-  kable(escape = F, align = "c", col.names = c("", col_hd)) %>%
+  kable(
+    escape = F, align = "c", col.names = c("", col_hd),
+    caption = "Summary matrix of joint adoption rates, 2018/19 vs. 2021/22 --- All households"
+    ) %>%
   add_header_above(c("", x)) %>%
-  column_spec(seq(1, 27, by = 2), border_right = T) %>% 
-  column_spec(2:28, width_min = "2cm") %>% 
+  column_spec(seq(1, row_n, by = 2), border_right = T) %>% 
+  column_spec(2:row_n, width_min = "2cm", width = "2cm") %>% 
   column_spec(1, width_min = "4cm") %>% 
   kable_styling(full_width = FALSE, fixed_thead = TRUE) 
 
 cell_ht_pnl  %>% 
-  kable(escape = F, align = "c", col.names = c("", col_hd)) %>%
+  kable(escape = F, align = "c", col.names = c("", col_hd),
+        caption = "Summary matrix of joint adoption rates, 2018/19 vs. 2021/22 --- Panel households") %>%
   add_header_above(c("", x)) %>%
-  column_spec(seq(1, 27, by = 2), border_right = T) %>% 
-  column_spec(2:28, width_min = "2cm") %>% 
+  column_spec(seq(1, row_n, by = 2), border_right = T) %>% 
+  column_spec(2:row_n, width_min = "2cm", width = "2cm") %>% 
   column_spec(1, width_min = "4cm") %>% 
   kable_styling(full_width = FALSE, fixed_thead = TRUE) 
 
