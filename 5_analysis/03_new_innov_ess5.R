@@ -1324,7 +1324,7 @@ sect11_hh_w5 <- read_dta(file.path(root, "2_raw_data/data/HH", "sect11_hh_w5.dta
 sect11_hh_w4 <- read_dta(file.path(root, "supplemental/replication_files/2_raw_data/ESS4_2018-19/Data", 
                                    "sect11_hh_w4.dta"))
 
-track_hh <- read_dta(file.path(root, "tmp/dynamics/06_1_track_hh.dta"))
+track_hh <- read_dta(file.path(root, "tmp/dynamics/06_1_track_hh_pp.dta"))
 
 tab_path <- "C:/Users/l.daba/SPIA Dropbox/Lemi Daba/Apps/Overleaf/ESS_adoption_matrices/tables"
 
