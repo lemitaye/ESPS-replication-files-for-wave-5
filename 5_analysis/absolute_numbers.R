@@ -3,7 +3,7 @@
 library(haven)
 library(kableExtra)
 library(fuzzyjoin)
-
+library(openxlsx)
 
 root <- "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Country teams/Ethiopia/LSMS_W5"
 
@@ -125,6 +125,84 @@ ess5_all <- adopt_rates_all_hh %>%
   filter(region != "National") %>% 
   select(region, label, mean, abs_num) %>% 
   arrange(region, label)
+
+
+df <- ess4_all %>% 
+  rename(num = abs_num) %>% 
+  mutate(mean = round(mean, 3), num = round(num)) %>% 
+  pivot_wider(
+    names_from = region,
+    names_glue = "{region}_{.value}",
+    values_from = c(mean, num)
+  ) %>% 
+  select(label, sort(colnames(.))) 
+
+region_nm <- str_remove(colnames(df)[-1], "_mean|_num") %>% 
+  as_tibble() %>% 
+  mutate(name = paste0("X", 1:nrow(.))) %>% 
+  pivot_wider(names_from = name, values_from = value)
+
+col_hd <- rep(c("Mean", "No. of hhs"), (ncol(df)-1)/2) %>% 
+  as_tibble() %>% 
+  mutate(name = paste0("X", 1:nrow(.))) %>% 
+  pivot_wider(names_from = name, values_from = value)
+
+
+# Create a workbook
+wb <- createWorkbook()
+
+# Add a worksheet
+addWorksheet(wb, "Data")
+
+# Write the region names
+writeData(wb, "Data", region_nm, startCol = 2, startRow = 2, colNames = FALSE)
+
+
+# Set the column names with merged cells
+for (i in seq(2, ncol(region_nm), by = 2)) {
+  x <- c(i, i+1)
+  mergeCells(wb, "Data", cols = x, rows = 2)
+}
+
+# write column headers
+writeData(wb, "Data", col_hd, startCol = 2, startRow = 3, colNames = FALSE)
+
+# write data 
+writeData(wb, "Data", df, startCol = 1, startRow = 4, colNames = FALSE)
+
+# Save the workbook as an Excel file
+saveWorkbook(wb, "output.xlsx", overwrite = TRUE)
+
+
+
+library(openxlsx)
+write.xlsx(iris, file = "writeXLSX1.xlsx", startCol = 2, startRow = 2)
+write.xlsx(iris, file = "writeXLSXTable1.xlsx", asTable = TRUE)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
