@@ -30,7 +30,36 @@ replace hhd_beansall=0 if hhd_impcr9==0 & hhd_impcr12==0 & hhd_impcr13==0 & hhd_
 replace hhd_beansall=1 if hhd_impcr9==1 |hhd_impcr12==1 |hhd_impcr13==1 |hhd_impcr18==1 |hhd_impcr19==0
 label variable hhd_beansall "Improved BEANS: Mung, Haricot, Horse, Soya, or Red Kidney"
 
-for var hh_ea-hhd_psnp: rename X X_w4
+// Add direct assistance PSNP for wave 4
+preserve
+    use "${raw4}/sect14_hh_w4.dta", clear
+
+    keep if assistance_cd==1
+
+    gen hhd_psnp_dir=.
+    replace hhd_psnp_dir=0 if s14q01==2
+    replace hhd_psnp_dir=1 if s14q01==1
+
+    keep household_id hhd_psnp_dir
+    label var hhd_psnp_dir "Direct support through PSNP"
+
+    tempfile psnp_direct
+    save `psnp_direct'
+restore
+
+merge 1:1 household_id using `psnp_direct'
+keep if _merge==1 | _merge==3
+drop _merge
+
+generate hhd_psnp_any=.
+replace hhd_psnp_any=0 if hhd_psnp==0 & hhd_psnp_dir==0
+replace hhd_psnp_any=1 if hhd_psnp==1 | hhd_psnp_dir==1
+
+label var hhd_psnp_any   "At least 1 member benefits from PSNP - Either"
+label var hhd_psnp       "At least 1 member benefits from PSNP - Temporary labor"
+
+
+for var hh_ea-hhd_psnp_any: rename X X_w4
 
 preserve
     use "${data}/wave5_hh_new.dta", clear
@@ -138,22 +167,22 @@ drop _merge
 global hhinnov     
     hhd_ofsp hhd_awassa83 hhd_rdisp hhd_motorpump hhd_swc hhd_consag1 hhd_consag2 
     hhd_affor hhd_mango hhd_papaya hhd_avocado hhd_fruitrees hhd_livIA hhd_crlr 
-    hhd_crsr hhd_crpo hhd_elepgrass hhd_grass hhd_psnp cg correct
+    hhd_crsr hhd_crpo hhd_elepgrass hhd_grass hhd_psnp hhd_psnp_any cg correct
     hhd_impcr1 hhd_impcr2 hhd_impcr6 hhd_impcr8 hhd_beansall
     hhd_impcr10 hhd_impcr11 hhd_impcr24 hhd_impcr14 hhd_impcr3 hhd_impcr5 
 ;
 #delimit cr
 
 // Adoption matrices:
-label define Yes_no 1 "Yes" 0 "No"
+label define Yes_no 1 "Yes" 0 "No", replace
 
 foreach var in $hhinnov {
-    label values `var'_* Yes_no
+    label values `var'_w? Yes_no
     
     local lbl : variable label `var'_w4
 
     est clear
-    estpost tab `var'_*
+    estpost tab `var'_w4 `var'_w5
 
     esttab . using "${tmp}/dynamics/tables/05_2_adoption_matrix_`var'.tex", replace ///
         cell(b pct(fmt(2) par) par) unstack noobs nonumber mtitle("Wave 5") ///
@@ -187,7 +216,7 @@ rename  total_cons_ann_win totconswin
 #delimit;
 global hhcovar   
     parcesizeHA fem_head fowner flivman hhd_flab age_head yrseduc nmtotcons  
-    consq1 consq2 asset_index pssetindex incofffarm
+    consq1 consq2 asset_index pssetindex incofffarm dist_road dist_market dist_popcenter
 ;
 #delimit cr
 
