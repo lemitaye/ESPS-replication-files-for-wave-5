@@ -14,7 +14,7 @@
 
 use "${data}/wave5_hh_new.dta", clear
 
-merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh.dta", keepusing(hh_status)
+merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh_pp.dta", keepusing(hh_status)
 keep if _merge==1 | _merge==3
 drop _merge
 
@@ -212,7 +212,7 @@ notes("Point estimates are wegihted sample means.")
 use "${dataw4}/wave4_hh_new.dta", clear
 
 // merge to id panel hhs:
-merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh.dta", keepusing(hh_status)
+merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh_pp.dta", keepusing(hh_status)
 keep if _merge==1 | _merge==3
 drop _merge
 
