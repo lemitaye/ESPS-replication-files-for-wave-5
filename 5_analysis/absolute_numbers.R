@@ -113,7 +113,7 @@ ess4_pnl <- adopt_rates_all_hh %>%
   filter(wave=="Wave 4") %>% 
   left_join(pop_rur_pnl, by = "region") %>% 
   mutate(abs_num = mean * pop_w5_panel) %>% 
-  filter(region != "National") %>% 
+  filter(!region %in% c("Tigray", "National")) %>% 
   select(region, label, mean, abs_num) %>% 
   arrange(region, label)
 
@@ -164,95 +164,93 @@ make_sheet(ess4_all)
 make_sheet(ess4_pnl)
 make_sheet(ess5_all)$df
 
-l <- list(make_sheet(ess4_all)$df, make_sheet(ess4_pnl)$df, make_sheet(ess5_all)$df)
-wb <- write.xlsx(l, file = "writeXLSX2.xlsx", startCol = 1, startRow = 4)
+df_lst <- list(
+  "ESS4 - all" = make_sheet(ess4_all)$df, 
+  "ESS4 - panel" = make_sheet(ess4_pnl)$df, 
+  "ESS5 - all" = make_sheet(ess5_all)$df
+  )
+
+reg_lst <- list(
+  make_sheet(ess4_all)$region_nm, 
+  make_sheet(ess4_pnl)$region_nm, 
+  make_sheet(ess5_all)$region_nm
+)
+
+col_lst <- list(
+  make_sheet(ess4_all)$col_hd, 
+  make_sheet(ess4_pnl)$col_hd, 
+  make_sheet(ess5_all)$col_hd
+)
+
+# Population frame:
+pop_frm <- reduce(list(pop_rur_w4_all, pop_rur_w5_all, pop_rur_pnl), left_join, by = "region") %>% 
+  rename("Region" = region, "Wave 4 weight" = pop_w4_all, 
+         "Wave 5 weight" = pop_w5_all, "Panel weight" = pop_w5_panel) %>% 
+  mutate_if(is.numeric, ~round(.))
 
 
-# Create a workbook
+# create a workbook
 wb <- createWorkbook()
 
+# set global options
 options(openxlsx.borderColour = "#4F80BD")
 options(openxlsx.borderStyle = "thin")
 modifyBaseFont(wb, fontSize = 10, fontName = "Times New Roman")
 
 # Add a worksheet
-addWorksheet(wb, "Data")
-
-# Write the region names
-writeData(wb, "Data", region_nm, startCol = 2, startRow = 2, colNames = FALSE)
-
-
-# Set the column names with merged cells
-for (i in seq(2, ncol(region_nm), by = 2)) {
-  x <- c(i, i+1)
-  mergeCells(wb, "Data", cols = x, rows = 2)
-}
-
-# write column headers
-writeData(wb, "Data", col_hd, startCol = 2, startRow = 3, colNames = FALSE)
+addWorksheet(wb, "Population Frame") 
 
 # write data 
-writeData(wb, "Data", df, startCol = 1, startRow = 4, colNames = FALSE)
+writeData(wb, sheet = "Population Frame", pop_frm, startCol = 2, startRow = 4)
 
-# width
-setColWidths(wb, sheet = 1, cols = 1, widths = 30)
 
-# styles (fine-tuning)
-addStyle(
-  wb, sheet = 1, 
-  cols = 2:ncol(df), 
-  rows = 2,
-  style = createStyle(textDecoration = "bold"),
-  gridExpand = TRUE
-)
-
-addStyle(
-  wb, sheet = 1, cols = 2:ncol(df), 
-  rows = 2:31,
-  style = createStyle(halign = "center"),
-  gridExpand = TRUE
+for (i in seq_along(df_lst)) {
+  
+  # Add a worksheet
+  addWorksheet(wb, names(df_lst)[[i]] ) 
+  
+  # write data 
+  writeData(wb, sheet = names(df_lst)[[i]], df_lst[[i]], startCol = 1, startRow = 4, colNames = FALSE)
+  
+  # Write the region names
+  writeData(wb, sheet = names(df_lst)[[i]], reg_lst[[i]], startCol = 2, startRow = 2, colNames = FALSE)
+  
+  # write column headers
+  writeData(wb, sheet = names(df_lst)[[i]], col_lst[[i]], startCol = 2, startRow = 3, colNames = FALSE)
+  
+  # column width
+  setColWidths(wb, sheet = names(df_lst)[[i]], cols = 1, widths = 30)
+  
+  # freeze panes
+  freezePane(wb, sheet = names(df_lst)[[i]], firstActiveRow = 4, firstActiveCol = 2) 
+  
+  # styles (fine-tuning)
+  addStyle(
+    wb, sheet = names(df_lst)[[i]], cols = 2:ncol(df_lst[[i]]), rows = 2,
+    style = createStyle(textDecoration = "bold"), gridExpand = TRUE
   )
+  
+  addStyle(
+    wb, sheet = names(df_lst)[[i]], cols = 2:ncol(df_lst[[i]]), rows = 2:31,
+    style = createStyle(halign = "center"), gridExpand = TRUE
+  )
+  
+}
+
+# Set the column names with merged cells
+for (i in seq_along(df_lst)) {
+  
+  for (j in seq(2, ncol(reg_lst[[i]]), by = 2)) {
+    x <- c(j, j+1)
+    mergeCells(wb, sheet = names(df_lst)[[i]], cols = x, rows = 2)
+  }
+  
+}
 
 # Save the workbook as an Excel file
-saveWorkbook(wb, "output.xlsx", overwrite = TRUE)
+saveWorkbook(wb, "writeXLSX2.xlsx", overwrite = TRUE)
 
-
-
-library(openxlsx)
-write.xlsx(iris, file = "writeXLSX1.xlsx", startCol = 2, startRow = 2)
-write.xlsx(iris, file = "writeXLSXTable1.xlsx", asTable = TRUE)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+openXL("writeXLSX2.xlsx")
 
 
 
