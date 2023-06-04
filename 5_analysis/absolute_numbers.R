@@ -127,29 +127,53 @@ ess5_all <- adopt_rates_all_hh %>%
   arrange(region, label)
 
 
-df <- ess4_all %>% 
-  rename(num = abs_num) %>% 
-  mutate(mean = round(mean, 3), num = round(num)) %>% 
-  pivot_wider(
-    names_from = region,
-    names_glue = "{region}_{.value}",
-    values_from = c(mean, num)
-  ) %>% 
-  select(label, sort(colnames(.))) 
+make_sheet <- function(tbl) {
+  
+  df <- tbl %>% 
+    rename(num = abs_num) %>% 
+    mutate(mean = round(mean, 3), num = round(num)) %>% 
+    pivot_wider(
+      names_from = region,
+      names_glue = "{region}_{.value}",
+      values_from = c(mean, num)
+    ) %>% 
+    select(label, sort(colnames(.))) 
+  
+  # Find the column indices that end with "_num"
+  num_cols <- grep("_num$", names(df))
+  
+  # Create a new column that is the sum of the selected columns
+  df$Total <- rowSums(df[, num_cols])
+  
+  
+  region_nm <- str_remove(colnames(df)[-1], "_mean|_num") %>% 
+    as_tibble() %>% 
+    mutate(name = paste0("X", 1:nrow(.))) %>% 
+    pivot_wider(names_from = name, values_from = value)
+  
+  col_hd <- rep(c("Mean", "No. of hhs"), (ncol(df)-1)/2) %>% 
+    as_tibble() %>% 
+    mutate(name = paste0("X", 1:nrow(.))) %>% 
+    pivot_wider(names_from = name, values_from = value)
+  
+  return(list(df = df, region_nm = region_nm, col_hd = col_hd))
+  
+}
 
-region_nm <- str_remove(colnames(df)[-1], "_mean|_num") %>% 
-  as_tibble() %>% 
-  mutate(name = paste0("X", 1:nrow(.))) %>% 
-  pivot_wider(names_from = name, values_from = value)
+make_sheet(ess4_all)
+make_sheet(ess4_pnl)
+make_sheet(ess5_all)$df
 
-col_hd <- rep(c("Mean", "No. of hhs"), (ncol(df)-1)/2) %>% 
-  as_tibble() %>% 
-  mutate(name = paste0("X", 1:nrow(.))) %>% 
-  pivot_wider(names_from = name, values_from = value)
+l <- list(make_sheet(ess4_all)$df, make_sheet(ess4_pnl)$df, make_sheet(ess5_all)$df)
+wb <- write.xlsx(l, file = "writeXLSX2.xlsx", startCol = 1, startRow = 4)
 
 
 # Create a workbook
 wb <- createWorkbook()
+
+options(openxlsx.borderColour = "#4F80BD")
+options(openxlsx.borderStyle = "thin")
+modifyBaseFont(wb, fontSize = 10, fontName = "Times New Roman")
 
 # Add a worksheet
 addWorksheet(wb, "Data")
@@ -169,6 +193,25 @@ writeData(wb, "Data", col_hd, startCol = 2, startRow = 3, colNames = FALSE)
 
 # write data 
 writeData(wb, "Data", df, startCol = 1, startRow = 4, colNames = FALSE)
+
+# width
+setColWidths(wb, sheet = 1, cols = 1, widths = 30)
+
+# styles (fine-tuning)
+addStyle(
+  wb, sheet = 1, 
+  cols = 2:ncol(df), 
+  rows = 2,
+  style = createStyle(textDecoration = "bold"),
+  gridExpand = TRUE
+)
+
+addStyle(
+  wb, sheet = 1, cols = 2:ncol(df), 
+  rows = 2:31,
+  style = createStyle(halign = "center"),
+  gridExpand = TRUE
+  )
 
 # Save the workbook as an Excel file
 saveWorkbook(wb, "output.xlsx", overwrite = TRUE)
