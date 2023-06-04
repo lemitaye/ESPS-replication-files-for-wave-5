@@ -791,7 +791,13 @@ psnp_hh <- bind_rows(
   psnp_panel_local %>% 
     mutate(sample = "Panel")
 ) %>% 
-  mutate(label = "PSNP (Direct support + Temporary labor)")
+  mutate(
+    label = case_when(
+      variable == "hhd_psnp"     ~ "PSNP (Temporary labor)",
+      variable == "hhd_psnp_dir" ~ "PSNP (Direct support)",
+      variable == "hhd_psnp_any" ~ "PSNP (Direct support + Temporary labor)"
+    )
+    )
 
 write_csv(psnp_hh, file = "dynamics_presentation/data/psnp_hh.csv")
 

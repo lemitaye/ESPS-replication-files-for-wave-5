@@ -22,42 +22,8 @@ ess4_hh_all <- read_dta(file.path(root, "tmp/dynamics/ess4_hh_all.dta"))
 
 ess4_hh_psnp <- read_dta(file.path(root, w4_dir, "ess4_hh_psnp.dta"))
 
-
-# some cleaning ----
-wave4_hh_new <- wave4_hh %>% 
-  rename(hhd_sesbaniya = hhd_sasbaniya, hhd_alfalfa = hhd_alfa) %>% 
-  mutate(hhd_grass = case_when(
-    hhd_elepgrass==100 | hhd_sesbaniya==100 | hhd_alfalfa==100 ~ 1,
-    hhd_elepgrass==0 & hhd_sesbaniya==0 & hhd_alfalfa==0 ~ 0 
-  )) %>% 
-  left_join(select(ess4_hh_psnp, household_id, hhd_psnp), by = "household_id")
-
-wave5_hh_new <- wave5_hh %>% 
-  mutate(hhd_grass = case_when(
-    hhd_elepgrass==1 | hhd_sesbaniya==1 | hhd_alfalfa==1 ~ 1,
-    hhd_elepgrass==0 & hhd_sesbaniya==0 & hhd_alfalfa==0 ~ 0 
-  )) 
-
-
-vars_all <- c(
-  "hhd_ofsp", "hhd_awassa83", "hhd_kabuli", "hhd_desi", "hhd_rdisp", "hhd_motorpump", 
-  "hhd_swc", "hhd_consag1", "hhd_consag2", "hhd_affor", "hhd_mango", 
-  "hhd_papaya", "hhd_avocado", "hotline", "hhd_malt", "hhd_durum", 
-  "hhd_seedv1", "hhd_seedv2", "hhd_livIA", "hhd_livIA_publ", 
-  "hhd_livIA_priv", "hhd_grass", "hhd_elepgrass", "hhd_sesbaniya", "hhd_alfalfa",
-  "hhd_mintillage", "hhd_zerotill", "hhd_cresidue2", "hhd_rotlegume", "hhd_psnp", 
-  "hhd_impcr1", "hhd_impcr2", "hhd_impcr6", "hhd_impcr8"
-)
-
-
-vars_both <- wave4_hh_new %>% 
-  select(any_of(vars_all)) %>% 
-  colnames()
-
-vars_w5 <- setdiff(vars_all, vars_both)
-
-vars_urban_hhs <- c("hhd_cross_largerum", "hhd_cross_smallrum", "hhd_cross_poultry")
-
+# psnp data (generated in 03_new_innov_ess5.R)
+psnp_hh <- read_csv("dynamics_presentation/data/psnp_hh.csv")
 
 
 recode_region <- function(tbl) {
@@ -83,17 +49,112 @@ recode_region <- function(tbl) {
   
 }
 
+# some cleaning ----
+
+innovs <- c(
+  "hhd_livIA", "hhd_cross_largerum", "hhd_cross_smallrum", "hhd_cross_poultry", 
+  "hhd_gaya", "hhd_sasbaniya", "hhd_alfa", "hhd_elepgrass",
+  "hhd_grass", "hhd_ofsp", "hhd_awassa83", "hhd_rdisp", "hhd_motorpump", "hhd_swc", 
+  "hhd_consag1", "hhd_consag2", "hhd_affor", "hhd_mango", "hhd_papaya", "hhd_avocado",
+  "qpm", "dtmz", "maize_cg", "barley_cg", "sorghum_cg"
+)
+
 
 # ALL HOUSEHOLDS ----
 
-hh_level_w4 <- wave4_hh_new %>% 
-  select(household_id, ea_id, wave, region = saq01, pw_w4, all_of(vars_both)) %>% 
+hh_level_w4 <- ess4_hh_all %>% 
+  select(
+    household_id, ea_id, wave, region = saq01, starts_with("pw_"), all_of(innovs)
+    ) %>% 
   mutate(
     across(
-      c(all_of(vars_both)), ~recode(., `100` = 1))  # since w4 vars are mult. by 100
+      c(all_of(innovs)), ~recode(., `100` = 1))  # since w4 vars are mult. by 100
   ) %>% 
   recode_region()
 
-hh_level_w5 <- wave5_hh_new %>% 
-  select(household_id, ea_id, wave, region = saq01, pw_w5, pw_panel, all_of(vars_both)) %>% 
-  recode_region()
+
+# calculate means
+mean_tbl <- function(tbl, vars, group_vars, pw) {
+  
+  tbl %>% 
+    pivot_longer(all_of(vars), 
+                 names_to = "variable",
+                 values_to = "value") %>% 
+    group_by(pick(group_vars)) %>% 
+    summarise(
+      mean = weighted.mean(value, w = {{pw}}, na.rm = TRUE),
+      nobs = sum(!is.na(value)),
+      .groups = "drop"
+    )
+  
+}
+
+national_hh_level <- bind_rows(
+  mean_tbl(hh_level_w4, innovs, group_vars = c("wave", "variable"), pw = pw_w4)
+) %>% 
+  mutate(wave = paste("Wave", wave))
+
+regions_hh_level <- bind_rows(
+  mean_tbl(hh_level_w4, innovs, group_vars = c("wave", "variable", "region"), pw = pw_w4)
+) %>% 
+  mutate(wave = paste("Wave", wave)) 
+
+
+# 
+labs <- ess4_hh_all %>% 
+  select(all_of(innovs)) %>% 
+  var_label() %>% 
+  as_tibble() %>% 
+  pivot_longer(
+    cols = everything(), 
+    names_to = "variable", 
+    values_to = "label"
+  )
+
+# modify PSNP
+psnp_w4 <- psnp_hh %>% 
+  filter(
+    wave == "Wave 4", locality == "Aggregate",
+    sample == "All", region != "Addis Ababa"
+  ) %>% 
+  select(wave, variable, region, mean, nobs, label)
+
+adopt_rates_w4_hh <- bind_rows(
+  regions_hh_level, 
+  national_hh_level %>% 
+    mutate(region = "National")
+)  %>% 
+  left_join(labs, by = "variable") %>% 
+  select(wave, region, variable, label, mean, nobs) %>% 
+  bind_rows(psnp_w4)
+
+write_csv(adopt_rates_w4_hh, file = "dynamics_presentation/data/adopt_rates_w4_hh.csv")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
