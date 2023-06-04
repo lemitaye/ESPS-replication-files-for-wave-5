@@ -226,11 +226,6 @@ for (i in seq_along(df_lst)) {
   
   # styles (fine-tuning)
   addStyle(
-    wb, sheet = names(df_lst)[[i]], cols = 2:ncol(df_lst[[i]]), rows = 2,
-    style = createStyle(textDecoration = "bold"), gridExpand = TRUE
-  )
-  
-  addStyle(
     wb, sheet = names(df_lst)[[i]], cols = 2:ncol(df_lst[[i]]), rows = 2:31,
     style = createStyle(halign = "center"), gridExpand = TRUE
   )
