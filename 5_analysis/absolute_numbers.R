@@ -18,6 +18,8 @@ tabpath <- "C:/Users/l.daba/SPIA Dropbox/Lemi Daba/Apps/Overleaf/ESS_adoption_ma
 adopt_rates_all_hh <- read_csv("dynamics_presentation/adoption_rates_ESS/data/adopt_rates_all_hh.csv")
 adopt_rates_panel_hh <- read_csv("dynamics_presentation/adoption_rates_ESS/data/adopt_rates_panel_hh.csv")
 
+adopt_rates_w4_hh <- read_csv("dynamics_presentation/data/adopt_rates_w4_hh.csv")
+
 track_hh <- read_dta(file.path(root, "tmp/dynamics/06_1_track_hh.dta")) 
 
 
@@ -45,6 +47,12 @@ pop_rur_pnl <- track_hh %>%
   )
 
 
+# filter and adjust innovations in wave 4
+# adopt_rates_w4_all <- adopt_rates_all_hh %>% 
+#   filter(wave=="Wave 4") %>% 
+#   filter(!str_detect(variable, "hhd_impcr"))
+
+
 # Do the same for wave 5
 sect_cover_pp_w5 <- read_dta(
   "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Country teams/Ethiopia/LSMS_W5/2_raw_data/data/PP/sect_cover_pp_w5.dta"
@@ -67,41 +75,9 @@ pop_rur_w5 <- ESS5_weights_hh %>%
   rename(wave5_n = n) %>% 
   bind_rows(data.frame(region = "National", wave5_n = sum(.$wave5_n)))
 
-
-pop_rur_w4_all  %>% 
-  kable(
-    format = "latex",
-    booktabs = TRUE,
-    align = c("l", "c"), 
-    col.names = c("Region", "No. of hhs"),
-    caption = "Number of rural households, ESPS - 2018/19",
-    linesep = ""
-  ) %>%
-  # column_spec(1, width_min = "4cm") %>% 
-  # column_spec(2:row_n, width_min = "2cm", width = "2cm") %>% 
-  kable_styling(latex_options = c("hold_position", "repeat_header")) %>% 
-  save_kable(file.path(tabpath, "pop_rur_w4_all.tex"))
-
-pop_rur_w5  %>% 
-  kable(
-    format = "latex",
-    booktabs = TRUE,
-    align = c("l", "c"), 
-    col.names = c("Region", "No. of hhs"),
-    caption = "Number of rural households, ESPS - 2021/22",
-    linesep = ""
-  ) %>%
-  # column_spec(1, width_min = "4cm") %>% 
-  # column_spec(2:row_n, width_min = "2cm", width = "2cm") %>% 
-  kable_styling(latex_options = c("hold_position", "repeat_header")) %>% 
-  save_kable(file.path(tabpath, "pop_rur_w5.tex")) 
-
-
-
 # join with adoption rates data
 
-ess4_all <- adopt_rates_all_hh %>% 
-  filter(wave=="Wave 4") %>% 
+ess4_all <- adopt_rates_w4_hh %>% 
   left_join(pop_rur_w4_all, by = "region") %>% 
   mutate(abs_num = mean * pop_w4_all) %>% 
   filter(region != "National") %>% 
@@ -109,8 +85,7 @@ ess4_all <- adopt_rates_all_hh %>%
   arrange(region, label)
 
 
-ess4_pnl <- adopt_rates_all_hh %>% 
-  filter(wave=="Wave 4") %>% 
+ess4_pnl <- adopt_rates_w4_hh %>% 
   left_join(pop_rur_pnl, by = "region") %>% 
   mutate(abs_num = mean * pop_w5_panel) %>% 
   filter(!region %in% c("Tigray", "National")) %>% 
@@ -118,20 +93,40 @@ ess4_pnl <- adopt_rates_all_hh %>%
   arrange(region, label)
 
 
-ess5_all <- adopt_rates_all_hh %>% 
-  filter(wave=="Wave 5") %>% 
+ess5_all <- adopt_rates_w4_all %>% 
   left_join(pop_rur_w5_all, by = "region") %>% 
   mutate(abs_num = mean * pop_w5_all) %>% 
   filter(region != "National") %>% 
   select(region, label, mean, abs_num) %>% 
   arrange(region, label)
 
+df <- ess4_all %>% 
+  rename(num = abs_num) %>% 
+  pivot_wider(
+    names_from = region,
+    names_glue = "{region}_{.value}",
+    values_from = c(mean, num)
+  ) %>% 
+  select(label, sort(colnames(.))) 
+
+# Find the column indices that end with "_num"
+num_cols <- grep("_num$", names(df))
+
+# Create a new column that is the sum of the selected columns
+df$Total <- rowSums(df[, num_cols], na.rm = TRUE)
+
+# final rounding
+df <- df %>% 
+  mutate(
+    across(c(ends_with("_num"), Total), ~round(.)),
+    across(c(ends_with("_mean"), Total), ~round(., 3))
+  )  
+
 
 make_sheet <- function(tbl) {
   
   df <- tbl %>% 
     rename(num = abs_num) %>% 
-    mutate(mean = round(mean, 3), num = round(num)) %>% 
     pivot_wider(
       names_from = region,
       names_glue = "{region}_{.value}",
@@ -145,6 +140,12 @@ make_sheet <- function(tbl) {
   # Create a new column that is the sum of the selected columns
   df$Total <- rowSums(df[, num_cols])
   
+  # final rounding
+  df <- df %>% 
+    mutate(
+      across(c(ends_with("_num"), Total), ~round(.)),
+      across(c(ends_with("_mean"), Total), ~round(., 3))
+    )  
   
   region_nm <- str_remove(colnames(df)[-1], "_mean|_num") %>% 
     as_tibble() %>% 
@@ -159,10 +160,6 @@ make_sheet <- function(tbl) {
   return(list(df = df, region_nm = region_nm, col_hd = col_hd))
   
 }
-
-make_sheet(ess4_all)
-make_sheet(ess4_pnl)
-make_sheet(ess5_all)$df
 
 df_lst <- list(
   "ESS4 - all" = make_sheet(ess4_all)$df, 

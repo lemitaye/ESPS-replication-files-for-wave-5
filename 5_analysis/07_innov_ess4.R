@@ -112,9 +112,9 @@ labs <- ess4_hh_all %>%
   )
 
 # modify PSNP
-psnp_w4 <- psnp_hh %>% 
+psnp_w4_rur <- psnp_hh %>% 
   filter(
-    wave == "Wave 4", locality == "Aggregate",
+    wave == "Wave 4", locality == "Rural",
     sample == "All", region != "Addis Ababa"
   ) %>% 
   select(wave, variable, region, mean, nobs, label)
@@ -126,7 +126,7 @@ adopt_rates_w4_hh <- bind_rows(
 )  %>% 
   left_join(labs, by = "variable") %>% 
   select(wave, region, variable, label, mean, nobs) %>% 
-  bind_rows(psnp_w4)
+  bind_rows(psnp_w4_rur)
 
 write_csv(adopt_rates_w4_hh, file = "dynamics_presentation/data/adopt_rates_w4_hh.csv")
 
