@@ -314,4 +314,4 @@ xml_tab C, save("$table/09_1_ess4_adoption_rates.xml") append sheet("HH_w4_panel
     $options3
 
 * save ----
-save "${tmp}/dynamics/ess4_hh_dna.dta", replace
+save "${tmp}/dynamics/ess4_hh_all.dta", replace
