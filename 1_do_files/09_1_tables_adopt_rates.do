@@ -221,13 +221,36 @@ merge 1:1 household_id using "${rawdata}/HH/ESS5_weights_hh.dta", keepusing(pw_p
 keep if _merge==1 | _merge==3
 drop _merge
 
+* Adding vars from DNA data ----
+
+preserve
+    use "${dataw4}/misclassification_plot_new.dta", clear
+
+    collapse (max) qpm dtmz *_cg, by(household_id)
+
+    label var qpm        "Quality Protein Maize"
+    label var dtmz       "Drought Tolerant Maize"
+    label var maize_cg   "Maize DNA-fingerprinting"
+    label var barley_cg  "Barley DNA-fingerprinting"
+    label var sorghum_cg "Sorghum DNA-fingerprinting"
+
+    tempfile dna_hh_w4
+    save `dna_hh_w4'
+restore
+
+// merge with DNA data
+merge 1:1 household_id using `dna_hh_w4'
+keep if _merge==1 | _merge==3
+drop _merge
+
 
 #delimit ;
 global hhlevel4     
 hhd_livIA hhd_cross_largerum hhd_cross_smallrum hhd_cross_poultry hhd_grass
 hhd_ofsp hhd_awassa83 hhd_rdisp hhd_motorpump hhd_swc hhd_consag1 hhd_consag2 
-hhd_affor hhd_mango hhd_papaya hhd_avocado hhd_impcr13 hhd_impcr19 hhd_impcr11 
-hhd_impcr24 hhd_impcr14 hhd_impcr3 hhd_impcr5 hhd_impcr60 hhd_impcr62
+hhd_affor hhd_mango hhd_papaya hhd_avocado qpm dtmz maize_cg barley_cg sorghum_cg 
+hhd_impcr13 hhd_impcr19 hhd_impcr11 hhd_impcr24 hhd_impcr14 hhd_impcr3 hhd_impcr5 
+hhd_impcr60 hhd_impcr62
 ;
 #delimit cr
 
@@ -289,3 +312,6 @@ descr_tab $hhlevel4 if hh_status==3, regions("1 2 3 4 5 6 7 12 13 15") wt(pw_pan
 xml_tab C, save("$table/09_1_ess4_adoption_rates.xml") append sheet("HH_w4_panel", nogridlines) ///
     title("Table: ESS4 - Adoption rates of innovations among rural households - panel sample only") ///
     $options3
+
+* save ----
+save "${tmp}/dynamics/ess4_hh_dna.dta", replace
