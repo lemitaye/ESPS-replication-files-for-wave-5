@@ -16,9 +16,13 @@ sect_cover_hh_w4 <- read_dta(
 tabpath <- "C:/Users/l.daba/SPIA Dropbox/Lemi Daba/Apps/Overleaf/ESS_adoption_matrices/tables"
 
 adopt_rates_all_hh <- read_csv("dynamics_presentation/adoption_rates_ESS/data/adopt_rates_all_hh.csv")
+
 adopt_rates_panel_hh <- read_csv("dynamics_presentation/adoption_rates_ESS/data/adopt_rates_panel_hh.csv")
 
 adopt_rates_w4_hh <- read_csv("dynamics_presentation/data/adopt_rates_w4_hh.csv")
+
+adopt_rate_dna_w4 <- read_csv("dynamics_presentation/data/adopt_rate_dna_w4.csv")
+
 
 track_hh <- read_dta(file.path(root, "tmp/dynamics/06_1_track_hh.dta")) 
 
@@ -47,80 +51,57 @@ pop_rur_pnl <- track_hh %>%
   )
 
 
-# filter and adjust innovations in wave 4
-# adopt_rates_w4_all <- adopt_rates_all_hh %>% 
-#   filter(wave=="Wave 4") %>% 
-#   filter(!str_detect(variable, "hhd_impcr"))
+# Wave 4: all households
 
-
-# Do the same for wave 5
-sect_cover_pp_w5 <- read_dta(
-  "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Country teams/Ethiopia/LSMS_W5/2_raw_data/data/PP/sect_cover_pp_w5.dta"
-  )  %>% 
-  mutate_if(is.labelled, as_factor)
-
-ESS5_weights_hh <- read_dta(
-  "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Country teams/Ethiopia/LSMS_W5/2_raw_data/data/HH/ESS5_weights_hh.dta"
-  ) %>% 
-  mutate_if(is.labelled, as_factor)
-
-ESS5_weights_hh %>% 
-  count(region, rururb, wt = pw_w5) 
-
-pop_rur_w5 <- ESS5_weights_hh %>% 
-  filter(rururb == "Rural") %>% 
-  count(region, wt = pw_w5) %>% 
-  mutate(region = str_to_title(region),
-         region = recode(region, "Snnp" = "SNNP"))  %>% 
-  rename(wave5_n = n) %>% 
-  bind_rows(data.frame(region = "National", wave5_n = sum(.$wave5_n)))
-
-# join with adoption rates data
-
-ess4_all <- adopt_rates_w4_hh %>% 
+ess4_innov <- adopt_rates_w4_hh %>% 
   left_join(pop_rur_w4_all, by = "region") %>% 
   mutate(abs_num = mean * pop_w4_all) %>% 
   filter(region != "National") %>% 
   select(region, label, mean, abs_num) %>% 
   arrange(region, label)
 
+ess4_dna <- adopt_rate_dna_w4 %>% 
+  left_join(pop_rur_w4_all, by = "region") %>% 
+  mutate(abs_num = mean * growing_pct * pop_w4_all) %>% 
+  filter(region != "National") %>% 
+  select(region, label, mean, abs_num) %>% 
+  arrange(region, label)
 
-ess4_pnl <- adopt_rates_w4_hh %>% 
+ess4_all <- bind_rows(ess4_innov, ess4_dna)
+
+# Wave 4: panel households
+ess4_innov_pnl <- adopt_rates_w4_hh %>% 
   left_join(pop_rur_pnl, by = "region") %>% 
   mutate(abs_num = mean * pop_w5_panel) %>% 
   filter(!region %in% c("Tigray", "National")) %>% 
   select(region, label, mean, abs_num) %>% 
   arrange(region, label)
 
+ess4_dna_pnl <- adopt_rate_dna_w4 %>% 
+  left_join(pop_rur_w4_all, by = "region") %>% 
+  mutate(abs_num = mean * growing_pct * pop_w4_all) %>% 
+  filter(!region %in% c("Tigray", "National")) %>% 
+  select(region, label, mean, abs_num) %>% 
+  arrange(region, label)
 
-ess5_all <- adopt_rates_w4_all %>% 
+ess4_pnl <- bind_rows(ess4_innov_pnl, ess4_dna_pnl)
+
+
+# Wave 5: 
+
+ess5_innov <- adopt_rates_all_hh %>% 
+  filter(wave == "Wave 5") %>% 
   left_join(pop_rur_w5_all, by = "region") %>% 
   mutate(abs_num = mean * pop_w5_all) %>% 
   filter(region != "National") %>% 
   select(region, label, mean, abs_num) %>% 
   arrange(region, label)
 
-df <- ess4_all %>% 
-  rename(num = abs_num) %>% 
-  pivot_wider(
-    names_from = region,
-    names_glue = "{region}_{.value}",
-    values_from = c(mean, num)
-  ) %>% 
-  select(label, sort(colnames(.))) 
 
-# Find the column indices that end with "_num"
-num_cols <- grep("_num$", names(df))
 
-# Create a new column that is the sum of the selected columns
-df$Total <- rowSums(df[, num_cols], na.rm = TRUE)
 
-# final rounding
-df <- df %>% 
-  mutate(
-    across(c(ends_with("_num"), Total), ~round(.)),
-    across(c(ends_with("_mean"), Total), ~round(., 3))
-  )  
+
+
 
 
 make_sheet <- function(tbl) {
@@ -138,7 +119,7 @@ make_sheet <- function(tbl) {
   num_cols <- grep("_num$", names(df))
   
   # Create a new column that is the sum of the selected columns
-  df$Total <- rowSums(df[, num_cols])
+  df$Total <- rowSums(df[, num_cols], na.rm = TRUE)
   
   # final rounding
   df <- df %>% 
@@ -238,6 +219,7 @@ for (i in seq_along(df_lst)) {
   }
   
 }
+
 
 # Save the workbook as an Excel file
 saveWorkbook(wb, "writeXLSX2.xlsx", overwrite = TRUE)
