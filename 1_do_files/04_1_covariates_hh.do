@@ -219,7 +219,7 @@ drop _m
 use "${rawdata}/HH/Pub_ETH_HouseholdGeovariables_Y5.dta", clear
 
 // retaining variables that Karen is interested in
-keep household_id dist_road dist_market dist_popcenter h2021_tot af_bio_12_x wetQ_avg af_bio_16_x
+keep household_id dist_* af_bio_* h2021_* eviarea_avg evimax_avg
 
 
 save "${tmp}/covariates/geo_hh.dta", replace
