@@ -23,6 +23,12 @@ adopt_rates_w4_hh <- read_csv("dynamics_presentation/data/adopt_rates_w4_hh.csv"
 
 adopt_rate_dna_w4 <- read_csv("dynamics_presentation/data/adopt_rate_dna_w4.csv")
 
+dna_means_hh <- read_csv("dynamics_presentation/data/dna_means_hh.csv")
+
+wave5_hh_new <- read_dta(file.path(root, "3_report_data/wave5_hh_new.dta"))
+
+psnp_hh <- read_csv("dynamics_presentation/data/psnp_hh.csv")
+
 
 track_hh <- read_dta(file.path(root, "tmp/dynamics/06_1_track_hh.dta")) 
 
@@ -49,6 +55,58 @@ pop_rur_pnl <- track_hh %>%
   bind_rows(
     data.frame(region = "National", pop_w5_panel = sum(.$pop_w5_panel))
   )
+
+# DNA in wave 5
+
+recode_region_dna <- function(tbl, region_var = region) {
+  
+  suppressWarnings(
+    tbl %>% 
+      mutate(
+        region = recode(
+          {{region_var}}, 
+          `1` = "Tigray",
+          `3` = "Amhara",
+          `4` = "Oromia",
+          `7` = "SNNP",
+          `13` = "Harar",
+          `15` = "Dire Dawa"
+        )
+      )
+  )
+  
+}
+
+
+maize_growing <- wave5_hh_new %>% 
+  recode_region_dna(saq01) %>% 
+  filter(!is.na(region)) %>% 
+  group_by(region) %>% 
+  summarise(growing_pct = weighted.mean(cr2, pw = pw_w5)) %>% 
+  bind_rows(data.frame(
+    region = "National",
+    growing_pct = weighted.mean(wave5_hh_new$cr2, pw = pw_w5)
+  ))
+
+dna_w5 <- dna_means_hh %>% 
+  filter(wave == "Wave 5", sample == "All households/EA") %>% 
+  left_join(maize_growing, by = "region")
+
+# PSNP in wave 5
+
+psnp_w5_rur <- psnp_hh %>% 
+  filter(
+    wave == "Wave 5", locality == "Rural",
+    sample == "All", region != "Addis Ababa"
+  ) %>% 
+  select(wave, variable, region, mean, nobs, label)
+
+
+# Innovations in wave 5:
+adopt_rates_w5_hh <- adopt_rates_all_hh %>% 
+  filter(wave == "Wave 5", !str_detect(variable, "_impcr|psnp")) %>% 
+  bind_rows(psnp_w5_rur)
+
 
 
 # Wave 4: all households
@@ -89,21 +147,24 @@ ess4_pnl <- bind_rows(ess4_innov_pnl, ess4_dna_pnl)
 
 # Wave 5: 
 
-ess5_innov <- adopt_rates_all_hh %>% 
-  filter(wave == "Wave 5") %>% 
+ess5_innov <- adopt_rates_w5_hh %>% 
   left_join(pop_rur_w5_all, by = "region") %>% 
   mutate(abs_num = mean * pop_w5_all) %>% 
   filter(region != "National") %>% 
   select(region, label, mean, abs_num) %>% 
   arrange(region, label)
 
+ess5_dna <- dna_w5 %>% 
+  left_join(pop_rur_w5_all, by = "region") %>% 
+  mutate(abs_num = mean * growing_pct * pop_w5_all) %>% 
+  filter(region != "National") %>% 
+  select(region, label, mean, abs_num) %>% 
+  arrange(region, label)
+
+ess5_all <- bind_rows(ess5_innov, ess5_dna)
 
 
-
-
-
-
-
+# function to construct list of data frames:
 make_sheet <- function(tbl) {
   
   df <- tbl %>% 
@@ -222,9 +283,9 @@ for (i in seq_along(df_lst)) {
 
 
 # Save the workbook as an Excel file
-saveWorkbook(wb, "writeXLSX2.xlsx", overwrite = TRUE)
+saveWorkbook(wb, file.path(root, "4_table/absolute_numbers.xlsx"), overwrite = TRUE)
 
-openXL("writeXLSX2.xlsx")
+openXL(file.path(root, "4_table/absolute_numbers.xlsx"))
 
 
 

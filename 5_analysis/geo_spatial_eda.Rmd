@@ -1,0 +1,249 @@
+---
+title: "Geo-spatial variables in ESS5 - Exploratory Data Analysis"
+author: "Lemi Daba (tayelemi@gmail.com)"
+date: "`r Sys.Date()`"
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+```{r}
+
+library(sp)
+library(sf)
+library(RColorBrewer)
+library(colorspace)
+library(haven)
+library(tidyverse)
+
+theme_set(theme_light())
+
+```
+
+```{r message=FALSE, warning=FALSE}
+
+root <- "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Country teams/Ethiopia/LSMS_W5"
+
+# read data ----
+hh_geo_w5 <- read_dta(
+  file.path(root, "2_raw_data/data/HH/Pub_ETH_HouseholdGeovariables_Y5.dta")
+  )
+
+ess5_weights_hh <- read_dta(file.path(root, "2_raw_data/data/HH/ESS5_weights_hh.dta"))
+
+eth_regions <- st_read(
+  dsn = "./gadm41_ETH_shp",
+  layer = "gadm41_ETH_1",
+  quiet = TRUE
+)
+
+```
+
+```{r}
+
+# wrangle ----
+
+hh_geo_slctd <- hh_geo_w5 %>% 
+  select(
+    household_id, h2021_tot, af_bio_12_x, wetQ_avg, af_bio_16_x, eviarea_avg,
+    lat_dd_mod, lon_dd_mod
+  ) %>% 
+  left_join(
+    ess5_weights_hh %>% 
+      select(-interview__key),
+    by = "household_id"
+  )
+
+hh_geo_slctd_sf <- hh_geo_slctd %>% 
+  filter(!is.na(lon_dd_mod), !is.na(lat_dd_mod)) %>% 
+  st_as_sf(coords = c("lon_dd_mod", "lat_dd_mod"), crs = st_crs(4326))
+
+```
+
+```{r}
+
+# Compute centroids of EAs:
+
+ea_sf <- hh_geo_slctd_sf %>% 
+  group_by(ea_id) %>% 
+  summarise(geometry = st_union(geometry)) %>%
+  st_centroid() 
+
+
+```
+
+
+```{r}
+
+# analysis grouped by EA
+
+
+hh_geo_ea <- hh_geo_slctd %>% 
+  group_by(ea_id) %>% 
+  summarise(
+    across(
+      c(h2021_tot, af_bio_12_x, wetQ_avg, af_bio_16_x, eviarea_avg), 
+      list(mean = mean, median = median)
+    ), 
+    region = first(region),
+    rururb = first(rururb)
+  )
+
+geo_ea_sf <- ea_sf %>% 
+  left_join(hh_geo_ea)
+
+
+```
+
+# Map by EA centroids
+
+```{r}
+
+ggplot() +
+  geom_sf(data = eth_regions, fill = NA) +
+  geom_sf(
+    data = geo_ea_sf, 
+    aes(size = h2021_tot_mean, color = rururb), 
+    alpha = .5
+    ) +
+  coord_sf() +
+  labs(
+    title = "12-month total rainfall (mm) in 2021",
+    subtitle = "Mean at the EA level",
+    color = "Locality",
+    size = "Rainfall (mm)"
+  )
+
+```
+
+
+
+```{r}
+
+ggplot() +
+  geom_sf(data = eth_regions, fill = NA) +
+  geom_sf(
+    data = geo_ea_sf, 
+    aes(size = af_bio_12_x_mean, color = rururb), 
+    alpha = .5
+    ) +
+  coord_sf() +
+  labs(
+    title = "Annual Precipitation (mm)",
+    subtitle = "Mean at the EA level",
+    color = "Locality",
+    size = "Rainfall (mm)"
+  )
+
+```
+
+
+
+
+```{r}
+
+ggplot() +
+  geom_sf(data = eth_regions, fill = NA) +
+  geom_sf(
+    data = geo_ea_sf, 
+    aes(size = wetQ_avg_mean, color = rururb), 
+    alpha = .5
+    ) +
+  coord_sf() +
+  labs(
+    title = "Average total rainfall in wettest quarter (mm)",
+    subtitle = "Mean at the EA level",
+    color = "Locality",
+    size = "Rainfall (mm)"
+  )
+
+```
+
+
+
+```{r}
+
+ggplot() +
+  geom_sf(data = eth_regions, fill = NA) +
+  geom_sf(
+    data = geo_ea_sf, 
+    aes(size = af_bio_16_x_mean, color = rururb), 
+    alpha = .5
+    ) +
+  coord_sf() +
+  labs(
+    title = "Precipitation of Wettest Quarter",
+    subtitle = "Mean at the EA level",
+    color = "Locality",
+    size = "Rainfall (mm)"
+  )
+
+```
+
+```{r}
+
+ggplot() +
+  geom_sf(data = eth_regions, fill = NA) +
+  geom_sf(
+    data = geo_ea_sf, 
+    aes(size = eviarea_avg_mean, color = rururb), 
+    alpha = .5
+    ) +
+  coord_sf() +
+  labs(
+    title = "Precipitation of Wettest Quarter",
+    subtitle = "Mean at the EA level",
+    color = "Locality",
+    size = "Rainfall (mm)"
+  )
+
+```
+
+
+## Comparison by region
+
+```{r}
+
+# ggplot() +
+#   geom_sf(data = eth_regions) +
+#   geom_sf(data = hh_geo_slctd_sf, aes(size = h2021_tot), alpha = .5)
+
+```
+
+```{r}
+
+hh_geo_slctd %>% 
+  ggplot(aes(h2021_tot)) +
+  geom_histogram() 
+
+```
+
+```{r}
+
+hh_geo_slctd %>% 
+  ggplot(aes(h2021_tot)) +
+  geom_histogram() +
+  facet_wrap(~ region, scales = "free", ncol = 3)
+
+```
+
+```{r}
+
+hh_geo_slctd %>% 
+  mutate(region = fct_reorder(region, af_bio_12_x)) %>% 
+  ggplot(aes(af_bio_12_x, region, fill = rururb)) +
+  geom_boxplot() +
+  facet_wrap(~rururb, scales = "free_x") +
+  theme(legend.position = "none") +
+  labs(
+    title = "Annual Precipitation (mm) by region",
+    fill = "Locality",
+    x = "Annual Precipitation (mm)",
+    y = ""
+  )
+
+```
