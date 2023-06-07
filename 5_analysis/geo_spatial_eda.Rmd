@@ -31,9 +31,20 @@ root <- "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Co
 # read data ----
 hh_geo_w5 <- read_dta(
   file.path(root, "2_raw_data/data/HH/Pub_ETH_HouseholdGeovariables_Y5.dta")
-  )
+  ) %>% 
+  mutate_if(is.labelled, as_factor)
+
+hh_geo_w4 <- read_dta(
+  file.path(root, "supplemental/replication_files/2_raw_data/ESS4_2018-19/Data/ETH_HouseholdGeovariables_Y4.dta")
+  ) %>% 
+  mutate_if(is.labelled, as_factor)
 
 ess5_weights_hh <- read_dta(file.path(root, "2_raw_data/data/HH/ESS5_weights_hh.dta"))
+
+hh_cover_w4 <- read_dta(
+  file.path(root, "supplemental/replication_files/2_raw_data/ESS4_2018-19/Data/sect_cover_hh_w4.dta")
+) %>% 
+  mutate_if(is.labelled, as_factor)
 
 eth_regions <- st_read(
   dsn = "./gadm41_ETH_shp",
@@ -47,28 +58,86 @@ eth_regions <- st_read(
 
 # wrangle ----
 
-hh_geo_slctd <- hh_geo_w5 %>% 
+hh_geo_slctd_w5 <- hh_geo_w5 %>% 
   select(
     household_id, h2021_tot, af_bio_12_x, wetQ_avg, af_bio_16_x, eviarea_avg,
-    lat_dd_mod, lon_dd_mod
+    lat_dd_mod, lon_dd_mod, ssa_aez09
   ) %>% 
   left_join(
     ess5_weights_hh %>% 
       select(-interview__key),
     by = "household_id"
-  )
+  ) %>% 
+  mutate(
+    avg_precip = h2021_tot/af_bio_12_x,
+    avg_wet = wetQ_avg/af_bio_16_x
+    )
 
-hh_geo_slctd_sf <- hh_geo_slctd %>% 
-  filter(!is.na(lon_dd_mod), !is.na(lat_dd_mod)) %>% 
-  st_as_sf(coords = c("lon_dd_mod", "lat_dd_mod"), crs = st_crs(4326))
+hh_geo_slctd_w4 <- hh_geo_w4 %>% 
+  select(
+    household_id, h2018_tot, af_bio_12, wetQ_avg, af_bio_16, lat_mod, lon_mod, ssa_aez09
+  ) %>% 
+  left_join(
+    hh_cover_w4 %>% 
+      select(household_id, ea_id, locality = saq14, pw_w4, region = saq01),
+    by = "household_id"
+  ) %>% 
+  mutate(
+    avg_precip = h2018_tot/af_bio_12,
+    avg_wet = wetQ_avg/af_bio_16
+    )
+
+# Bind wave 4 and wave 5 together
+
+hh_geo_slctd_bind <- bind_rows(
+  
+  hh_geo_slctd_w4 %>% 
+    select(household_id, ea_id, region, locality, h_tot = h2018_tot, af_bio_12, wetQ_avg, af_bio_16, ssa_aez09, lat_mod, lon_mod) %>% 
+    mutate(year = "2018"), 
+  
+  hh_geo_slctd_w5 %>% 
+    select(household_id, ea_id, region, locality = rururb, h_tot = h2021_tot, af_bio_12 = af_bio_12_x, wetQ_avg, af_bio_16 = af_bio_16_x, ssa_aez09, lat_mod = lat_dd_mod, lon_mod = lon_dd_mod) %>% 
+    mutate(year = "2021")
+  
+)
 
 ```
 
 ```{r}
 
+# convert to sf:
+
+# hh_geo_slctd_w5_sf <- hh_geo_slctd_w5 %>% 
+#   filter(!is.na(lon_dd_mod), !is.na(lat_dd_mod)) %>% 
+#   st_as_sf(coords = c("lon_dd_mod", "lat_dd_mod"), crs = st_crs(4326))
+# 
+# hh_geo_slctd_w4_sf <- hh_geo_slctd_w4 %>% 
+#   filter(!is.na(lon_mod), !is.na(lat_mod)) %>% 
+#   st_as_sf(coords = c("lon_mod", "lat_mod"), crs = st_crs(4326))
+
+hh_geo_slctd_bind_sf <- hh_geo_slctd_bind %>% 
+  filter(!is.na(lon_mod), !is.na(lat_mod)) %>% 
+  st_as_sf(coords = c("lon_mod", "lat_mod"), crs = st_crs(4326))
+
+```
+
+
+
+```{r}
+
 # Compute centroids of EAs:
 
-ea_sf <- hh_geo_slctd_sf %>% 
+# ea_sf_w5 <- hh_geo_slctd_w5_sf %>% 
+#   group_by(ea_id) %>% 
+#   summarise(geometry = st_union(geometry)) %>%
+#   st_centroid() 
+# 
+# ea_sf_w4 <- hh_geo_slctd_w4_sf %>% 
+#   group_by(ea_id) %>% 
+#   summarise(geometry = st_union(geometry)) %>%
+#   st_centroid() 
+
+ea_sf_bind <- hh_geo_slctd_bind_sf %>% 
   group_by(ea_id) %>% 
   summarise(geometry = st_union(geometry)) %>%
   st_centroid() 
@@ -77,24 +146,53 @@ ea_sf <- hh_geo_slctd_sf %>%
 ```
 
 
+
 ```{r}
 
-# analysis grouped by EA
+# group by EA
 
 
-hh_geo_ea <- hh_geo_slctd %>% 
-  group_by(ea_id) %>% 
+# hh_geo_ea_w5 <- hh_geo_slctd_w5 %>% 
+#   group_by(ea_id) %>% 
+#   summarise(
+#     across(
+#       c(h2021_tot, af_bio_12_x, wetQ_avg, af_bio_16_x, eviarea_avg,
+#         avg_precip, avg_wet), 
+#       list(mean = mean, median = median)
+#     ), 
+#     across(c(region, rururb, ssa_aez09), first)
+#   )
+# 
+# hh_geo_ea_w4 <- hh_geo_slctd_w4 %>% 
+#   group_by(ea_id) %>% 
+#   summarise(
+#     across(
+#       c(h2021_tot, af_bio_12_x, wetQ_avg, af_bio_16_x, eviarea_avg,
+#         avg_precip, avg_wet), 
+#       list(mean = mean, median = median)
+#     ), 
+#     across(c(region, rururb, ssa_aez09), first)
+#   )
+
+hh_geo_ea_bind <- hh_geo_slctd_bind %>% 
+  group_by(year, ea_id) %>% 
   summarise(
     across(
-      c(h2021_tot, af_bio_12_x, wetQ_avg, af_bio_16_x, eviarea_avg), 
+      c(h_tot, af_bio_12, wetQ_avg, af_bio_16), 
       list(mean = mean, median = median)
     ), 
-    region = first(region),
-    rururb = first(rururb)
+    across(c(region, locality, ssa_aez09), first),
+    .groups = "drop"
   )
 
-geo_ea_sf <- ea_sf %>% 
-  left_join(hh_geo_ea)
+geo_ea_sf_w5 <- ea_sf_w5 %>% 
+  left_join(hh_geo_ea_w5)
+
+geo_ea_sf_w4 <- ea_sf_w4 %>% 
+  left_join(hh_geo_ea_w4)
+
+geo_ea_sf_bind <- ea_sf_bind %>% 
+  left_join(hh_geo_ea_bind)
 
 
 ```
@@ -106,7 +204,7 @@ geo_ea_sf <- ea_sf %>%
 ggplot() +
   geom_sf(data = eth_regions, fill = NA) +
   geom_sf(
-    data = geo_ea_sf, 
+    data = geo_ea_sf_w5, 
     aes(size = h2021_tot_mean, color = rururb), 
     alpha = .5
     ) +
@@ -127,7 +225,28 @@ ggplot() +
 ggplot() +
   geom_sf(data = eth_regions, fill = NA) +
   geom_sf(
-    data = geo_ea_sf, 
+    data = geo_ea_sf_w5, 
+    aes(size = avg_precip_mean, color = rururb), 
+    alpha = .5
+    ) +
+  coord_sf() +
+  labs(
+    title = "12-month total rainfall (mm) in 2021",
+    subtitle = "Mean at the EA level",
+    color = "Locality",
+    size = "Rainfall (mm)"
+  )
+
+```
+
+
+
+```{r}
+
+ggplot() +
+  geom_sf(data = eth_regions, fill = NA) +
+  geom_sf(
+    data = geo_ea_sf_w5, 
     aes(size = af_bio_12_x_mean, color = rururb), 
     alpha = .5
     ) +
@@ -149,7 +268,7 @@ ggplot() +
 ggplot() +
   geom_sf(data = eth_regions, fill = NA) +
   geom_sf(
-    data = geo_ea_sf, 
+    data = geo_ea_sf_w5, 
     aes(size = wetQ_avg_mean, color = rururb), 
     alpha = .5
     ) +
@@ -170,7 +289,7 @@ ggplot() +
 ggplot() +
   geom_sf(data = eth_regions, fill = NA) +
   geom_sf(
-    data = geo_ea_sf, 
+    data = geo_ea_sf_w5, 
     aes(size = af_bio_16_x_mean, color = rururb), 
     alpha = .5
     ) +
@@ -189,7 +308,7 @@ ggplot() +
 ggplot() +
   geom_sf(data = eth_regions, fill = NA) +
   geom_sf(
-    data = geo_ea_sf, 
+    data = geo_ea_sf_w5, 
     aes(size = eviarea_avg_mean, color = rururb), 
     alpha = .5
     ) +
@@ -204,19 +323,39 @@ ggplot() +
 ```
 
 
+```{r}
+
+ggplot() +
+  geom_sf(data = eth_regions, fill = NA) +
+  geom_sf(
+    data = geo_ea_sf_bind, 
+    aes(size = af_bio_12_mean, color = locality), 
+    alpha = .5
+    ) +
+  coord_sf() +
+  labs(
+    title = "Annual Precipitation (mm)",
+    subtitle = "Mean at the EA level",
+    color = "Locality",
+    size = "Rainfall (mm)"
+  )
+
+```
+
+
 ## Comparison by region
 
 ```{r}
 
 # ggplot() +
 #   geom_sf(data = eth_regions) +
-#   geom_sf(data = hh_geo_slctd_sf, aes(size = h2021_tot), alpha = .5)
+#   geom_sf(data = hh_geo_slctd_w5_sf, aes(size = h2021_tot), alpha = .5)
 
 ```
 
 ```{r}
 
-hh_geo_slctd %>% 
+hh_geo_slctd_w5 %>% 
   ggplot(aes(h2021_tot)) +
   geom_histogram() 
 
@@ -224,7 +363,7 @@ hh_geo_slctd %>%
 
 ```{r}
 
-hh_geo_slctd %>% 
+hh_geo_slctd_w5 %>% 
   ggplot(aes(h2021_tot)) +
   geom_histogram() +
   facet_wrap(~ region, scales = "free", ncol = 3)
@@ -233,7 +372,7 @@ hh_geo_slctd %>%
 
 ```{r}
 
-hh_geo_slctd %>% 
+hh_geo_slctd_w5 %>% 
   mutate(region = fct_reorder(region, af_bio_12_x)) %>% 
   ggplot(aes(af_bio_12_x, region, fill = rururb)) +
   geom_boxplot() +
@@ -247,3 +386,86 @@ hh_geo_slctd %>%
   )
 
 ```
+
+```{r}
+
+hh_geo_slctd_w5 %>% 
+  ggplot(aes(h2021_tot, af_bio_12_x, color = region)) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0) +
+  labs(
+    x = "12-month total rainfall (mm) in 2021",
+    y = "Annual Precipitation (mm)",
+    subtitle = "Household level",
+    color = "Region"
+  )
+
+```
+
+
+```{r}
+
+geo_ea_sf_w5 %>% 
+  ggplot(aes(h2021_tot_mean, af_bio_12_x_mean, color = region)) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0) +
+  labs(
+    x = "12-month total rainfall (mm) in 2021",
+    y = "Annual Precipitation (mm)",
+    subtitle = "EA level",
+    color = "Region"
+  )
+
+```
+
+```{r}
+
+hh_geo_slctd_w5 %>% 
+  ggplot(aes(h2021_tot, af_bio_12_x, color = region)) +
+  geom_point() +
+  geom_abline(slope = 1, intercept = 0) +
+  labs(
+    x = "12-month total rainfall (mm) in 2021",
+    y = "Annual Precipitation (mm)",
+    subtitle = "Household level",
+    color = "Region"
+  )
+
+```
+
+
+```{r}
+
+hh_geo_slctd_w5 %>% 
+  count(region, ssa_aez09) %>% 
+  group_by(region) %>% 
+  mutate(pct_aez = n / sum(n)) %>% 
+  ggplot(aes(pct_aez, ssa_aez09)) +
+  geom_col() +
+  facet_wrap(~ region)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
