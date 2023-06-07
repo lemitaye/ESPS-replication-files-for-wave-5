@@ -35,6 +35,8 @@ track_hh <- read_dta(file.path(root, "tmp/dynamics/06_1_track_hh.dta"))
 
 # calculate no. of rural households by region for each wave
 
+# Rural populations
+
 pop_rur_w4_all <- track_hh %>% 
   filter(wave4==1, locality == "Rural") %>%
   count(region, wt = pw_w4, name = "pop_w4_all") %>% 
@@ -55,6 +57,30 @@ pop_rur_pnl <- track_hh %>%
   bind_rows(
     data.frame(region = "National", pop_w5_panel = sum(.$pop_w5_panel))
   )
+
+# Urban populations
+
+pop_urb_w4_all <- track_hh %>% 
+  filter(wave4==1, locality == "Urban") %>%
+  count(region, wt = pw_w4, name = "pop_w4_all") %>% 
+  bind_rows(
+    data.frame(region = "National", pop_w4_all = sum(.$pop_w4_all))
+  )
+
+pop_urb_w5_all <- track_hh %>% 
+  filter(wave5==1, locality == "Urban") %>%
+  count(region, wt = pw_w5, name = "pop_w5_all") %>% 
+  bind_rows(
+    data.frame(region = "National", pop_w5_all = sum(.$pop_w5_all))
+  )
+
+pop_urb_pnl <- track_hh %>% 
+  filter(locality == "Urban", hh_status==3) %>%
+  count(region, wt = pw_panel, name = "pop_w5_panel") %>% 
+  bind_rows(
+    data.frame(region = "National", pop_w5_panel = sum(.$pop_w5_panel))
+  )
+
 
 # DNA in wave 5
 
@@ -144,6 +170,23 @@ ess4_dna_pnl <- adopt_rate_dna_w4 %>%
 
 ess4_pnl <- bind_rows(ess4_innov_pnl, ess4_dna_pnl)
 
+# Wave 4: panel households (using wave 5 weights)
+ess4_innov_w5_all <- adopt_rates_w4_hh %>% 
+  left_join(pop_rur_w5_all, by = "region") %>% 
+  mutate(abs_num = mean * pop_w5_all) %>% 
+  filter(!region %in% c("Tigray", "National")) %>% 
+  select(region, label, mean, abs_num) %>% 
+  arrange(region, label)
+
+ess4_dna_w5_all <- adopt_rate_dna_w4 %>% 
+  left_join(pop_rur_w5_all, by = "region") %>% 
+  mutate(abs_num = mean * growing_pct * pop_w5_all) %>% 
+  filter(!region %in% c("Tigray", "National")) %>% 
+  select(region, label, mean, abs_num) %>% 
+  arrange(region, label)
+
+ess4_w5_all <- bind_rows(ess4_innov_w5_all, ess4_dna_w5_all)
+
 
 # Wave 5: 
 
@@ -204,25 +247,33 @@ make_sheet <- function(tbl) {
 }
 
 df_lst <- list(
-  "ESS4 - all" = make_sheet(ess4_all)$df, 
-  "ESS4 - panel" = make_sheet(ess4_pnl)$df, 
-  "ESS5 - all" = make_sheet(ess5_all)$df
+  "ESS4 - wave 4 weight" = make_sheet(ess4_all)$df, 
+  "ESS4 - panel weight" = make_sheet(ess4_pnl)$df, 
+  "ESS4 - wave 5 weight" = make_sheet(ess4_w5_all)$df,
+  "ESS5 - wave 5 weight" = make_sheet(ess5_all)$df
   )
 
 reg_lst <- list(
   make_sheet(ess4_all)$region_nm, 
   make_sheet(ess4_pnl)$region_nm, 
+  make_sheet(ess4_w5_all)$region_nm, 
   make_sheet(ess5_all)$region_nm
 )
 
 col_lst <- list(
   make_sheet(ess4_all)$col_hd, 
   make_sheet(ess4_pnl)$col_hd, 
+  make_sheet(ess4_w5_all)$col_hd, 
   make_sheet(ess5_all)$col_hd
 )
 
 # Population frame:
-pop_frm <- reduce(list(pop_rur_w4_all, pop_rur_w5_all, pop_rur_pnl), left_join, by = "region") %>% 
+pop_frm_rur <- reduce(list(pop_rur_w4_all, pop_rur_w5_all, pop_rur_pnl), left_join, by = "region") %>% 
+  rename("Region" = region, "Wave 4 weight" = pop_w4_all, 
+         "Wave 5 weight" = pop_w5_all, "Panel weight" = pop_w5_panel) %>% 
+  mutate_if(is.numeric, ~round(.))
+
+pop_frm_urb <- reduce(list(pop_urb_w4_all, pop_urb_w5_all, pop_urb_pnl), left_join, by = "region") %>% 
   rename("Region" = region, "Wave 4 weight" = pop_w4_all, 
          "Wave 5 weight" = pop_w5_all, "Panel weight" = pop_w5_panel) %>% 
   mutate_if(is.numeric, ~round(.))
@@ -240,7 +291,10 @@ modifyBaseFont(wb, fontSize = 10, fontName = "Times New Roman")
 addWorksheet(wb, "Population Frame") 
 
 # write data 
-writeData(wb, sheet = "Population Frame", pop_frm, startCol = 2, startRow = 4)
+writeData(wb, sheet = "Population Frame", pop_frm_rur, startCol = 2, startRow = 4)
+
+writeData(wb, sheet = "Population Frame", pop_frm_urb, startCol = 7, startRow = 4)
+
 
 
 for (i in seq_along(df_lst)) {
