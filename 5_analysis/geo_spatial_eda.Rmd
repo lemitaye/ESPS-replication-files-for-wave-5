@@ -60,46 +60,32 @@ eth_regions <- st_read(
 
 hh_geo_slctd_w5 <- hh_geo_w5 %>% 
   select(
-    household_id, h2021_tot, af_bio_12_x, wetQ_avg, af_bio_16_x, eviarea_avg,
-    lat_dd_mod, lon_dd_mod, ssa_aez09
+    household_id, h_tot = h2021_tot, af_bio_12 = af_bio_12_x, wetQ_avg, af_bio_16 = af_bio_16_x, eviarea_avg,
+    lat_mod = lat_dd_mod, lon_mod = lon_dd_mod, ssa_aez09
   ) %>% 
   left_join(
     ess5_weights_hh %>% 
-      select(-interview__key),
+      select(-interview__key) %>% 
+      rename(locality = rururb),
     by = "household_id"
   ) %>% 
-  mutate(
-    avg_precip = h2021_tot/af_bio_12_x,
-    avg_wet = wetQ_avg/af_bio_16_x
-    )
+  mutate(year = "2021")
 
 hh_geo_slctd_w4 <- hh_geo_w4 %>% 
   select(
-    household_id, h2018_tot, af_bio_12, wetQ_avg, af_bio_16, lat_mod, lon_mod, ssa_aez09
+    household_id, h_tot = h2018_tot, af_bio_12, wetQ_avg, af_bio_16, lat_mod, lon_mod, ssa_aez09
   ) %>% 
   left_join(
     hh_cover_w4 %>% 
       select(household_id, ea_id, locality = saq14, pw_w4, region = saq01),
     by = "household_id"
   ) %>% 
-  mutate(
-    avg_precip = h2018_tot/af_bio_12,
-    avg_wet = wetQ_avg/af_bio_16
-    )
+  mutate(year = "2018")
 
 # Bind wave 4 and wave 5 together
 
-hh_geo_slctd_bind <- bind_rows(
-  
-  hh_geo_slctd_w4 %>% 
-    select(household_id, ea_id, region, locality, h_tot = h2018_tot, af_bio_12, wetQ_avg, af_bio_16, ssa_aez09, lat_mod, lon_mod) %>% 
-    mutate(year = "2018"), 
-  
-  hh_geo_slctd_w5 %>% 
-    select(household_id, ea_id, region, locality = rururb, h_tot = h2021_tot, af_bio_12 = af_bio_12_x, wetQ_avg, af_bio_16 = af_bio_16_x, ssa_aez09, lat_mod = lat_dd_mod, lon_mod = lon_dd_mod) %>% 
-    mutate(year = "2021")
-  
-)
+hh_geo_slctd_bind <- bind_rows(hh_geo_slctd_w4, hh_geo_slctd_w5)
+
 
 ```
 
