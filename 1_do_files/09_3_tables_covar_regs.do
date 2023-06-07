@@ -234,6 +234,12 @@ merge m:1 ea_id using "${dataw4}/ess4_pp_cov_ea_new.dta", keepusing(cs4q011 cs4q
 keep if _merge==1 | _merge==3
 drop _merge
 
+// merge with data on geo-covariates:
+merge 1:1 household_id using "${raw4}/ETH_HouseholdGeovariables_Y4.dta", ///
+    keepusing(dist_road dist_market dist_border dist_popcenter dist_admhq)
+keep if _merge==1 | _merge==3
+drop _merge
+
 // replace missing distances with zero:
 for var cs4q15 cs4q53: replace X=0 if X==.
 
@@ -246,7 +252,8 @@ replace hhd_impcr2=. if maize_cg==.
 #delimit;
 global hhcov4
 hhd_flab flivman parcesizeHA asset_index pssetindex income_offfarm total_cons_ann 
-totconswin nmtotcons consq1 consq2 adulteq age_head cs4q011 cs4q15 cs4q53
+totconswin nmtotcons consq1 consq2 adulteq age_head cs4q011 cs4q15 cs4q53 dist_road 
+dist_market dist_popcenter
 ;
 #delimit cr
 

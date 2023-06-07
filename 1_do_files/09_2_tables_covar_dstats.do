@@ -165,11 +165,17 @@ merge 1:1 household_id using "${rawdata}/HH/ESS5_weights_hh.dta", keepusing(pw_p
 keep if _merge==1 | _merge==3
 drop _merge
 
+// merge with data on geo-covariates:
+merge 1:1 household_id using "${raw4}/ETH_HouseholdGeovariables_Y4.dta", ///
+    keepusing(dist_road dist_market dist_border dist_popcenter dist_admhq)
+keep if _merge==1 | _merge==3
+drop _merge
+
 
 #delimit;
 global hhlevel4 
 parcesizeHA fem_head fowne flivman hhd_flab  age_head nom_totcons_aeq consq1 
-consq2 asset_index pssetindex income_offfarm
+consq2 asset_index pssetindex income_offfarm dist_road dist_market dist_popcenter
 ;
 # delimit cr
 
