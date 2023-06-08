@@ -21,42 +21,17 @@ gen     dnadata=0
 replace dnadata=1 if _merge==3
 *keep if _m==3
 
-
-* Upper bound ------------
-// upper bound is # of households with at least one CG-related innovation.
-
 sum hhd_treadle hhd_motorpump hhd_rdisp hhd_consag1 hhd_swc hhd_cross hhd_livIA ///
     hhd_elepgrass hhd_sesbaniya hhd_agroind  hhd_alfalfa  hhd_grass hhd_avocado ///
     hhd_mango hhd_papaya hhd_sweetpotato hhd_fieldp commirr plotirr maize hhd_ofsp  ///
     hhd_awassa83 hhd_desi hhd_kabuli
 
 
-gen     ubound1 = 0 if dnadata==1
-replace ubound1 = 1 if dnadata==1 & (maize==1 | hhd_treadle==1 | hhd_motorpump==1 | ///
-    hhd_rdisp==1 | hhd_consag1==1 | hhd_swc==1 | hhd_cross==1 | hhd_livIA==1 | ///
-    hhd_elepgrass==1 | hhd_sesbaniya==1 | hhd_alfalfa==1 | hhd_agroind==1 | ///
-    hhd_grass==1  | hhd_avocado==1 | hhd_mango==1 | hhd_papaya==1 | hhd_sweetpotato==1 | ///
-    hhd_fieldp==1 | (commirr==1 & plotirr==1) | hhd_ofsp==1 | hhd_awassa83==1 | ///
-    hhd_desi==1 | hhd_kabuli==1)
+* Upper bound ----------------
+// upper bound is # of households with at least one CG-related innovation.
 
-
-gen     ubound2 = 0 
-replace ubound2 = 1 if  (hhd_treadle==1 | hhd_motorpump==1 | hhd_rdisp==1 | ///
-    hhd_consag1==1 | hhd_swc==1 | hhd_cross==1 | hhd_livIA==1 | hhd_elepgrass==1 | ///
-    hhd_sesbaniya==1 | hhd_alfalfa==1 | hhd_agroind==1 | hhd_grass==1  | ///
-    hhd_avocado==1 | hhd_mango==1 | hhd_papaya==1 | hhd_sweetpotato==1 | hhd_fieldp==1 | ///
-    (commirr==1 & plotirr==1) | hhd_ofsp==1 | hhd_awassa83==1 | hhd_desi==1 | hhd_kabuli==1)
-
-
-gen     ubound3 = 0 
-replace ubound3 = 1 if   (hhd_treadle==1 | hhd_motorpump==1 | hhd_rdisp==1 | ///
-    hhd_consag1==1 | hhd_swc==1 | hhd_cross==1 | hhd_livIA==1 | hhd_elepgrass==1 | ///
-    hhd_sesbaniya==1 | hhd_alfalfa==1 | hhd_agroind==1 | hhd_grass==1  | ///
-    hhd_avocado==1 | hhd_mango==1 | hhd_papaya==1 | hhd_sweetpotato==1 | hhd_fieldp==1 | ///
-    (commirr==1 & plotirr==1) | hhd_ofsp==1 | hhd_awassa83==1 | hhd_desi==1 | hhd_kabuli==1)
-
-gen     percrural = 0
-replace percrural = 1 if maize==1 | hhd_ofsp==1 | hhd_awassa83==1 | hhd_treadle==1 | ///
+gen     ubound = 0
+replace ubound = 1 if maize==1 | hhd_ofsp==1 | hhd_awassa83==1 | hhd_treadle==1 | ///
     hhd_motorpump==1 | hhd_rdisp==1 | hhd_consag1==1 | hhd_swc==1 | hhd_cross==1 | ///
     hhd_livIA==1 | hhd_elepgrass==1 | hhd_sesbaniya==1 | hhd_alfalfa==1 | ///
     hhd_agroind==1 | hhd_grass==1  | hhd_avocado==1 | hhd_mango==1 | hhd_papaya==1 | ///
@@ -66,24 +41,23 @@ replace percrural = 1 if maize==1 | hhd_ofsp==1 | hhd_awassa83==1 | hhd_treadle=
 // Lower bound is # of hh with improved maize, sweet potato, or kabuli chickpea type
 
 gen     lbound=0
-replace lbound=1 if maize==1 | hhd_ofsp==1 | hhd_awassa83==100 | hhd_desi==1 | hhd_kabuli==1
+replace lbound=1 if maize==1 | hhd_ofsp==1 | hhd_awassa83==1 | hhd_desi==1 | hhd_kabuli==1
+
 
 * label variables
-label var ubound1 "Upper bound - 1"   
-label var ubound2 "Upper bound - 2" 
-label var ubound3 "Upper bound - 3"  
+label var ubound  "Upper bound"   
 label var lbound  "Lower bound"
 label var cr2     "Perc. of rural hhs growing maize"
 
-
-global dnastats maize cr2 ubound1 ubound2 ubound3 lbound
+* global
+global boundvars ubound lbound maize cr2 
 
 // construct matrix:
-descr_tab $dnastats, regions("2 3 4 5 6 7 12 13 15") wt(pw_w5)
+descr_tab $boundvars, regions("2 3 4 5 6 7 12 13 15") wt(pw_w5)
 
 // prep:
 local rname ""
-foreach var in $dnastats {
+foreach var in $boundvars {
 	local lbl : variable label `var'
 	local rname `"  `rname'   "`lbl'" "'		
 }
