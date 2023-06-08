@@ -151,7 +151,7 @@ ess4_dna <- adopt_rate_dna_w4 %>%
   select(region, label, mean, abs_num) %>% 
   arrange(region, label)
 
-ess4_all <- bind_rows(ess4_innov, ess4_dna)
+ess4_cs <- bind_rows(ess4_innov, ess4_dna)
 
 
 # Wave 4: panel weight
@@ -164,8 +164,8 @@ ess4_innov_pnl <- adopt_rates_w4_hh %>%
   arrange(region, label)
 
 ess4_dna_pnl <- adopt_rate_dna_w4 %>% 
-  left_join(pop_rur_w4_all, by = "region") %>% 
-  mutate(abs_num = mean * growing_pct * pop_w4_all) %>% 
+  left_join(pop_rur_pnl, by = "region") %>% 
+  mutate(abs_num = mean * growing_pct * pop_w5_panel) %>% 
   filter(!region %in% c("Tigray", "National")) %>% 
   select(region, label, mean, abs_num) %>% 
   arrange(region, label)
@@ -189,7 +189,26 @@ ess5_dna <- dna_w5 %>%
   select(region, label, mean, abs_num) %>% 
   arrange(region, label)
 
-ess5_all <- bind_rows(ess5_innov, ess5_dna)
+ess5_cs <- bind_rows(ess5_innov, ess5_dna)
+
+
+# Wave 5: panel weights
+
+ess5_innov_pnl <- adopt_rates_w5_hh %>% 
+  left_join(pop_rur_pnl, by = "region") %>% 
+  mutate(abs_num = mean * pop_w5_panel) %>% 
+  filter(!region %in% c("Tigray", "National")) %>% 
+  select(region, label, mean, abs_num) %>% 
+  arrange(region, label)
+
+ess5_dna_pnl <- dna_w5 %>% 
+  left_join(pop_rur_pnl, by = "region") %>% 
+  mutate(abs_num = mean * growing_pct * pop_w5_panel) %>% 
+  filter(!region %in% c("Tigray", "National")) %>% 
+  select(region, label, mean, abs_num) %>% 
+  arrange(region, label)
+
+ess5_pnl <- bind_rows(ess5_innov_pnl, ess5_dna_pnl)
 
 
 
@@ -234,35 +253,39 @@ make_sheet <- function(tbl) {
 }
 
 df_lst <- list(
-  "ESS4 - wave 4 weight" = make_sheet(ess4_all)$df, 
+  "ESS4 - wave 4 CS weight" = make_sheet(ess4_cs)$df, 
   "ESS4 - panel weight" = make_sheet(ess4_pnl)$df, 
-  "ESS4 - wave 5 weight" = make_sheet(ess4_w5_all)$df,
-  "ESS5 - wave 5 weight" = make_sheet(ess5_all)$df
+  "ESS5 - wave 5 CS weight" = make_sheet(ess5_cs)$df,
+  "ESS5 - panel weight" = make_sheet(ess5_pnl)$df
   )
 
 reg_lst <- list(
-  make_sheet(ess4_all)$region_nm, 
+  make_sheet(ess4_cs)$region_nm, 
   make_sheet(ess4_pnl)$region_nm, 
-  make_sheet(ess4_w5_all)$region_nm, 
-  make_sheet(ess5_all)$region_nm
+  make_sheet(ess5_cs)$region_nm, 
+  make_sheet(ess5_pnl)$region_nm
 )
 
 col_lst <- list(
-  make_sheet(ess4_all)$col_hd, 
+  make_sheet(ess4_cs)$col_hd, 
   make_sheet(ess4_pnl)$col_hd, 
-  make_sheet(ess4_w5_all)$col_hd, 
-  make_sheet(ess5_all)$col_hd
+  make_sheet(ess5_cs)$col_hd, 
+  make_sheet(ess5_pnl)$col_hd
 )
 
 # Population frame:
-pop_frm_rur <- reduce(list(pop_rur_w4_all, pop_rur_w5_all, pop_rur_pnl), left_join, by = "region") %>% 
-  rename("Region" = region, "Wave 4 weight" = pop_w4_all, 
-         "Wave 5 weight" = pop_w5_all, "Panel weight" = pop_w5_panel) %>% 
+pop_frm_rur <- reduce(
+  list(pop_rur_w4_all, pop_rur_w5_all, pop_rur_pnl), left_join, by = "region"
+  ) %>% 
+  rename("Region" = region, "Wave 4 CS weight" = pop_w4_all, 
+         "Wave 5 CS weight" = pop_w5_all, "Panel weight" = pop_w5_panel) %>% 
   mutate_if(is.numeric, ~round(.))
 
-pop_frm_urb <- reduce(list(pop_urb_w4_all, pop_urb_w5_all, pop_urb_pnl), left_join, by = "region") %>% 
-  rename("Region" = region, "Wave 4 weight" = pop_w4_all, 
-         "Wave 5 weight" = pop_w5_all, "Panel weight" = pop_w5_panel) %>% 
+pop_frm_urb <- reduce(
+  list(pop_urb_w4_all, pop_urb_w5_all, pop_urb_pnl), left_join, by = "region"
+  ) %>% 
+  rename("Region" = region, "Wave 4 CS weight" = pop_w4_all, 
+         "Wave 5 CS weight" = pop_w5_all, "Panel weight" = pop_w5_panel) %>% 
   mutate_if(is.numeric, ~round(.))
 
 
