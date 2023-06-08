@@ -8,7 +8,8 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE,
+                      fig.height= 8, fig.width=16)
 ```
 
 ```{r}
@@ -19,10 +20,45 @@ library(RColorBrewer)
 library(colorspace)
 library(haven)
 library(tidyverse)
+library(ggpubr)
+library(stargazer)
 
 theme_set(theme_light())
 
 ```
+
+```{r}
+
+# theme_for_map <-
+#   theme(
+#     axis.ticks = element_blank(),
+#     axis.text = element_blank(),
+#     axis.line = element_blank(),
+#     panel.border = element_blank(),
+#     panel.grid = element_line(color = "transparent"),
+#     panel.background = element_blank(),
+#     plot.background = element_rect(fill = "transparent", color = "transparent")
+#   )
+
+theme_for_map <- theme(
+    axis.ticks = element_blank(),
+    axis.text = element_blank(),
+    axis.line = element_blank(),
+    panel.border = element_blank(),
+    panel.grid = element_line(color = "transparent"),
+    panel.background = element_blank(),
+    plot.background = element_rect(fill = "transparent", color = "transparent"),
+    # strip.background=element_rect(colour="#f0f0f0",fill="#f0f0f0"),
+    strip.text = element_text(size = 12, face="bold"),
+    legend.position = "right",
+    legend.key.height = unit(.8, "cm"),
+    legend.key.width = unit(.5, "cm"),
+    legend.text = element_text(size = 12, family = "Times"),
+    legend.title = element_text(size = 12, family = "Times")
+  )
+
+```
+
 
 ```{r message=FALSE, warning=FALSE}
 
@@ -80,7 +116,9 @@ hh_geo_slctd_w4 <- hh_geo_w4 %>%
       select(household_id, ea_id, locality = saq14, pw_w4, region = saq01),
     by = "household_id"
   ) %>% 
-  mutate(year = "2018")
+  mutate(year = "2018", locality = str_to_title(locality),
+         locality = if_else(is.na(locality), "Rural", locality),
+         region = str_to_title(region))
 
 # Bind wave 4 and wave 5 together
 
@@ -124,8 +162,8 @@ hh_geo_slctd_bind_sf <- hh_geo_slctd_bind %>%
 #   st_centroid() 
 
 ea_sf_bind <- hh_geo_slctd_bind_sf %>% 
-  group_by(ea_id) %>% 
-  summarise(geometry = st_union(geometry)) %>%
+  group_by(year, ea_id) %>% 
+  summarise(geometry = st_union(geometry), .groups = "drop") %>%
   st_centroid() 
 
 
@@ -138,7 +176,7 @@ ea_sf_bind <- hh_geo_slctd_bind_sf %>%
 # group by EA
 
 
-# hh_geo_ea_w5 <- hh_geo_slctd_w5 %>% 
+# ea_geo_w5 <- hh_geo_slctd_w5 %>% 
 #   group_by(ea_id) %>% 
 #   summarise(
 #     across(
@@ -149,7 +187,7 @@ ea_sf_bind <- hh_geo_slctd_bind_sf %>%
 #     across(c(region, rururb, ssa_aez09), first)
 #   )
 # 
-# hh_geo_ea_w4 <- hh_geo_slctd_w4 %>% 
+# ea_geo_w4 <- hh_geo_slctd_w4 %>% 
 #   group_by(ea_id) %>% 
 #   summarise(
 #     across(
@@ -160,147 +198,45 @@ ea_sf_bind <- hh_geo_slctd_bind_sf %>%
 #     across(c(region, rururb, ssa_aez09), first)
 #   )
 
-hh_geo_ea_bind <- hh_geo_slctd_bind %>% 
+ea_geo_bind <- hh_geo_slctd_bind %>% 
   group_by(year, ea_id) %>% 
   summarise(
     across(
-      c(h_tot, af_bio_12, wetQ_avg, af_bio_16), 
+      c(h_tot, af_bio_12, wetQ_avg, af_bio_16, eviarea_avg), 
       list(mean = mean, median = median)
     ), 
     across(c(region, locality, ssa_aez09), first),
     .groups = "drop"
   )
 
-geo_ea_sf_w5 <- ea_sf_w5 %>% 
-  left_join(hh_geo_ea_w5)
-
-geo_ea_sf_w4 <- ea_sf_w4 %>% 
-  left_join(hh_geo_ea_w4)
+# geo_ea_sf_w5 <- ea_sf_w5 %>% 
+#   left_join(ea_geo_w5)
+# 
+# geo_ea_sf_w4 <- ea_sf_w4 %>% 
+#   left_join(ea_geo_w4)
 
 geo_ea_sf_bind <- ea_sf_bind %>% 
-  left_join(hh_geo_ea_bind)
+  left_join(ea_geo_bind, by = c("year", "ea_id"))
 
 
 ```
 
 # Map by EA centroids
 
-```{r}
-
-ggplot() +
-  geom_sf(data = eth_regions, fill = NA) +
-  geom_sf(
-    data = geo_ea_sf_w5, 
-    aes(size = h2021_tot_mean, color = rururb), 
-    alpha = .5
-    ) +
-  coord_sf() +
-  labs(
-    title = "12-month total rainfall (mm) in 2021",
-    subtitle = "Mean at the EA level",
-    color = "Locality",
-    size = "Rainfall (mm)"
-  )
-
-```
-
-
 
 ```{r}
 
 ggplot() +
   geom_sf(data = eth_regions, fill = NA) +
   geom_sf(
-    data = geo_ea_sf_w5, 
-    aes(size = avg_precip_mean, color = rururb), 
+    data = geo_ea_sf_bind, 
+    aes(size = h_tot_mean, color = locality), 
     alpha = .5
     ) +
-  coord_sf() +
+  facet_wrap(~year) +
+  theme_for_map +
   labs(
-    title = "12-month total rainfall (mm) in 2021",
-    subtitle = "Mean at the EA level",
-    color = "Locality",
-    size = "Rainfall (mm)"
-  )
-
-```
-
-
-
-```{r}
-
-ggplot() +
-  geom_sf(data = eth_regions, fill = NA) +
-  geom_sf(
-    data = geo_ea_sf_w5, 
-    aes(size = af_bio_12_x_mean, color = rururb), 
-    alpha = .5
-    ) +
-  coord_sf() +
-  labs(
-    title = "Annual Precipitation (mm)",
-    subtitle = "Mean at the EA level",
-    color = "Locality",
-    size = "Rainfall (mm)"
-  )
-
-```
-
-
-
-
-```{r}
-
-ggplot() +
-  geom_sf(data = eth_regions, fill = NA) +
-  geom_sf(
-    data = geo_ea_sf_w5, 
-    aes(size = wetQ_avg_mean, color = rururb), 
-    alpha = .5
-    ) +
-  coord_sf() +
-  labs(
-    title = "Average total rainfall in wettest quarter (mm)",
-    subtitle = "Mean at the EA level",
-    color = "Locality",
-    size = "Rainfall (mm)"
-  )
-
-```
-
-
-
-```{r}
-
-ggplot() +
-  geom_sf(data = eth_regions, fill = NA) +
-  geom_sf(
-    data = geo_ea_sf_w5, 
-    aes(size = af_bio_16_x_mean, color = rururb), 
-    alpha = .5
-    ) +
-  coord_sf() +
-  labs(
-    title = "Precipitation of Wettest Quarter",
-    subtitle = "Mean at the EA level",
-    color = "Locality",
-    size = "Rainfall (mm)"
-  )
-
-```
-
-```{r}
-
-ggplot() +
-  geom_sf(data = eth_regions, fill = NA) +
-  geom_sf(
-    data = geo_ea_sf_w5, 
-    aes(size = eviarea_avg_mean, color = rururb), 
-    alpha = .5
-    ) +
-  coord_sf() +
-  labs(
-    title = "Precipitation of Wettest Quarter",
+    title = "12-month total rainfall (mm)",
     subtitle = "Mean at the EA level",
     color = "Locality",
     size = "Rainfall (mm)"
@@ -318,7 +254,8 @@ ggplot() +
     aes(size = af_bio_12_mean, color = locality), 
     alpha = .5
     ) +
-  coord_sf() +
+  facet_wrap(~year) +
+  theme_for_map +
   labs(
     title = "Annual Precipitation (mm)",
     subtitle = "Mean at the EA level",
@@ -329,43 +266,218 @@ ggplot() +
 ```
 
 
+
+
+```{r}
+
+ggplot() +
+  geom_sf(data = eth_regions, fill = NA) +
+  geom_sf(
+    data = geo_ea_sf_bind, 
+    aes(size = wetQ_avg_mean, color = locality), 
+    alpha = .5
+    ) +
+  facet_wrap(~year) +
+  theme_for_map +
+  labs(
+    title = "Average total rainfall in wettest quarter (mm)",
+    subtitle = "Mean at the EA level",
+    color = "Locality",
+    size = "Rainfall (mm)"
+  )
+
+```
+
+
+
+```{r}
+
+ggplot() +
+  geom_sf(data = eth_regions, fill = NA) +
+  geom_sf(
+    data = geo_ea_sf_bind, 
+    aes(size = af_bio_16_mean, color = locality), 
+    alpha = .5
+    ) +
+  facet_wrap(~year) +
+  theme_for_map +
+  labs(
+    title = "Precipitation of Wettest Quarter",
+    subtitle = "Mean at the EA level",
+    color = "Locality",
+    size = "Rainfall (mm)"
+  )
+
+```
+
+```{r}
+
+ggplot() +
+  geom_sf(data = eth_regions, fill = NA) +
+  geom_sf(
+    data = filter(geo_ea_sf_bind, year == "2021"), 
+    aes(size = eviarea_avg_mean, color = locality), 
+    alpha = .5
+    ) +
+  theme_for_map +
+  labs(
+    title = "Average total change in greenness",
+    subtitle = "Mean at the EA level",
+    color = "Locality",
+    size = "Change"
+  )
+
+```
+
+
 ## Comparison by region
 
 ```{r}
+# summary statistics
 
-# ggplot() +
-#   geom_sf(data = eth_regions) +
-#   geom_sf(data = hh_geo_slctd_w5_sf, aes(size = h2021_tot), alpha = .5)
+# hh_geo_slctd_bind %>% 
+#   group_by(year, region, locality) %>% 
+#   summarise(
+#     across(
+#       c(h_tot, af_bio_12, wetQ_avg, af_bio_16, eviarea_avg), 
+#       list(mean = mean, median = median)
+#     ), 
+#     across(c(ssa_aez09), first),
+#     .groups = "drop"
+#   )
+
+
+hh_geo_slctd_bind %>% 
+  filter(year == "2018", locality == "Rural") %>% 
+  select(-starts_with("pw")) %>% 
+  as.data.frame() %>% 
+  stargazer(
+    type = "text", summary = T,
+    title = "Summary statistics - 2018 (Rural sample)"
+    )
 
 ```
 
 ```{r}
 
-hh_geo_slctd_w5 %>% 
-  ggplot(aes(h2021_tot)) +
-  geom_histogram() 
+hh_geo_slctd_bind %>% 
+  filter(year == "2021", locality == "Rural") %>% 
+  as.data.frame() %>% 
+  stargazer(
+    type = "text", summary = T,
+    title = "Summary statistics - 2021 (Rural sample)"
+    )
 
 ```
 
-```{r}
-
-hh_geo_slctd_w5 %>% 
-  ggplot(aes(h2021_tot)) +
-  geom_histogram() +
-  facet_wrap(~ region, scales = "free", ncol = 3)
-
-```
 
 ```{r}
 
-hh_geo_slctd_w5 %>% 
-  mutate(region = fct_reorder(region, af_bio_12_x)) %>% 
-  ggplot(aes(af_bio_12_x, region, fill = rururb)) +
-  geom_boxplot() +
-  facet_wrap(~rururb, scales = "free_x") +
+hh_geo_slctd_bind %>% 
+  filter(locality == "Rural") %>% 
+  gghistogram("h_tot", fill = "year") +
+  facet_wrap(~ year) +
   theme(legend.position = "none") +
   labs(
-    title = "Annual Precipitation (mm) by region",
+    title = "12-month total rainfall (mm)",
+    x = "Rainfall (mm)",
+    subtitle = "Only Rural sample included"
+  )
+
+```
+
+```{r}
+
+hh_geo_slctd_bind %>% 
+  filter(locality == "Rural", year == "2018", !is.na(region)) %>% 
+  gghistogram("h_tot", fill = "purple") +
+  facet_wrap(~ region, scales = "free_y") +
+  theme(legend.position = "none") +
+  labs(
+    title = "12-month total rainfall (mm) - 2018",
+    x = "Rainfall (mm)",
+    subtitle = "Only Rural sample included"
+  )
+
+```
+
+
+```{r}
+
+hh_geo_slctd_bind %>% 
+  filter(locality == "Rural", year == "2021", !is.na(region)) %>% 
+  gghistogram("h_tot", fill = "lightgreen") +
+  facet_wrap(~ region, scales = "free_y") +
+  theme(legend.position = "none") +
+  labs(
+    title = "12-month total rainfall (mm) - 2021",
+    x = "Rainfall (mm)",
+    subtitle = "Only Rural sample included"
+  )
+
+```
+
+```{r}
+
+hh_geo_slctd_bind %>% 
+  filter(locality == "Rural") %>% 
+  gghistogram("af_bio_12", fill = "year") +
+  facet_wrap(~ year) +
+  theme(legend.position = "none") +
+  labs(
+    title = "Annual Precipitation (mm)",
+    x = "Precipitation (mm)",
+    subtitle = "Only Rural sample included"
+  )
+
+```
+
+
+
+```{r}
+
+hh_geo_slctd_bind %>% 
+  filter(locality == "Rural", year == "2018", !is.na(region)) %>% 
+  gghistogram("af_bio_12", fill = "purple") +
+  facet_wrap(~ region, scales = "free_y") +
+  theme(legend.position = "none") +
+  labs(
+    title = "Annual Precipitation (mm) - 2018",
+    x = "Rainfall (mm)",
+    subtitle = "Only Rural sample included"
+  )
+
+```
+
+
+```{r}
+
+hh_geo_slctd_bind %>% 
+  filter(locality == "Rural", year == "2021", !is.na(region)) %>% 
+  gghistogram("af_bio_12", fill = "lightgreen") +
+  facet_wrap(~ region, scales = "free_y") +
+  theme(legend.position = "none") +
+  labs(
+    title = "Annual Precipitation (mm) - 2021",
+    x = "Rainfall (mm)",
+    subtitle = "Only Rural sample included"
+  )
+
+```
+
+
+
+```{r}
+
+hh_geo_slctd_bind %>%
+  filter(!is.na(region), year == "2018") %>% 
+  mutate(region = fct_reorder(region, af_bio_12)) %>%
+  ggplot(aes(af_bio_12, region, fill = locality)) +
+  geom_boxplot() +
+  facet_wrap(~locality, scales = "free_x") +
+  theme(legend.position = "none") +
+  labs(
+    title = "Annual Precipitation (mm) by region - 2018",
     fill = "Locality",
     x = "Annual Precipitation (mm)",
     y = ""
@@ -373,64 +485,83 @@ hh_geo_slctd_w5 %>%
 
 ```
 
+
 ```{r}
 
-hh_geo_slctd_w5 %>% 
-  ggplot(aes(h2021_tot, af_bio_12_x, color = region)) +
-  geom_point() +
-  geom_abline(slope = 1, intercept = 0) +
+hh_geo_slctd_bind %>%
+  filter(!is.na(region), year == "2021") %>% 
+  mutate(region = fct_reorder(region, af_bio_12)) %>%
+  ggplot(aes(af_bio_12, region, fill = locality)) +
+  geom_boxplot() +
+  facet_wrap(~locality, scales = "free_x") +
+  theme(legend.position = "none") +
   labs(
-    x = "12-month total rainfall (mm) in 2021",
-    y = "Annual Precipitation (mm)",
-    subtitle = "Household level",
-    color = "Region"
+    title = "Annual Precipitation (mm) by region - 2021",
+    fill = "Locality",
+    x = "Annual Precipitation (mm)",
+    y = ""
   )
 
 ```
 
+<!-- ```{r} -->
 
-```{r}
+<!-- hh_geo_slctd_w5 %>% -->
+<!--   ggplot(aes(h2021_tot, af_bio_12_x, color = region)) + -->
+<!--   geom_point() + -->
+<!--   geom_abline(slope = 1, intercept = 0) + -->
+<!--   labs( -->
+<!--     x = "12-month total rainfall (mm) in 2021", -->
+<!--     y = "Annual Precipitation (mm)", -->
+<!--     subtitle = "Household level", -->
+<!--     color = "Region" -->
+<!--   ) -->
 
-geo_ea_sf_w5 %>% 
-  ggplot(aes(h2021_tot_mean, af_bio_12_x_mean, color = region)) +
-  geom_point() +
-  geom_abline(slope = 1, intercept = 0) +
-  labs(
-    x = "12-month total rainfall (mm) in 2021",
-    y = "Annual Precipitation (mm)",
-    subtitle = "EA level",
-    color = "Region"
-  )
-
-```
-
-```{r}
-
-hh_geo_slctd_w5 %>% 
-  ggplot(aes(h2021_tot, af_bio_12_x, color = region)) +
-  geom_point() +
-  geom_abline(slope = 1, intercept = 0) +
-  labs(
-    x = "12-month total rainfall (mm) in 2021",
-    y = "Annual Precipitation (mm)",
-    subtitle = "Household level",
-    color = "Region"
-  )
-
-```
+<!-- ``` -->
 
 
-```{r}
+<!-- ```{r} -->
 
-hh_geo_slctd_w5 %>% 
-  count(region, ssa_aez09) %>% 
-  group_by(region) %>% 
-  mutate(pct_aez = n / sum(n)) %>% 
-  ggplot(aes(pct_aez, ssa_aez09)) +
-  geom_col() +
-  facet_wrap(~ region)
+<!-- geo_ea_sf_w5 %>% -->
+<!--   ggplot(aes(h2021_tot_mean, af_bio_12_x_mean, color = region)) + -->
+<!--   geom_point() + -->
+<!--   geom_abline(slope = 1, intercept = 0) + -->
+<!--   labs( -->
+<!--     x = "12-month total rainfall (mm) in 2021", -->
+<!--     y = "Annual Precipitation (mm)", -->
+<!--     subtitle = "EA level", -->
+<!--     color = "Region" -->
+<!--   ) -->
 
-```
+<!-- ``` -->
+
+<!-- ```{r} -->
+
+<!-- hh_geo_slctd_w5 %>% -->
+<!--   ggplot(aes(h2021_tot, af_bio_12_x, color = region)) + -->
+<!--   geom_point() + -->
+<!--   geom_abline(slope = 1, intercept = 0) + -->
+<!--   labs( -->
+<!--     x = "12-month total rainfall (mm) in 2021", -->
+<!--     y = "Annual Precipitation (mm)", -->
+<!--     subtitle = "Household level", -->
+<!--     color = "Region" -->
+<!--   ) -->
+
+<!-- ``` -->
+
+
+<!-- ```{r} -->
+
+<!-- hh_geo_slctd_w5 %>% -->
+<!--   count(region, ssa_aez09) %>% -->
+<!--   group_by(region) %>% -->
+<!--   mutate(pct_aez = n / sum(n)) %>% -->
+<!--   ggplot(aes(pct_aez, ssa_aez09)) + -->
+<!--   geom_col() + -->
+<!--   facet_wrap(~ region) -->
+
+<!-- ``` -->
 
 
 
