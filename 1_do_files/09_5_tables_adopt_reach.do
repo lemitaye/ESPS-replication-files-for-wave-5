@@ -30,27 +30,47 @@ sum hhd_treadle hhd_motorpump hhd_rdisp hhd_consag1 hhd_swc hhd_cross hhd_livIA 
 * Upper bound ----------------
 // upper bound is # of households with at least one CG-related innovation.
 
-gen     ubound = 0
-replace ubound = 1 if maize==1 | hhd_ofsp==1 | hhd_awassa83==1 | hhd_treadle==1 | ///
-    hhd_motorpump==1 | hhd_rdisp==1 | hhd_consag1==1 | hhd_swc==1 | hhd_cross==1 | ///
-    hhd_livIA==1 | hhd_elepgrass==1 | hhd_sesbaniya==1 | hhd_alfalfa==1 | ///
-    hhd_agroind==1 | hhd_grass==1  | hhd_avocado==1 | hhd_mango==1 | hhd_papaya==1 | ///
-    hhd_sweetpotato==1 | hhd_fieldp==1 | (commirr==1 & plotirr==1) | hhd_desi==1 | hhd_kabuli==1
+/*
+Note: there are two types of upper bound estimates: (i) an estimate that includes
+maize DNA and hence need to take into account maize growing households, and (ii) 
+an estimate without maize DNA
+*/
+
+gen     ubound1 = 0 if dnadata==1
+replace ubound1 = 1 if dnadata==1 & (maize==1 | hhd_treadle==1 | hhd_motorpump==1 | ///
+    hhd_rdisp==1 | hhd_consag1==1 | hhd_swc==1 | hhd_cross==1 | hhd_livIA==1 | ///
+    hhd_elepgrass==1 | hhd_sesbaniya==1 | hhd_alfalfa==1 | hhd_agroind==1 | ///
+    hhd_grass==1  | hhd_avocado==1 | hhd_mango==1 | hhd_papaya==1 | hhd_sweetpotato==1 | ///
+    hhd_fieldp==1 | (commirr==1 & plotirr==1) | hhd_ofsp==1 | hhd_awassa83==1 | ///
+    hhd_desi==1 | hhd_kabuli==1)
+
+
+gen     ubound2 = 0 
+replace ubound2 = 1 if  (hhd_treadle==1 | hhd_motorpump==1 | hhd_rdisp==1 | ///
+    hhd_consag1==1 | hhd_swc==1 | hhd_cross==1 | hhd_livIA==1 | hhd_elepgrass==1 | ///
+    hhd_sesbaniya==1 | hhd_alfalfa==1 | hhd_agroind==1 | hhd_grass==1  | ///
+    hhd_avocado==1 | hhd_mango==1 | hhd_papaya==1 | hhd_sweetpotato==1 | hhd_fieldp==1 | ///
+    (commirr==1 & plotirr==1) | hhd_ofsp==1 | hhd_awassa83==1 | hhd_desi==1 | hhd_kabuli==1)
 
 * lower bound -----------------
 // Lower bound is # of hh with improved maize, sweet potato, or kabuli chickpea type
 
-gen     lbound=0
-replace lbound=1 if maize==1 | hhd_ofsp==1 | hhd_awassa83==1 | hhd_desi==1 | hhd_kabuli==1
+gen     lbound1=0
+replace lbound1=1 if dnadata==1 & (maize==1 | hhd_ofsp==1 | hhd_awassa83==1 | hhd_desi==1 | hhd_kabuli==1)
+
+gen     lbound2=0
+replace lbound2=1 if hhd_ofsp==1 | hhd_awassa83==1 | hhd_desi==1 | hhd_kabuli==1
 
 
 * label variables
-label var ubound  "Upper bound"   
-label var lbound  "Lower bound"
-label var cr2     "Perc. of rural hhs growing maize"
+label var ubound1  "Upper bound - 1"   
+label var ubound2  "Upper bound - 2"   
+label var lbound1  "Lower bound - 1"
+label var lbound2  "Lower bound - 2"
+label var cr2      "Perc. of rural hhs growing maize"
 
 * global
-global boundvars ubound lbound maize cr2 
+global boundvars ubound1 ubound2 lbound1 lbound2 cr2 
 
 // prep:
 local rname ""
@@ -98,6 +118,9 @@ xml_tab C, save("$table/09_5_ess5_number_bounds.xml") replace sheet("HH_w5", nog
     title("Table: ESS5 - Upper and lower bounds of adoption reach") ///
     $options1
 
+* save ------
+drop sh* ead* impcr*
+save "${tmp}/dynamics/ess5_bounds.dta", replace  
 
 
 * ESS4 -------------------------------------------------------------------------
@@ -140,14 +163,14 @@ replace ubound2=1 if  (hhd_treadle==1 | hhd_motorpump==1 | hhd_rdisp==1 | hhd_co
     hhd_ofsp==1 | hhd_awassa83==1)
 
 
-g       ubound3=0 
+gen     ubound3=0 
 replace ubound3=1 if (hhd_treadle==1 | hhd_motorpump==1 | hhd_rdisp==1 | hhd_consag1==1 | ///
     hhd_swc==1 | hhd_cross==1 | hhd_livIA==1 | hhd_elepgrass==1 | hhd_gaya==1 | ///
     hhd_sasbaniya==1 | hhd_alfa==1 | hhd_indprod==1 | hhd_grass==1  | hhd_avocado==1 | ///
     hhd_mango==1 | hhd_papaya==1 | hhd_sweetpotato==1 | hhd_fieldp==1 | ///
     (commirr==1 & plotirr==1) | hhd_ofsp==1 | hhd_awassa83==1)
 
-g       percrural=0
+gen     percrural=0
 replace percrural=1 if maize==1 | barley==1 | sorghum==1 | hhd_ofsp==100 | ///
     hhd_awassa83==100 | hhd_treadle==1 | hhd_motorpump==1 | hhd_rdisp==1 | ///
     hhd_consag1==1 | hhd_swc==1 | hhd_cross==1 | hhd_livIA==1 | hhd_elepgrass==1 | ///
@@ -206,4 +229,5 @@ xml_tab C, save("$table/09_5_ess4_number_bounds.xml") replace sheet("HH_w4", nog
     $options2
 
 * save ------
+drop sh* ead* impcr*
 save "${tmp}/dynamics/ess4_bounds.dta", replace  
