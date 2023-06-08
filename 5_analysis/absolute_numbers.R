@@ -135,7 +135,7 @@ adopt_rates_w5_hh <- adopt_rates_all_hh %>%
 
 
 
-# Wave 4: all households
+# Wave 4: cross-sectional weight
 
 ess4_innov <- adopt_rates_w4_hh %>% 
   left_join(pop_rur_w4_all, by = "region") %>% 
@@ -153,7 +153,9 @@ ess4_dna <- adopt_rate_dna_w4 %>%
 
 ess4_all <- bind_rows(ess4_innov, ess4_dna)
 
-# Wave 4: panel households
+
+# Wave 4: panel weight
+
 ess4_innov_pnl <- adopt_rates_w4_hh %>% 
   left_join(pop_rur_pnl, by = "region") %>% 
   mutate(abs_num = mean * pop_w5_panel) %>% 
@@ -170,25 +172,8 @@ ess4_dna_pnl <- adopt_rate_dna_w4 %>%
 
 ess4_pnl <- bind_rows(ess4_innov_pnl, ess4_dna_pnl)
 
-# Wave 4: panel households (using wave 5 weights)
-ess4_innov_w5_all <- adopt_rates_w4_hh %>% 
-  left_join(pop_rur_w5_all, by = "region") %>% 
-  mutate(abs_num = mean * pop_w5_all) %>% 
-  filter(!region %in% c("Tigray", "National")) %>% 
-  select(region, label, mean, abs_num) %>% 
-  arrange(region, label)
 
-ess4_dna_w5_all <- adopt_rate_dna_w4 %>% 
-  left_join(pop_rur_w5_all, by = "region") %>% 
-  mutate(abs_num = mean * growing_pct * pop_w5_all) %>% 
-  filter(!region %in% c("Tigray", "National")) %>% 
-  select(region, label, mean, abs_num) %>% 
-  arrange(region, label)
-
-ess4_w5_all <- bind_rows(ess4_innov_w5_all, ess4_dna_w5_all)
-
-
-# Wave 5: 
+# Wave 5: cross-sectional weights
 
 ess5_innov <- adopt_rates_w5_hh %>% 
   left_join(pop_rur_w5_all, by = "region") %>% 
@@ -205,6 +190,8 @@ ess5_dna <- dna_w5 %>%
   arrange(region, label)
 
 ess5_all <- bind_rows(ess5_innov, ess5_dna)
+
+
 
 
 # function to construct list of data frames:
