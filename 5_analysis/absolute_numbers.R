@@ -29,6 +29,8 @@ wave5_hh_new <- read_dta(file.path(root, "3_report_data/wave5_hh_new.dta"))
 
 psnp_hh <- read_csv("dynamics_presentation/data/psnp_hh.csv")
 
+ubounds_w4 <- read_csv("dynamics_presentation/data/ubounds_w4.csv")
+
 
 track_hh <- read_dta(file.path(root, "tmp/dynamics/06_1_track_hh.dta")) 
 
@@ -289,6 +291,25 @@ pop_frm_urb <- reduce(
   mutate_if(is.numeric, ~round(.))
 
 
+# Upper bounds
+
+ub_w4 <- ubounds_w4 %>% 
+  left_join(pop_rur_w4_all, by = "region") %>% 
+  mutate(abs_num = mean * pct * pop_w4_all, mean_pct = mean*pct) %>% 
+  group_by(region) %>% 
+  summarise(abs_num = sum(abs_num), mean = sum(mean_pct)) %>% 
+  mutate(label = "Upper Bound") 
+
+lb_w4 <- ess4_dna %>% 
+  filter(label == "Maize DNA-fingerprinting") %>% 
+  mutate(label = "Lower Bound")
+
+bd_w4 <- bind_rows(ub_w4, lb_w4) %>% 
+  expand(region, label) %>% 
+  left_join(bind_rows(ub_w4, lb_w4), by = c("region", "label"))
+  
+
+
 # create a workbook
 wb <- createWorkbook()
 
@@ -344,6 +365,9 @@ for (i in seq_along(df_lst)) {
   }
   
 }
+
+# add bound numbers
+writeData(wb, sheet = names(df_lst)[[1]], bd_w4, startCol = 1, startRow = 33, colNames = FALSE)
 
 
 # Save the workbook as an Excel file
