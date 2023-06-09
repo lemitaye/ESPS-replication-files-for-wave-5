@@ -3,7 +3,8 @@
 *                Upper and lower bound estimates of absolute reach
 * Country: Ethiopia 
 * Data: ESS4 & ESS5 
-* Author: Lemi Daba (tayelemi@gmail.com) [code adopted from Paola Mallia (paola_mallia@ymail.com )] 
+* Author: Lemi Daba (tayelemi@gmail.com) 
+*   [code adopted from Paola Mallia (paola_mallia@ymail.com )] 
 ********************************************************************************
 
 
@@ -55,7 +56,7 @@ replace ubound2 = 1 if  (hhd_treadle==1 | hhd_motorpump==1 | hhd_rdisp==1 | ///
 * lower bound -----------------
 // Lower bound is # of hh with improved maize, sweet potato, or kabuli chickpea type
 
-gen     lbound1=0
+gen     lbound1=0 if dnadata==1
 replace lbound1=1 if dnadata==1 & (maize==1 | hhd_ofsp==1 | hhd_awassa83==1 | hhd_desi==1 | hhd_kabuli==1)
 
 gen     lbound2=0
@@ -147,28 +148,21 @@ global innov4 hhd_treadle hhd_motorpump hhd_rdisp hhd_consag1 hhd_swc hhd_cross 
 
 for var $innov4: replace X=1 if X==100
 
-gen     ubound1=0 if dnadata==1
-replace ubound1=1 if dnadata==1 & (maize==1 | hhd_treadle==1 | hhd_motorpump==1 | ///
+gen     ubound1a=0 if dnadata==1
+replace ubound1a=1 if dnadata==1 & (maize==1 | hhd_treadle==1 | hhd_motorpump==1 | ///
     hhd_rdisp==1 | hhd_consag1==1 | hhd_swc==1 | hhd_cross==1 | hhd_livIA==1 | ///
     hhd_elepgrass==1 | hhd_gaya==1 | hhd_sasbaniya==1 | hhd_alfa==1 | hhd_indprod==1 | ///
     hhd_grass==1  | hhd_avocado==1 | hhd_mango==1 | hhd_papaya==1 | hhd_sweetpotato==1 | ///
     hhd_fieldp==1 | (commirr==1 & plotirr==1) |   hhd_ofsp==1 | hhd_awassa83==1)
 
 
-gen     ubound2=0 
-replace ubound2=1 if  (hhd_treadle==1 | hhd_motorpump==1 | hhd_rdisp==1 | hhd_consag1==1 | ///
+gen     ubound1b=0 
+replace ubound1b=1 if  (hhd_treadle==1 | hhd_motorpump==1 | hhd_rdisp==1 | hhd_consag1==1 | ///
     hhd_swc==1 | hhd_cross==1 | hhd_livIA==1 | hhd_elepgrass==1 | hhd_gaya==1 | ///
     hhd_sasbaniya==1 | hhd_alfa==1 | hhd_indprod==1 | hhd_grass==1  | hhd_avocado==1 | ///
     hhd_mango==1 | hhd_papaya==1 | hhd_sweetpotato==1 | hhd_fieldp==1 | (commirr==1 & plotirr==1) | ///
     hhd_ofsp==1 | hhd_awassa83==1)
 
-
-gen     ubound3=0 
-replace ubound3=1 if (hhd_treadle==1 | hhd_motorpump==1 | hhd_rdisp==1 | hhd_consag1==1 | ///
-    hhd_swc==1 | hhd_cross==1 | hhd_livIA==1 | hhd_elepgrass==1 | hhd_gaya==1 | ///
-    hhd_sasbaniya==1 | hhd_alfa==1 | hhd_indprod==1 | hhd_grass==1  | hhd_avocado==1 | ///
-    hhd_mango==1 | hhd_papaya==1 | hhd_sweetpotato==1 | hhd_fieldp==1 | ///
-    (commirr==1 & plotirr==1) | hhd_ofsp==1 | hhd_awassa83==1)
 
 gen     percrural=0
 replace percrural=1 if maize==1 | barley==1 | sorghum==1 | hhd_ofsp==100 | ///
@@ -178,8 +172,34 @@ replace percrural=1 if maize==1 | barley==1 | sorghum==1 | hhd_ofsp==100 | ///
     hhd_avocado==1 | hhd_mango==1 | hhd_papaya==1 | hhd_sweetpotato==1 | ///
     hhd_fieldp==1 | (commirr==1 & plotirr==1) 
 
+// Lower bounds
 
-global dnastats4 maize barley sorghum cr2 ubound1 ubound2 ubound3
+gen     lbound1=0 if dnadata==1
+replace lbound1=1 if dnadata==1 & maize_cg==1 
+
+
+gen     lbound2a=0 if dnadata==1
+replace lbound2a=1 if dnadata==1 & (maize_cg==1 | hhd_ofsp==1 | hhd_awassa83==1)
+
+gen     lbound2b=0
+replace lbound2b=1 if hhd_ofsp==1 | hhd_awassa83==1 
+
+
+gen     lbound3=0 if dnadata==1
+replace lbound3=1 if maize_cg==1 | barley_cg==1 | sorghum_cg==1
+
+
+gen     lbound4a=0 if dnadata==1
+replace lbound4a=1 if dnadata==1 & (maize_cg==1 | barley_cg==1 | sorghum_cg==1) & ///
+                        (hhd_ofsp==1 | hhd_awassa83==1)
+
+gen     lbound4b=0 
+replace lbound4b=1 if hhd_ofsp==1 | hhd_awassa83==1 
+
+
+
+global dnastats4 maize barley sorghum cr1 cr2 cr6 anycr ubound1a ubound1b ///
+    lbound1 lbound2a lbound2b lbound3 lbound4a lbound4b
 
 // prep:
 local rname ""

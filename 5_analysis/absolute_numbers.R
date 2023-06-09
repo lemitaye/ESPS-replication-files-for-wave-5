@@ -31,6 +31,9 @@ psnp_hh <- read_csv("dynamics_presentation/data/psnp_hh.csv")
 
 ubounds_w4 <- read_csv("dynamics_presentation/data/ubounds_w4.csv")
 
+ess5_bounds <- read_dta(file.path(root, "tmp/dynamics/ess5_bounds.dta"))
+
+
 
 track_hh <- read_dta(file.path(root, "tmp/dynamics/06_1_track_hh.dta")) 
 
@@ -134,6 +137,25 @@ psnp_w5_rur <- psnp_hh %>%
 adopt_rates_w5_hh <- adopt_rates_all_hh %>% 
   filter(wave == "Wave 5", !str_detect(variable, "_impcr|psnp")) %>% 
   bind_rows(psnp_w5_rur)
+
+
+# Upper and lower ound calculations, wave 5
+
+maize_growing_w5 <- ess5_bounds %>% 
+  recode_region(saq01) %>% 
+  group_by(region) %>% 
+  summarise(growing_pct = weighted.mean(cr2, pw = pw_w5)) 
+
+ubounds_w5 <- ess5_bounds %>% 
+  recode_region(saq01) %>% 
+  group_by(region) %>% 
+  summarise(
+    across(c(starts_with(c("ubound", "lbound"))), ~weighted.mean(., w = pw_w5, na.rm = T))
+  ) %>% 
+  replace_na(list(ubound1 = 0, lbound1 = 0)) %>% 
+  # pivot_longer(-region, names_to = "variable", values_to = "mean") %>% 
+  left_join(maize_growing_w5, by = "region") %>% 
+  mutate(no_gr_pct = 1 - growing_pct) 
 
 
 
@@ -291,7 +313,9 @@ pop_frm_urb <- reduce(
   mutate_if(is.numeric, ~round(.))
 
 
-# Upper bounds
+# Upper and lower bounds
+
+# Wave 4
 
 ub_w4 <- ubounds_w4 %>% 
   left_join(pop_rur_w4_all, by = "region") %>% 
@@ -306,7 +330,43 @@ lb_w4 <- ess4_dna %>%
 
 bd_w4 <- bind_rows(ub_w4, lb_w4) %>% 
   expand(region, label) %>% 
-  left_join(bind_rows(ub_w4, lb_w4), by = c("region", "label"))
+  left_join(bind_rows(ub_w4, lb_w4), by = c("region", "label")) %>% 
+  replace_na(list(abs_num = 0, mean = 0))
+
+
+# Wave 5
+
+bd_w5 <- ubounds_w5 %>% 
+  left_join(pop_rur_w5_all, by = "region") %>% 
+  mutate(
+    
+    mean_ub = ( ubound1 * growing_pct ) + ( ubound2 * no_gr_pct ),
+    num_ub = mean_ub * pop_w5_all,
+    
+    mean_lb = ( lbound1 * growing_pct ) + ( lbound2 * no_gr_pct ),
+    num_lb = mean_lb * pop_w5_all,
+    
+    ) %>% 
+  select(region, mean_ub, mean_lb, num_ub, num_lb) %>% 
+  pivot_longer(
+    cols = mean_ub:num_lb,
+    names_to = c("stat", "type"),
+    names_sep = "_",
+    values_to = "value"
+  ) %>% 
+  pivot_wider(
+    names_from = "stat", values_from = "value"
+    ) %>% 
+  mutate(
+    label = case_match(
+      type, 
+      "ub" ~ "Upper Bound", 
+      "lb" ~ "Lower Bound"
+    )
+  ) %>% 
+  select(region, label, mean, abs_num = num)
+
+
   
 
 
@@ -367,7 +427,8 @@ for (i in seq_along(df_lst)) {
 }
 
 # add bound numbers
-writeData(wb, sheet = names(df_lst)[[1]], bd_w4, startCol = 1, startRow = 33, colNames = FALSE)
+writeData(wb, sheet = names(df_lst)[[1]], make_sheet(bd_w4)$df, startCol = 1, startRow = 33, colNames = FALSE)
+writeData(wb, sheet = names(df_lst)[[3]], make_sheet(bd_w5)$df, startCol = 1, startRow = 33, colNames = FALSE)
 
 
 # Save the workbook as an Excel file
