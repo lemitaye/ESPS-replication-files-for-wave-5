@@ -139,73 +139,73 @@ write_csv(adopt_rates_w5_hh, file = "dynamics_presentation/data/adopt_rates_w5_h
 
 # DNA -------
 
-dna_vars <- c("qpm", "dtmz", "maize_cg", "barley_cg", "sorghum_cg",
-              "cr1", "cr2", "cr6")
-
-hh_dna_w4 <- ess4_hh_all %>% 
-  select(
-    household_id, ea_id, wave, region = saq01, starts_with("pw_"), all_of(dna_vars),
-    cr1, cr2, cr6
-  ) %>% 
-  mutate(
-    across(
-      c(all_of(dna)), ~recode(., `100` = 1))  # since w4 vars are mult. by 100
-  ) %>% 
-  recode_region() 
-
-
-labs_dna <- ess4_hh_all %>% 
-  select(all_of(dna_vars)) %>% 
-  var_label() %>% 
-  as_tibble() %>% 
-  pivot_longer(
-    cols = everything(), 
-    names_to = "variable", 
-    values_to = "label"
-  )
-
-
-dna_w4 <- bind_rows(
-  mean_tbl(hh_dna_w4, dna_vars, group_vars = c("wave", "variable"), pw = pw_w4) %>% 
-    mutate(region = "National"),
-  mean_tbl(hh_dna_w4, dna_vars, group_vars = c("wave", "variable", "region"), pw = pw_w4) 
-) %>% 
-  filter(!variable %in% c("cr1", "cr2", "cr6")) %>% 
-  left_join(labs_dna, by = "variable") %>% 
-  mutate(wave = paste("Wave", wave)) %>% 
-  select(wave, region, variable, label, mean, nobs) %>% 
-  mutate(crop = case_match(
-    variable,
-    c("maize_cg", "dtmz", "qpm") ~ "Maize",
-    "sorghum_cg" ~ "Sorghum", 
-    "barley_cg" ~ "Barley"
-  )) %>% 
-  filter(region %in% c("Amhara", "Dire Dawa", "Harar", "Oromia", "SNNP", "Tigray"))
-
-
-crop_growing <- hh_dna_w4 %>% 
-  select(c("cr1", "cr2", "cr6"), region, pw_w4) %>% 
-  group_by(region) %>% 
-  summarise(
-    across( c(cr1, cr2, cr6), ~weighted.mean(., w = pw_w4, na.rm = T) )
-  ) %>% 
-  pivot_longer(
-    c(cr1, cr2, cr6), names_to = "variable", values_to = "maize_pct"
-  ) %>% 
-  mutate(crop = case_match(
-    variable,
-    "cr2" ~ "Maize",
-    "cr6" ~ "Sorghum", 
-    "cr1" ~ "Barley"
-  )) %>% 
-  select(region, crop, maize_pct) 
-
-adopt_rate_dna_w4 <- dna_w4 %>% 
-  left_join(crop_growing, by = c("region", "crop"))
-
-
-
-write_csv(adopt_rate_dna_w4, file = "dynamics_presentation/data/adopt_rate_dna_w4.csv")
+# dna_vars <- c("qpm", "dtmz", "maize_cg", "barley_cg", "sorghum_cg",
+#               "cr1", "cr2", "cr6")
+# 
+# hh_dna_w4 <- ess4_hh_all %>% 
+#   select(
+#     household_id, ea_id, wave, region = saq01, starts_with("pw_"), all_of(dna_vars),
+#     cr1, cr2, cr6
+#   ) %>% 
+#   mutate(
+#     across(
+#       c(all_of(dna)), ~recode(., `100` = 1))  # since w4 vars are mult. by 100
+#   ) %>% 
+#   recode_region() 
+# 
+# 
+# labs_dna <- ess4_hh_all %>% 
+#   select(all_of(dna_vars)) %>% 
+#   var_label() %>% 
+#   as_tibble() %>% 
+#   pivot_longer(
+#     cols = everything(), 
+#     names_to = "variable", 
+#     values_to = "label"
+#   )
+# 
+# 
+# dna_w4 <- bind_rows(
+#   mean_tbl(hh_dna_w4, dna_vars, group_vars = c("wave", "variable"), pw = pw_w4) %>% 
+#     mutate(region = "National"),
+#   mean_tbl(hh_dna_w4, dna_vars, group_vars = c("wave", "variable", "region"), pw = pw_w4) 
+# ) %>% 
+#   filter(!variable %in% c("cr1", "cr2", "cr6")) %>% 
+#   left_join(labs_dna, by = "variable") %>% 
+#   mutate(wave = paste("Wave", wave)) %>% 
+#   select(wave, region, variable, label, mean, nobs) %>% 
+#   mutate(crop = case_match(
+#     variable,
+#     c("maize_cg", "dtmz", "qpm") ~ "Maize",
+#     "sorghum_cg" ~ "Sorghum", 
+#     "barley_cg" ~ "Barley"
+#   )) %>% 
+#   filter(region %in% c("Amhara", "Dire Dawa", "Harar", "Oromia", "SNNP", "Tigray"))
+# 
+# 
+# crop_growing <- hh_dna_w4 %>% 
+#   select(c("cr1", "cr2", "cr6"), region, pw_w4) %>% 
+#   group_by(region) %>% 
+#   summarise(
+#     across( c(cr1, cr2, cr6), ~weighted.mean(., w = pw_w4, na.rm = T) )
+#   ) %>% 
+#   pivot_longer(
+#     c(cr1, cr2, cr6), names_to = "variable", values_to = "maize_pct"
+#   ) %>% 
+#   mutate(crop = case_match(
+#     variable,
+#     "cr2" ~ "Maize",
+#     "cr6" ~ "Sorghum", 
+#     "cr1" ~ "Barley"
+#   )) %>% 
+#   select(region, crop, maize_pct) 
+# 
+# adopt_rate_dna_w4 <- dna_w4 %>% 
+#   left_join(crop_growing, by = c("region", "crop"))
+# 
+# 
+# 
+# write_csv(adopt_rate_dna_w4, file = "dynamics_presentation/data/adopt_rate_dna_w4.csv")
 
 
 
