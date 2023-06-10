@@ -180,7 +180,7 @@ replace lbound1=1 if dnadata==1 & maize_cg==1
 
 // 2. Maize CG + improved sp 
 gen     lbound2a=0 if dnadata==1 
-replace lbound2a=1 if dnadata==1 & (maize_cg==1 | barley_cg==1 | sorghum_cg==1) & ///
+replace lbound2a=1 if dnadata==1 & (maize_cg==1 | barley_cg==1 | sorghum_cg==1) | ///
                         (hhd_ofsp==1 | hhd_awassa83==1)
 
 gen     lbound2b=0 

@@ -382,6 +382,7 @@ bd_w4 <- bd_means_w4 %>%
 
 bd_w4_pnl <- bd_means_w4 %>%
   left_join(pop_rur_pnl, by = "region") %>%
+  filter(region != "Tigray") %>% 
   mutate(
     num_ub = mean_ub * pop_w5_panel,
     num_lb1 = mean_lb1 * pop_w5_panel,
