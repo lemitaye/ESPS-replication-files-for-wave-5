@@ -34,6 +34,8 @@ psnp_hh <- read_csv("dynamics_presentation/data/psnp_hh.csv")
 
 ubounds_w4 <- read_csv("dynamics_presentation/data/ubounds_w4.csv")
 
+bd_mean_w5 <- read_csv("dynamics_presentation/data/bd_mean_w5.csv")
+
 ess5_bounds <- read_dta(file.path(root, "tmp/dynamics/ess5_bounds.dta"))
 
 
@@ -126,41 +128,6 @@ dna_w5 <- dna_means_hh %>%
   filter(wave == "Wave 5", sample == "All households/EA") %>% 
   left_join(maize_growing, by = "region")
 
-# PSNP in wave 5
-
-# psnp_w5_rur <- psnp_hh %>% 
-#   filter(
-#     wave == "Wave 5", locality == "Rural",
-#     sample == "All", region != "Addis Ababa"
-#   ) %>% 
-#   select(wave, variable, region, mean, nobs, label)
-
-
-# Innovations in wave 5:
-# adopt_rates_w5_hh <- adopt_rates_all_hh %>% 
-#   filter(wave == "Wave 5", !str_detect(variable, "_impcr|psnp")) %>% 
-#   bind_rows(psnp_w5_rur)
-
-
-# Upper and lower ound calculations, wave 5
-
-maize_growing_w5 <- ess5_bounds %>% 
-  recode_region(saq01) %>% 
-  group_by(region) %>% 
-  summarise(growing_pct = weighted.mean(cr2, pw = pw_w5)) 
-
-ubounds_w5 <- ess5_bounds %>% 
-  recode_region(saq01) %>% 
-  group_by(region) %>% 
-  summarise(
-    across(c(starts_with(c("ubound", "lbound"))), ~weighted.mean(., w = pw_w5, na.rm = T))
-  ) %>% 
-  mutate_all( ~replace_na(., 0) ) %>% 
-  # pivot_longer(-region, names_to = "variable", values_to = "mean") %>% 
-  left_join(maize_growing_w5, by = "region") %>% 
-  mutate(no_gr_pct = 1 - growing_pct) 
-
-  
 
 # Wave 4: cross-sectional weight
 
@@ -323,7 +290,7 @@ pop_frm_urb <- reduce(
 
 ub_w4 <- ubounds_w4 %>% 
   left_join(pop_rur_w4_all, by = "region") %>% 
-  mutate(abs_num = mean * pct * pop_w4_all, mean_pct = mean*pct) %>% 
+  mutate(abs_num = mean * pct * pop_w4_all, mean_pct = mean * pct) %>% 
   group_by(region) %>% 
   summarise(abs_num = sum(abs_num), mean = sum(mean_pct)) %>% 
   mutate(label = "Upper Bound") 
@@ -414,15 +381,6 @@ bd_w4_pnl <- bd_means_w4 %>%
 
 
 # Wave 5
-
-bd_mean_w5 <- ubounds_w5 %>% 
-  mutate(
-    mean_ub1 = ( ubound1a * growing_pct ) + ( ubound1b * no_gr_pct ),
-    mean_ub2 = ( ubound2a * growing_pct ) + ( ubound2b * no_gr_pct ),
-    mean_lb = ( lbound1a * growing_pct ) + ( lbound1b * no_gr_pct ),
-    ) %>% 
-  select(region, starts_with("mean")) 
-
 
 bd_w5 <- bd_mean_w5 %>% 
   left_join(pop_rur_w5_all, by = "region") %>%

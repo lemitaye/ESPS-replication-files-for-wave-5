@@ -20,7 +20,8 @@ root <- "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Co
 
 wave5_hh <- read_dta(file.path(root, "3_report_data/wave5_hh_new.dta"))
 
-# ess4_bounds <- read_dta(file.path(root, "tmp/dynamics/ess4_bounds.dta"))
+ess5_bounds <- read_dta(file.path(root, "tmp/dynamics/ess5_bounds.dta"))
+
 
 
 # psnp data (generated in 03_new_innov_ess5.R)
@@ -189,7 +190,7 @@ crop_growing <- hh_dna_w4 %>%
     across( c(cr1, cr2, cr6), ~weighted.mean(., w = pw_w4, na.rm = T) )
   ) %>% 
   pivot_longer(
-    c(cr1, cr2, cr6), names_to = "variable", values_to = "growing_pct"
+    c(cr1, cr2, cr6), names_to = "variable", values_to = "maize_pct"
   ) %>% 
   mutate(crop = case_match(
     variable,
@@ -197,7 +198,7 @@ crop_growing <- hh_dna_w4 %>%
     "cr6" ~ "Sorghum", 
     "cr1" ~ "Barley"
   )) %>% 
-  select(region, crop, growing_pct) 
+  select(region, crop, maize_pct) 
 
 adopt_rate_dna_w4 <- dna_w4 %>% 
   left_join(crop_growing, by = c("region", "crop"))
@@ -215,50 +216,29 @@ write_csv(adopt_rate_dna_w4, file = "dynamics_presentation/data/adopt_rate_dna_w
 
 no_dna_reg <- c("Afar", "Benishangul Gumuz", "Gambela", "Somali")
 
-bounds_w4 <- ess4_bounds %>% 
+bounds_w5 <- ess5_bounds %>% 
   recode_region(saq01) %>% 
   group_by(region) %>% 
   summarise(
-    across(c(starts_with(c("ubound", "lbound")), cr2, anycr), ~weighted.mean(., w = pw_w4, na.rm = T))
+    across(c(starts_with(c("ubound", "lbound")), cr2), ~weighted.mean(., w = pw_w5, na.rm = T))
   ) %>% 
   mutate(across(-region, ~replace_na(., 0))) %>% 
-  rename(maize_pct = cr2, anycr_pct = anycr)
+  rename(maize_pct = cr2)
 
-
-bd_means_w4 <- bounds_w4 %>% 
+# calculate means
+bd_mean_w5 <- bounds_w5 %>% 
   mutate(
-    maize_pct = if_else(region %in% no_dna_reg, 0, maize_pct),
-    anycr_pct = if_else(region %in% no_dna_reg, 0, anycr_pct)
+    maize_pct = if_else(region %in% no_dna_reg, 0, maize_pct)
   ) %>% 
   mutate(
-    mean_ub = ( ubound1a * maize_pct ) + ( ubound1b * (1 - maize_pct) ),
-    
-    mean_lb1 = ( lbound1 * maize_pct ),
-    
-    mean_lb2 = ( lbound2a * anycr_pct ) + ( lbound2b * (1 - anycr_pct) )
+    mean_ub1 = ( ubound1a * maize_pct ) + ( ubound1b * (1 - maize_pct) ),
+    mean_ub2 = ( ubound2a * maize_pct ) + ( ubound2b * (1 - maize_pct) ),
+    mean_lb = ( lbound1a * maize_pct ) + ( lbound1b * (1 - maize_pct) ),
   ) %>% 
-  select(region, starts_with("mean_"))
+  select(region, starts_with("mean")) 
 
 
-
-write_csv(ubounds_w4, file = "dynamics_presentation/data/ubounds_w4.csv")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# save
+write_csv(bd_mean_w5, file = "dynamics_presentation/data/bd_mean_w5.csv")
 
 
