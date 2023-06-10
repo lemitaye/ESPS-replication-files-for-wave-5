@@ -23,6 +23,9 @@ adopt_rates_w4_hh <- read_csv("dynamics_presentation/data/adopt_rates_w4_hh.csv"
 
 adopt_rate_dna_w4 <- read_csv("dynamics_presentation/data/adopt_rate_dna_w4.csv")
 
+adopt_rates_w5_hh <- read_csv("dynamics_presentation/data/adopt_rates_w5_hh.csv")
+
+
 dna_means_hh <- read_csv("dynamics_presentation/data/dna_means_hh.csv")
 
 wave5_hh_new <- read_dta(file.path(root, "3_report_data/wave5_hh_new.dta"))
@@ -125,18 +128,18 @@ dna_w5 <- dna_means_hh %>%
 
 # PSNP in wave 5
 
-psnp_w5_rur <- psnp_hh %>% 
-  filter(
-    wave == "Wave 5", locality == "Rural",
-    sample == "All", region != "Addis Ababa"
-  ) %>% 
-  select(wave, variable, region, mean, nobs, label)
+# psnp_w5_rur <- psnp_hh %>% 
+#   filter(
+#     wave == "Wave 5", locality == "Rural",
+#     sample == "All", region != "Addis Ababa"
+#   ) %>% 
+#   select(wave, variable, region, mean, nobs, label)
 
 
 # Innovations in wave 5:
-adopt_rates_w5_hh <- adopt_rates_all_hh %>% 
-  filter(wave == "Wave 5", !str_detect(variable, "_impcr|psnp")) %>% 
-  bind_rows(psnp_w5_rur)
+# adopt_rates_w5_hh <- adopt_rates_all_hh %>% 
+#   filter(wave == "Wave 5", !str_detect(variable, "_impcr|psnp")) %>% 
+#   bind_rows(psnp_w5_rur)
 
 
 # Upper and lower ound calculations, wave 5
@@ -200,6 +203,7 @@ ess4_pnl <- bind_rows(ess4_innov_pnl, ess4_dna_pnl)
 # Wave 5: cross-sectional weights
 
 ess5_innov <- adopt_rates_w5_hh %>% 
+  filter(!variable %in% c("dtmz", "maize_cg")) %>% 
   left_join(pop_rur_w5_all, by = "region") %>% 
   mutate(abs_num = mean * pop_w5_all) %>% 
   filter(region != "National") %>% 
