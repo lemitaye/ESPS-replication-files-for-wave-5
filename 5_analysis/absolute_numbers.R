@@ -335,54 +335,77 @@ bd_w4 <- bind_rows(ub_w4, lb_w4) %>%
 
 # panel hhs
 
-ub_w4_pnl <- ubounds_w4 %>% 
-  left_join(pop_rur_pnl, by = "region") %>% 
-  filter(region != "Tigray") %>% 
-  mutate(abs_num = mean * pct * pop_w5_panel, mean_pct = mean*pct) %>% 
-  group_by(region) %>% 
-  summarise(abs_num = sum(abs_num), mean = sum(mean_pct)) %>% 
-  mutate(label = "Upper Bound") 
+# ub_w4_pnl <- ubounds_w4 %>% 
+#   left_join(pop_rur_pnl, by = "region") %>% 
+#   filter(region != "Tigray") %>% 
+#   mutate(abs_num = mean * pct * pop_w5_panel, mean_pct = mean*pct) %>% 
+#   group_by(region) %>% 
+#   summarise(abs_num = sum(abs_num), mean = sum(mean_pct)) %>% 
+#   mutate(label = "Upper Bound") 
+# 
+# lb_w4_pnl <- ess4_dna_pnl %>% 
+#   filter(label == "Maize DNA-fingerprinting") %>% 
+#   mutate(label = "Lower Bound")
+# 
+# bd_w4_pnl <- bind_rows(ub_w4_pnl, lb_w4_pnl) %>% 
+#   expand(region, label) %>% 
+#   left_join(bind_rows(ub_w4_pnl, lb_w4_pnl), by = c("region", "label")) %>% 
+#   replace_na(list(abs_num = 0, mean = 0))
 
-lb_w4_pnl <- ess4_dna_pnl %>% 
-  filter(label == "Maize DNA-fingerprinting") %>% 
-  mutate(label = "Lower Bound")
 
-bd_w4_pnl <- bind_rows(ub_w4_pnl, lb_w4_pnl) %>% 
-  expand(region, label) %>% 
-  left_join(bind_rows(ub_w4_pnl, lb_w4_pnl), by = c("region", "label")) %>% 
-  replace_na(list(abs_num = 0, mean = 0))
+bd_w4 <- bd_means_w4 %>%
+  left_join(pop_rur_w4_all, by = "region") %>%
+  mutate(
+    num_ub = mean_ub * pop_w4_all,
+    num_lb1 = mean_lb1 * pop_w4_all,
+    num_lb2 = mean_lb2 * pop_w4_all
+  ) %>%
+  select(-pop_w4_all) %>%
+  pivot_longer(
+    cols = -region,
+    names_to = c("stat", "type"),
+    names_sep = "_",
+    values_to = "value"
+  ) %>%
+  pivot_wider(
+    names_from = "stat", values_from = "value"
+  ) %>%
+  mutate(
+    label = case_match(
+      type,
+      "ub" ~ "Upper Bound",
+      "lb1" ~ "Lower Bound-1",
+      "lb2" ~ "Lower Bound-2"
+    )
+  ) %>%
+  select(region, label, mean, abs_num = num)
 
-
-# bd_w4 <- bd_means_w4 %>% 
-#   left_join(pop_rur_w4_all, by = "region") %>% 
-#   mutate(
-#     num_ub = mean_ub * pop_w4_all,
-#     num_lb1 = mean_lb1 * pop_w4_all,
-#     num_lb2 = mean_lb2 * pop_w4_all,
-#     num_lb3 = mean_lb3 * pop_w4_all,
-#     num_lb4 = mean_lb4 * pop_w4_all,
-#   ) %>% 
-#   select(-pop_w4_all) %>% 
-#   pivot_longer(
-#     cols = -region,
-#     names_to = c("stat", "type"),
-#     names_sep = "_",
-#     values_to = "value"
-#   ) %>% 
-#   pivot_wider(
-#     names_from = "stat", values_from = "value"
-#   ) %>% 
-#   mutate(
-#     label = case_match(
-#       type, 
-#       "ub" ~ "Upper Bound", 
-#       "lb1" ~ "Lower Bound - 1",
-#       "lb2" ~ "Lower Bound - 2",
-#       "lb3" ~ "Lower Bound - 3",
-#       "lb4" ~ "Lower Bound - 4"
-#     )
-#   ) %>% 
-#   select(region, label, mean, abs_num = num)
+bd_w4_pnl <- bd_means_w4 %>%
+  left_join(pop_rur_pnl, by = "region") %>%
+  mutate(
+    num_ub = mean_ub * pop_w5_panel,
+    num_lb1 = mean_lb1 * pop_w5_panel,
+    num_lb2 = mean_lb2 * pop_w5_panel
+  ) %>%
+  select(-pop_w5_panel) %>%
+  pivot_longer(
+    cols = -region,
+    names_to = c("stat", "type"),
+    names_sep = "_",
+    values_to = "value"
+  ) %>%
+  pivot_wider(
+    names_from = "stat", values_from = "value"
+  ) %>%
+  mutate(
+    label = case_match(
+      type,
+      "ub" ~ "Upper Bound",
+      "lb1" ~ "Lower Bound-1",
+      "lb2" ~ "Lower Bound-2"
+    )
+  ) %>%
+  select(region, label, mean, abs_num = num)
 
 
 # Wave 5
