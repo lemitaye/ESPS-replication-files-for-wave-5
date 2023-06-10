@@ -152,12 +152,12 @@ ubounds_w5 <- ess5_bounds %>%
   summarise(
     across(c(starts_with(c("ubound", "lbound"))), ~weighted.mean(., w = pw_w5, na.rm = T))
   ) %>% 
-  replace_na(list(ubound1 = 0, lbound1 = 0)) %>% 
+  mutate_all( ~replace_na(., 0) ) %>% 
   # pivot_longer(-region, names_to = "variable", values_to = "mean") %>% 
   left_join(maize_growing_w5, by = "region") %>% 
   mutate(no_gr_pct = 1 - growing_pct) 
 
-
+  
 
 # Wave 4: cross-sectional weight
 
@@ -413,21 +413,23 @@ bd_w4_pnl <- bd_means_w4 %>%
 
 bd_mean_w5 <- ubounds_w5 %>% 
   mutate(
-    mean_ub = ( ubound1 * growing_pct ) + ( ubound2 * no_gr_pct ),
-    mean_lb = ( lbound1 * growing_pct ) + ( lbound2 * no_gr_pct ),
+    mean_ub1 = ( ubound1a * growing_pct ) + ( ubound1b * no_gr_pct ),
+    mean_ub2 = ( ubound2a * growing_pct ) + ( ubound2b * no_gr_pct ),
+    mean_lb = ( lbound1a * growing_pct ) + ( lbound1b * no_gr_pct ),
     ) %>% 
-  select(region, mean_ub, mean_lb, growing_pct, no_gr_pct) 
+  select(region, starts_with("mean")) 
 
 
 bd_w5 <- bd_mean_w5 %>% 
   left_join(pop_rur_w5_all, by = "region") %>%
-  transmute(
-    region, mean_ub, mean_lb,
-    num_ub = mean_ub * pop_w5_all,
-    num_lb = mean_lb * pop_w5_all
+  mutate(
+    num_ub1 = mean_ub1 * pop_w5_all,
+    num_ub2 = mean_ub2 * pop_w5_all,
+    num_lb  = mean_lb * pop_w5_all
   ) %>% 
+  select(-pop_w5_all) %>% 
   pivot_longer(
-    cols = mean_ub:num_lb,
+    cols = -region,
     names_to = c("stat", "type"),
     names_sep = "_",
     values_to = "value"
@@ -438,7 +440,8 @@ bd_w5 <- bd_mean_w5 %>%
   mutate(
     label = case_match(
       type, 
-      "ub" ~ "Upper Bound", 
+      "ub1" ~ "Upper Bound-1", 
+      "ub2" ~ "Upper Bound-2", 
       "lb" ~ "Lower Bound"
     )
   ) %>% 
@@ -447,13 +450,14 @@ bd_w5 <- bd_mean_w5 %>%
 
 bd_w5_pnl <- bd_mean_w5 %>% 
   left_join(pop_rur_pnl, by = "region") %>%
-  transmute(
-    region, mean_ub, mean_lb,
-    num_ub = mean_ub * pop_w5_panel,
-    num_lb = mean_lb * pop_w5_panel
+  mutate(
+    num_ub1 = mean_ub1 * pop_w5_panel,
+    num_ub2 = mean_ub2 * pop_w5_panel,
+    num_lb  = mean_lb * pop_w5_panel
   ) %>% 
+  select(-pop_w5_panel) %>% 
   pivot_longer(
-    cols = mean_ub:num_lb,
+    cols = -region,
     names_to = c("stat", "type"),
     names_sep = "_",
     values_to = "value"
@@ -464,7 +468,8 @@ bd_w5_pnl <- bd_mean_w5 %>%
   mutate(
     label = case_match(
       type, 
-      "ub" ~ "Upper Bound", 
+      "ub1" ~ "Upper Bound-1", 
+      "ub2" ~ "Upper Bound-2", 
       "lb" ~ "Lower Bound"
     )
   ) %>% 
