@@ -223,8 +223,8 @@ bounds_w4 <- ess4_bounds %>%
 
 bd_means_w4 <- bounds_w4 %>% 
   mutate(
-    maize_pct = if_else(region %in% no_dna_reg, 1, maize_pct),
-    anycr_pct = if_else(region %in% no_dna_reg, 1, anycr_pct)
+    maize_pct = if_else(region %in% no_dna_reg, 0, maize_pct),
+    anycr_pct = if_else(region %in% no_dna_reg, 0, anycr_pct)
     ) %>% 
   mutate(
     mean_ub = ( ubound1a * maize_pct ) + ( ubound1b * (1 - maize_pct) ),
@@ -235,19 +235,6 @@ bd_means_w4 <- bounds_w4 %>%
   ) %>% 
   select(region, starts_with("mean_"))
 
-
-bounds_w4 %>% 
-  pivot_longer(-region, names_to = "variable", values_to = "mean") %>% 
-  filter(variable != "ubound3") %>% 
-  left_join(filter(crop_growing, crop=="Maize")) %>% 
-  mutate(
-    non_gr_pct = 1 - growing_pct,
-    growing_pct = if_else(variable=="ubound2", NA_real_, growing_pct),
-    non_gr_pct = if_else(variable=="ubound1", NA_real_, non_gr_pct),
-    growing_pct = if_else(region %in% no_dna_reg, 1, growing_pct)
-    ) %>% 
-  mutate(pct = if_else(!is.na(growing_pct), growing_pct, non_gr_pct)) %>% 
-  select(-growing_pct, -non_gr_pct)
 
 
 write_csv(ubounds_w4, file = "dynamics_presentation/data/ubounds_w4.csv")
