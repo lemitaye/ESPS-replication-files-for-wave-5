@@ -31,47 +31,60 @@ sum hhd_treadle hhd_motorpump hhd_rdisp hhd_consag1 hhd_swc hhd_cross hhd_livIA 
 * Upper bound ----------------
 // upper bound is # of households with at least one CG-related innovation.
 
-/*
-Note: there are two types of upper bound estimates: (i) an estimate that includes
-maize DNA and hence need to take into account maize growing households, and (ii) 
-an estimate without maize DNA
-*/
-
-gen     ubound1 = 0 if dnadata==1
-replace ubound1 = 1 if dnadata==1 & (maize==1 | hhd_treadle==1 | hhd_motorpump==1 | ///
+// 1. an upper bound with restricted forage types
+gen     ubound1a = 0 if dnadata==1
+replace ubound1a = 1 if dnadata==1 & (maize==1 | hhd_treadle==1 | hhd_motorpump==1 | ///
     hhd_rdisp==1 | hhd_consag1==1 | hhd_swc==1 | hhd_cross==1 | hhd_livIA==1 | ///
     hhd_elepgrass==1 | hhd_sesbaniya==1 | hhd_alfalfa==1 | hhd_agroind==1 | ///
-    hhd_grass==1  | hhd_avocado==1 | hhd_mango==1 | hhd_papaya==1 | hhd_sweetpotato==1 | ///
+    hhd_avocado==1 | hhd_mango==1 | hhd_papaya==1 | hhd_sweetpotato==1 | ///
     hhd_fieldp==1 | (commirr==1 & plotirr==1) | hhd_ofsp==1 | hhd_awassa83==1 | ///
-    hhd_desi==1 | hhd_kabuli==1)
+    hhd_kabuli==1 | hhd_desi==1)
 
 
-gen     ubound2 = 0 
-replace ubound2 = 1 if  (hhd_treadle==1 | hhd_motorpump==1 | hhd_rdisp==1 | ///
-    hhd_consag1==1 | hhd_swc==1 | hhd_cross==1 | hhd_livIA==1 | hhd_elepgrass==1 | ///
-    hhd_sesbaniya==1 | hhd_alfalfa==1 | hhd_agroind==1 | hhd_grass==1  | ///
+gen     ubound1b = 0 
+replace ubound1b = 1 if  (hhd_treadle==1 | hhd_motorpump==1 | hhd_rdisp==1 | ///
+    hhd_consag1==1 | hhd_swc==1 | hhd_cross==1 | hhd_livIA==1 | ///
+    hhd_elepgrass==1 | hhd_sesbaniya==1 | hhd_alfalfa==1 | hhd_agroind==1 | ///
+    hhd_avocado==1 | hhd_mango==1 | hhd_papaya==1 | hhd_sweetpotato==1 | ///
+    hhd_fieldp==1 | (commirr==1 & plotirr==1) | hhd_ofsp==1 | hhd_awassa83==1 | ///
+    hhd_kabuli==1 | hhd_desi==1)
+
+// 2. an upper bound with all forage types
+gen     ubound2a = 0 if dnadata==1
+replace ubound2a = 1 if dnadata==1 & (maize==1 | hhd_treadle==1 | hhd_motorpump==1 | ///
+    hhd_rdisp==1 | hhd_consag1==1 | hhd_swc==1 | hhd_cross==1 | hhd_livIA==1 | ///
+    hhd_elepgrass==1 | hhd_sesbaniya==1 | hhd_alfalfa==1 | hhd_grass==1 | hhd_agroind==1 | ///
     hhd_avocado==1 | hhd_mango==1 | hhd_papaya==1 | hhd_sweetpotato==1 | hhd_fieldp==1 | ///
-    (commirr==1 & plotirr==1) | hhd_ofsp==1 | hhd_awassa83==1 | hhd_desi==1 | hhd_kabuli==1)
+    (commirr==1 & plotirr==1) | hhd_ofsp==1 | hhd_awassa83==1 | hhd_kabuli==1 | hhd_desi==1)
+
+
+gen     ubound2b = 0 
+replace ubound2b = 1 if  (hhd_treadle==1 | hhd_motorpump==1 | hhd_rdisp==1 | ///
+    hhd_consag1==1 | hhd_swc==1 | hhd_cross==1 | hhd_livIA==1 | ///
+    hhd_elepgrass==1 | hhd_sesbaniya==1 | hhd_alfalfa==1 | hhd_grass==1 | hhd_agroind==1 | ///
+    hhd_avocado==1 | hhd_mango==1 | hhd_papaya==1 | hhd_sweetpotato==1 | hhd_fieldp==1 | ///
+    (commirr==1 & plotirr==1) | hhd_ofsp==1 | hhd_awassa83==1 | hhd_kabuli==1 | hhd_desi==1)    
+
 
 * lower bound -----------------
 // Lower bound is # of hh with improved maize, sweet potato, or kabuli chickpea type
 
-gen     lbound1=0 if dnadata==1
-replace lbound1=1 if dnadata==1 & (maize==1 | hhd_ofsp==1 | hhd_awassa83==1 | hhd_desi==1 | hhd_kabuli==1)
+gen     lbound1a=0 if dnadata==1
+replace lbound1a=1 if dnadata==1 & (maize==1 | hhd_ofsp==1 | hhd_awassa83==1 | hhd_kabuli==1 | hhd_desi==1)
 
-gen     lbound2=0
-replace lbound2=1 if hhd_ofsp==1 | hhd_awassa83==1 | hhd_desi==1 | hhd_kabuli==1
+gen     lbound1b=0
+replace lbound1b=1 if hhd_ofsp==1 | hhd_awassa83==1 | hhd_kabuli==1 | hhd_desi==1
 
 
-* label variables
+/* label variables
 label var ubound1  "Upper bound - 1"   
 label var ubound2  "Upper bound - 2"   
 label var lbound1  "Lower bound - 1"
 label var lbound2  "Lower bound - 2"
 label var cr2      "Perc. of rural hhs growing maize"
-
+*/
 * global
-global boundvars ubound1 ubound2 lbound1 lbound2 cr2 
+global boundvars ubound1a ubound1b ubound2a ubound2b lbound1a lbound1b cr2 
 
 // prep:
 local rname ""
