@@ -231,11 +231,7 @@ bd_means_w4 <- bounds_w4 %>%
     
     mean_lb1 = ( lbound1 * maize_pct ),
     
-    mean_lb2 = ( lbound2a * maize_pct ) + ( lbound2b * (1 - maize_pct) ),
-    
-    mean_lb3 = ( lbound3 * anycr_pct ),
-    
-    mean_lb4 = ( lbound4a * anycr_pct ) + ( lbound4b * (1 - anycr_pct) ),
+    mean_lb2 = ( lbound2a * maize_pct ) + ( lbound2b * (1 - maize_pct) )
   ) %>% 
   select(region, starts_with("mean_"))
 
