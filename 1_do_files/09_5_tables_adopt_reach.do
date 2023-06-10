@@ -174,32 +174,22 @@ replace percrural=1 if maize==1 | barley==1 | sorghum==1 | hhd_ofsp==100 | ///
 
 // Lower bounds
 
+// 1. Only maize CG (what is in the report)
 gen     lbound1=0 if dnadata==1
 replace lbound1=1 if dnadata==1 & maize_cg==1 
 
-
+// 2. Maize CG + improved sp 
 gen     lbound2a=0 if dnadata==1
-replace lbound2a=1 if dnadata==1 & (maize_cg==1 | hhd_ofsp==1 | hhd_awassa83==1)
+replace lbound2a=1 if dnadata==1 & (maize_cg==1 | barley_cg==1 | sorghum_cg==1) & ///
+                        (hhd_ofsp==1 | hhd_awassa83==1)
 
-gen     lbound2b=0
+gen     lbound2b=0 
 replace lbound2b=1 if hhd_ofsp==1 | hhd_awassa83==1 
 
 
-gen     lbound3=0 if dnadata==1
-replace lbound3=1 if maize_cg==1 | barley_cg==1 | sorghum_cg==1
-
-
-gen     lbound4a=0 if dnadata==1
-replace lbound4a=1 if dnadata==1 & (maize_cg==1 | barley_cg==1 | sorghum_cg==1) & ///
-                        (hhd_ofsp==1 | hhd_awassa83==1)
-
-gen     lbound4b=0 
-replace lbound4b=1 if hhd_ofsp==1 | hhd_awassa83==1 
-
-
-
+* Table:
 global dnastats4 maize barley sorghum cr1 cr2 cr6 anycr ubound1a ubound1b ///
-    lbound1 lbound2a lbound2b lbound3 lbound4a lbound4b
+    lbound1 lbound2a lbound2b
 
 // prep:
 local rname ""
