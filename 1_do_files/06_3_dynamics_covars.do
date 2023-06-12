@@ -24,14 +24,13 @@ merge 1:1 household_id using "${raw4}/ETH_HouseholdGeovariables_Y4.dta", ///
 keep if _merge==1 | _merge==3
 drop _merge
 
-
 rename nom_totcons_aeq      nmtotcons
 rename hhd_mintillage       hhd_mintil
 rename  total_cons_ann_win  totconswin
 
 replace hhd_impcr2=. if maize_cg==.
 
-
+// global of covariates and innovations to keep (for both waves)
 #delimit;
 global hhcov4
 hhd_flab flivman parcesizeHA asset_index pssetindex income_offfarm total_cons_ann 
@@ -50,8 +49,20 @@ hhd_impcr1
 ;
 #delimit cr
 
+// recode from 100 to 1
+for var $adopt: replace X=1 if X==100
+
 keep household_id $hhcov4 $adopt
 gen wave=4
+
+// merge with tracking file to id panel hhs:
+merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh_pp.dta", keepusing(hh_status)
+keep if _merge==1 | _merge==3
+drop _merge
+
+keep if hh_status==3
+
+save "${tmp}/dynamics/06_3_covars_w4.dta", replace
 
 use "${data}/ess5_pp_hh_new.dta", clear
 
@@ -64,140 +75,85 @@ rename hhd_agroind hhd_indprod
 replace hhd_impcr2=. if maize_cg==.
 
 keep household_id $adopt
+gen wave=5
 
+// merge with tracking file to id panel hhs:
+merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh_pp.dta", keepusing(hh_status pw_panel)
+keep if _merge==1 | _merge==3
+drop _merge
 
+keep if hh_status==3
 
+// merge with wave 4 covariates
+merge 1:1 household_id using "${tmp}/dynamics/06_3_covars_w4.dta", keepusing($covar)
+drop _merge
 
+// save
+save "${tmp}/dynamics/06_3_covars_w5.dta", replace
 
 
-#delimit;
-global adopt     
-hhd_rdisp hhd_motorpump hhd_rotlegume hhd_cresidue1 hhd_cresidue2 hhd_mintil 
-hhd_zerotill hhd_consag1 hhd_consag2 hhd_swc hhd_terr hhd_wcatch hhd_affor hhd_ploc 
-hhd_ofsp hhd_awassa83 hhd_avocado hhd_papaya hhd_mango hhd_fieldp hhd_psnp 
-maize_cg dtmz hhd_agroind hhd_grass hhd_cross crlargerum crsmallrum crpoultry 
-hhd_impcr1 hhd_impcr2 
-;
-#delimit cr
+* Append
+use "${tmp}/dynamics/06_3_covars_w4.dta", clear
 
+append using "${tmp}/dynamics/06_3_covars_w5.dta", force
 
 
+// Running Diff-in-Diff regression
 
+gen int_var=(total_cons_ann*wave5)
 
+gen wave5=(wave==5)
 
+regress hhd_motorpump total_cons_ann wave5 int_var [pw=pw_panel]
 
+matrix drop _all
+ 
+foreach covar in $hhcov4 {
 
+    foreach var in $adopt {
 
+        reg `covar' `var'##wave5 [pw=pw_panel]
 
+        scalar b`covar'`var'     = e(b)[1,8]
+        scalar `covar'stder`var' = r(table)[2,8]
+        scalar `covar'pval`var'  = r(table)[4,8]
 
+        di b`covar'`var'
 
+        matrix bse`covar'`var' = (b`covar'`var')
+        *matrix bse`covar'`var' = (b`covar'`var'\ `covar'stder`var')
+        *matrix rownames bse`covar'`var' = b`var' stder`var'
+        
+        /*/ p-values:
+                
+        if (`covar'pval`var'<=0.1 & `covar'pval`var'>0.05)  {
+            matrix mstr`covar'`var' = (3)      // significant at 10% level
+        }
+        
+        if (`covar'pval`var'  <=0.05 & `covar'pval`var'>0.01)  {
+            matrix mstr`covar'`var' = (2)      // significant at 5% level
+        }
+        
+        if `covar'pval`var'  <=0.01 {
+            matrix mstr`covar'`var' = (1)      // significant at 1% level
+        }
+        
+        if `covar'pval`var'   >0.1 {
+            matrix mstr`covar'`var' = (0)       // Non-significant
+        }
+        */
+        *matrix mstr`covar'`var' = (mstr`covar'`var')
 
+        matrix A1`covar' = nullmat(A1`covar')\ bse`covar'`var'
 
+        *matrix A1`covar'_STARS =  nullmat(A1`covar'_STARS)\mstr`covar'`var'
 
+    }
 
+    matrix colnames A1`covar' = `covar'
 
+    matrix C = (nullmat(C), A1`covar')
+    *matrix C_STARS = (nullmat(C_STARS), A1`covar'_STARS)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
 
