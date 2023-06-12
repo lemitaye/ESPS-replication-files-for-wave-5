@@ -109,6 +109,16 @@ labs <- ess4_hh_all %>%
     cols = everything(), 
     names_to = "variable", 
     values_to = "label"
+  ) %>% 
+  mutate(
+    label = str_replace(label, "Feed and Forage|Grass", "Forages"),
+    label = case_match(
+      variable,
+      "hhd_livIA" ~ "AI on any livestock type",
+      paste0("hhd_cross_", c("smallrum", "largerum", "poultry")) ~ str_to_title(label),
+      "hhd_grass" ~ paste0("Forages: ", str_to_title(label)),
+      .default = label
+    )
   )
 
 # modify PSNP
