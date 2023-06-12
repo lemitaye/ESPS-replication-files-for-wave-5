@@ -69,10 +69,7 @@ innovs_w5 <- c(
   
   # Natural resoruce management:
   "hhd_rdisp", "hhd_motorpump", "hhd_swc", "hhd_consag1", "hhd_consag2", "hhd_affor", 
-  "hhd_mango", "hhd_papaya", "hhd_avocado", "hhd_malt", "hhd_durum", 
-  
-  # policy influences: (psnp is treated separately)
-  "hotline", "hhd_seedv1", "hhd_seedv2"
+  "hhd_mango", "hhd_papaya", "hhd_avocado"
   )
 
 
