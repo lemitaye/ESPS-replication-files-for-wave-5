@@ -4,6 +4,7 @@ library(haven)
 library(kableExtra)
 library(openxlsx)
 library(tidyverse)
+library(scales)
 
 root <- "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Country teams/Ethiopia/LSMS_W5"
 
@@ -153,6 +154,7 @@ ess5_cs <- bind_rows(ess5_innov, ess5_dna)
 # Wave 5: panel weights
 
 ess5_innov_pnl <- adopt_rates_w5_hh %>% 
+  filter(!variable %in% c("dtmz", "maize_cg")) %>% 
   left_join(pop_rur_pnl, by = "region") %>% 
   mutate(abs_num = mean * pop_w5_panel) %>% 
   filter(!region %in% c("Tigray", "National")) %>% 
@@ -484,6 +486,122 @@ writeData(
 saveWorkbook(wb, file.path(root, "4_table/absolute_numbers.xlsx"), overwrite = TRUE)
 
 openXL(file.path(root, "4_table/absolute_numbers.xlsx"))
+
+
+
+
+
+# Figure 9 for ESS5 -----------
+
+var_labs <-    bind_rows(
+  filter(adopt_rates_w5_hh, !variable %in% c("dtmz", "maize_cg")), 
+  adopt_rate_dna_w5
+) %>% 
+  distinct(variable, label) 
+
+ess5_totals <- bind_rows(
+  mutate(make_sheet(ess5_cs)$df, sample = "all"), 
+  mutate(make_sheet(ess5_pnl)$df, sample = "panel")
+) %>% 
+  left_join(var_labs, by = "label") %>% 
+  select(sample, variable, label, total = Total) %>% 
+  filter(
+    !variable %in% c(
+      "hhd_agroind", "hhd_alfalfa", "hhd_deshograss", "hhd_elepgrass", "hhd_lablab",
+      "hhd_rhodesgrass", "hhd_sesbaniya", "hhd_sinar", "hhd_vetch", 
+      "hhd_psnp", "hhd_psnp_dir", "hhd_psnp_any"
+    )
+  ) %>% 
+  # categories of innovations
+  mutate(
+    label = case_match(
+      variable,
+      "hhd_grass" ~ "Forage grasses",
+      .default = label
+    ),
+    type = case_when(
+      str_detect(variable, "hhd_cross_|hhd_livIA|hhd_grass") ~ "Animal agriculture",
+      variable %in% c(
+        "hhd_maize_cg", "hhd_dtmz", "hhd_kabuli", "hhd_ofsp", "hhd_awassa83"
+        ) ~ "Crop germplasm improvement",
+      variable %in% c(
+        "hhd_rdisp", "hhd_motorpump", "hhd_swc", "hhd_consag1", "hhd_consag2",
+        "hhd_affor", "hhd_mango", "hhd_papaya", "hhd_avocado"
+      ) ~ "Natural resource management"
+    )
+  )
+
+
+theme_set(theme_light())
+
+ess5_totals %>% 
+  filter(sample == "all") %>% 
+  mutate(label = fct_reorder(label, total)) %>% 
+  ggplot(aes(total, label, fill = type)) +
+  geom_col() +
+  scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6)) +
+  labs(
+    x = "Number of rural households",
+    y = "",
+    fill = "Category",
+    title = "Number of rural households adopting each CGIAR-related innovation in\nEthiopia, ESS5 (2021/22) - All households"
+  )
+
+ggsave(
+  filename = "../tmp/figures/fig09_all.png",
+  width = 300,
+  height = 160,
+  units = "mm"
+)
+
+ess5_totals %>% 
+  filter(sample == "panel") %>% 
+  mutate(label = fct_reorder(label, total)) %>% 
+  ggplot(aes(total, label, fill = type)) +
+  geom_col() +
+  scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6)) +
+  labs(
+    x = "Number of rural households",
+    y = "",
+    fill = "Category",
+    title = "Number of rural households adopting each CGIAR-related innovation\nin Ethiopia, ESS5 (2021/22) - Panel households"
+  )
+
+ggsave(
+  filename = "../tmp/figures/fig09_panel.png",
+  width = 300,
+  height = 160,
+  units = "mm"
+)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
