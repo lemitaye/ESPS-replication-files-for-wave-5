@@ -12,18 +12,7 @@
 
 * Who are the adopters? --------------------------------------------------------
 
-use "${data}/ess5_pp_hh_new.dta", clear 
-
-// merge with covar data:
-merge 1:1 household_id using "${tmp}/covariates/04_2_covars_hh_pp.dta"
-/*
-    Result                      Number of obs
-    -----------------------------------------
-    Not matched                             0
-    Matched                             2,079  (_merge==3)
-    -----------------------------------------
-*/
-drop _merge
+use "${tmp}/covariates/04_2_covars_hh_pp.dta", clear 
 
 // merge with covar data at EA level:
 merge m:1 ea_id using "${data}/ess5_pp_cov_ea_new.dta", keepusing(cs4q01_11 cs4q15 cs4q53)
