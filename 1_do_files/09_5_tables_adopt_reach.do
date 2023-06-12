@@ -52,6 +52,8 @@ replace ubound1b = 1 if  (hhd_treadle==1 | hhd_motorpump==1 | hhd_rdisp==1 | ///
 gen     ubound2a = 0 if dnadata==1
 replace ubound2a = 1 if dnadata==1 & (maize==1 | hhd_treadle==1 | hhd_motorpump==1 | ///
     hhd_rdisp==1 | hhd_consag1==1 | hhd_swc==1 | hhd_cross==1 | hhd_livIA==1 | ///
+    hhd_elepgrass==1 | hhd_deshograss==1 | hhd_sesbaniya==1 | hhd_sinar==1 | ///
+    hhd_lablab==1 | hhd_alfalfa==1 | hhd_vetch==1 | hhd_rhodesgrass==1 | ///
     hhd_grass==1 | hhd_agroind==1 | hhd_avocado==1 | hhd_mango==1 | hhd_papaya==1 | ///
     hhd_sweetpotato==1 | hhd_fieldp==1 | (commirr==1 & plotirr==1) | hhd_ofsp==1 | ///
     hhd_awassa83==1 | hhd_kabuli==1)
@@ -60,6 +62,8 @@ replace ubound2a = 1 if dnadata==1 & (maize==1 | hhd_treadle==1 | hhd_motorpump=
 gen     ubound2b = 0 
 replace ubound2b = 1 if  (hhd_treadle==1 | hhd_motorpump==1 | hhd_rdisp==1 | ///
     hhd_consag1==1 | hhd_swc==1 | hhd_cross==1 | hhd_livIA==1 | hhd_grass==1 | hhd_agroind==1 | ///
+    hhd_elepgrass==1 | hhd_deshograss==1 | hhd_sesbaniya==1 | hhd_sinar==1 | ///
+    hhd_lablab==1 | hhd_alfalfa==1 | hhd_vetch==1 | hhd_rhodesgrass==1 | ///
     hhd_avocado==1 | hhd_mango==1 | hhd_papaya==1 | hhd_sweetpotato==1 | hhd_fieldp==1 | ///
     (commirr==1 & plotirr==1) | hhd_ofsp==1 | hhd_awassa83==1 | hhd_kabuli==1)    
 

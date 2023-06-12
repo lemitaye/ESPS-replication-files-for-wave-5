@@ -2,8 +2,8 @@
 
 library(haven)
 library(kableExtra)
-library(fuzzyjoin)
 library(openxlsx)
+library(tidyverse)
 
 root <- "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Country teams/Ethiopia/LSMS_W5"
 
@@ -25,14 +25,14 @@ adopt_rate_dna_w4 <- read_csv("dynamics_presentation/data/adopt_rate_dna_w4.csv"
 
 adopt_rates_w5_hh <- read_csv("dynamics_presentation/data/adopt_rates_w5_hh.csv")
 
+adopt_rate_dna_w5 <- read_csv("dynamics_presentation/data/adopt_rate_dna_w5.csv")
 
-dna_means_hh <- read_csv("dynamics_presentation/data/dna_means_hh.csv")
 
 wave5_hh_new <- read_dta(file.path(root, "3_report_data/wave5_hh_new.dta"))
 
 psnp_hh <- read_csv("dynamics_presentation/data/psnp_hh.csv")
 
-ubounds_w4 <- read_csv("dynamics_presentation/data/ubounds_w4.csv")
+bd_means_w4 <- read_csv("dynamics_presentation/data/bd_means_w4.csv")
 
 bd_mean_w5 <- read_csv("dynamics_presentation/data/bd_mean_w5.csv")
 
@@ -90,43 +90,6 @@ pop_urb_pnl <- track_hh %>%
   bind_rows(
     data.frame(region = "National", pop_w5_panel = sum(.$pop_w5_panel))
   )
-
-
-# DNA in wave 5
-
-recode_region_dna <- function(tbl, region_var = region) {
-  
-  suppressWarnings(
-    tbl %>% 
-      mutate(
-        region = recode(
-          {{region_var}}, 
-          `1` = "Tigray",
-          `3` = "Amhara",
-          `4` = "Oromia",
-          `7` = "SNNP",
-          `13` = "Harar",
-          `15` = "Dire Dawa"
-        )
-      )
-  )
-  
-}
-
-
-maize_growing <- wave5_hh_new %>% 
-  recode_region_dna(saq01) %>% 
-  filter(!is.na(region)) %>% 
-  group_by(region) %>% 
-  summarise(growing_pct = weighted.mean(cr2, pw = pw_w5)) %>% 
-  bind_rows(data.frame(
-    region = "National",
-    growing_pct = weighted.mean(wave5_hh_new$cr2, pw = pw_w5)
-  ))
-
-dna_w5 <- dna_means_hh %>% 
-  filter(wave == "Wave 5", sample == "All households/EA") %>% 
-  left_join(maize_growing, by = "region")
 
 
 # Wave 4: cross-sectional weight
@@ -196,7 +159,7 @@ ess5_innov_pnl <- adopt_rates_w5_hh %>%
   select(region, label, mean, abs_num) %>% 
   arrange(region, label)
 
-ess5_dna_pnl <- dna_w5 %>% 
+ess5_dna_pnl <- adopt_rate_dna_w5 %>% 
   left_join(pop_rur_pnl, by = "region") %>% 
   mutate(abs_num = mean * growing_pct * pop_w5_panel) %>% 
   filter(!region %in% c("Tigray", "National")) %>% 

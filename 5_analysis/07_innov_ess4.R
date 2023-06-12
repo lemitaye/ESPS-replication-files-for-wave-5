@@ -144,7 +144,7 @@ hh_dna_w4 <- ess4_hh_all %>%
   ) %>% 
   mutate(
     across(
-      c(all_of(dna)), ~recode(., `100` = 1))  # since w4 vars are mult. by 100
+      c(all_of(dna_vars)), ~recode(., `100` = 1))  # since w4 vars are mult. by 100
   ) %>% 
   recode_region() 
 
@@ -237,7 +237,7 @@ bd_means_w4 <- bounds_w4 %>%
 
 
 
-write_csv(ubounds_w4, file = "dynamics_presentation/data/ubounds_w4.csv")
+write_csv(bd_means_w4, file = "dynamics_presentation/data/bd_means_w4.csv")
 
 
 
