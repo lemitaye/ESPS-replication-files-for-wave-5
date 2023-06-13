@@ -68,7 +68,7 @@ innovs_w5 <- c(
   "maize_cg", "dtmz", "hhd_ofsp", "hhd_awassa83", "hhd_kabuli", 
   
   # Natural resoruce management:
-  "hhd_rdisp", "hhd_motorpump", "hhd_swc", "hhd_consag1", "hhd_consag2", "hhd_affor", 
+  "hhd_rdisp", "hhd_treadle", "hhd_motorpump", "hhd_swc", "hhd_consag1", "hhd_consag2", "hhd_affor", 
   "hhd_mango", "hhd_papaya", "hhd_avocado"
   )
 

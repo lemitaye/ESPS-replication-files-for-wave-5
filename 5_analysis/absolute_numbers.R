@@ -489,9 +489,12 @@ openXL(file.path(root, "4_table/absolute_numbers.xlsx"))
 
 
 
+# Figure 9: Totals ---------------------
 
 
-# Figure 9 for ESS5 -----------
+source("dynamics_presentation/helpers/ggplot_theme_Publication-2.R")
+
+## Figure 9 for ESS5 -----------
 
 var_labs_w5 <-    bind_rows(
   filter(adopt_rates_w5_hh, !variable %in% c("dtmz", "maize_cg")), 
@@ -517,6 +520,9 @@ ess5_totals <- bind_rows(
     label = case_match(
       variable,
       "hhd_grass" ~ "Forage grasses",
+      "hh_swc" ~ "Soil & Water Conservation practices",
+      "hhd_maize_cg" ~ "Maize varieties",
+      "hhd_cross_poultry" ~ "Poultry crossbreeds",
       .default = label
     ),
     type = case_when(
@@ -540,8 +546,15 @@ ess5_totals %>%
   ggplot(aes(label, total, fill = type)) +
   geom_col() +
   scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6)) +
+  theme_Publication() +
+  scale_fill_Publication() +
   theme(
-    axis.text.x = element_text(angle = 90),
+    axis.text.x = element_text(
+      angle = 90,
+      size = 10,
+      hjust = 1,
+      vjust = .4
+      ),
     legend.position = "top"
   ) +
   labs(
@@ -586,7 +599,8 @@ ggsave(
 
 
 
-# Figure 9 for ESS4 -----------
+## Figure 9 for ESS4 ------------
+
 
 var_labs_w4 <-  bind_rows(
   filter(adopt_rates_w4_hh, !variable %in% c("dtmz", "maize_cg")), 

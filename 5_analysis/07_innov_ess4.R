@@ -55,7 +55,7 @@ recode_region <- function(tbl, region_var = region) {
 innovs <- c(
   "hhd_livIA", "hhd_cross_largerum", "hhd_cross_smallrum", "hhd_cross_poultry", 
   "hhd_gaya", "hhd_sasbaniya", "hhd_alfa", "hhd_elepgrass",
-  "hhd_grass", "hhd_ofsp", "hhd_awassa83", "hhd_rdisp", "hhd_motorpump", "hhd_swc", 
+  "hhd_grass", "hhd_ofsp", "hhd_awassa83", "hhd_rdisp", "hhd_treadle", "hhd_motorpump", "hhd_swc", 
   "hhd_consag1", "hhd_consag2", "hhd_affor", "hhd_mango", "hhd_papaya", "hhd_avocado"
 )
 
