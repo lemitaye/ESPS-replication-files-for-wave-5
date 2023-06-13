@@ -496,12 +496,13 @@ source("dynamics_presentation/helpers/ggplot_theme_Publication-2.R")
 
 ## Figure 9 for ESS5 -----------
 
-var_labs_w5 <- as_tibble_col(
+var_labs <- as_tibble_col(
   c(
     "hhd_livIA", "hhd_avocado", "hhd_kabuli", "hhd_consag1", 
     "hhd_consag2", "hhd_cross_largerum", "hhd_cross_poultry", "hhd_cross_smallrum", 
     "hhd_grass", "hhd_mango", "hhd_motorpump", "hhd_papaya", "hhd_rdisp", 
-    "hhd_swc", "hhd_awassa83", "hhd_ofsp", "hhd_treadle", "hhd_maize_cg"
+    "hhd_swc", "hhd_awassa83", "hhd_ofsp", "hhd_treadle", "hhd_maize_cg",
+    "barley_cg", "sorghum_cg"
     ),
   column_name = "variable" 
 ) %>% 
@@ -516,7 +517,7 @@ var_labs_w5 <- as_tibble_col(
       "hhd_consag2"        ~ "Conservation Agriculture / ZT*",
       "hhd_cross_largerum" ~ "Large ruminants crossbreeds", 
       "hhd_cross_poultry"  ~ "Poultry crossbreeds",
-      "hhd_cross_smallrum" ~ "small ruminants crossbreeds",
+      "hhd_cross_smallrum" ~ "Small ruminants crossbreeds",
       "hhd_grass"          ~ "Forage grasses",
       "hhd_mango"          ~ "Mango trees",
       "hhd_motorpump"      ~ "Motorized pumps",
@@ -526,7 +527,9 @@ var_labs_w5 <- as_tibble_col(
       "hhd_awassa83"       ~ "Sweet potato Awassa-83 variety",
       "hhd_ofsp"           ~ "Sweet potato OFSP varieties", 
       "hhd_treadle"        ~ "Treadle pumps",
-      "hhd_maize_cg"       ~ "Maize varieties"
+      "hhd_maize_cg"       ~ "Maize varieties",
+      "barley_cg"          ~ "Barley varieties",
+      "sorghum_cg"         ~ "Sorghum varieties"
     ),
     
     # categories of innovations
@@ -535,7 +538,7 @@ var_labs_w5 <- as_tibble_col(
       str_detect(variable, "hhd_cross_|hhd_livIA|hhd_grass") ~ "Animal agriculture",
       
       variable %in% c(
-        "hhd_maize_cg", "hhd_kabuli", "hhd_ofsp", "hhd_awassa83"
+        "hhd_maize_cg", "hhd_kabuli", "hhd_ofsp", "hhd_awassa83", "barley_cg", "sorghum_cg"
       ) ~ "Crop germplasm improvement",
       
       variable %in% c(
@@ -543,6 +546,12 @@ var_labs_w5 <- as_tibble_col(
         "hhd_consag2", "hhd_affor", "hhd_mango", "hhd_papaya", "hhd_avocado"
       ) ~ "Natural resource management"
       
+    ),
+    
+    variable_w4 = case_match(
+      variable,
+      "hhd_maize_cg" ~ "maize_cg",
+      .default = variable
     )
   )
 
@@ -560,11 +569,11 @@ ess5_totals <- bind_rows(
     multiple = "all"
   ) %>% 
   select(-label) %>% 
-  inner_join(var_labs_w5, by = "variable") %>% 
+  inner_join(var_labs, by = "variable") %>% 
   select(sample, variable, label, type, total)
 
 
-theme_set(theme_light())
+# theme_set(theme_light())
 
 ess5_totals %>% 
   filter(sample == "all") %>% 
@@ -581,6 +590,7 @@ ess5_totals %>%
       hjust = 1,
       vjust = .4
       ),
+    axis.title.y = element_text(size = 11),
     legend.position = "top"
   ) +
   labs(
@@ -591,7 +601,7 @@ ess5_totals %>%
   )
 
 ggsave(
-  filename = "../tmp/figures/fig09_all.png",
+  filename = "../tmp/figures/fig09_all_w5.png",
   width = 300,
   height = 160,
   units = "mm"
@@ -603,8 +613,16 @@ ess5_totals %>%
   ggplot(aes(label, total, fill = type)) +
   geom_col() +
   scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6)) +
+  theme_Publication() +
+  scale_fill_Publication() +
   theme(
-    axis.text.x = element_text(angle = 90),
+    axis.text.x = element_text(
+      angle = 90,
+      size = 10,
+      hjust = 1,
+      vjust = .4
+    ),
+    axis.title.y = element_text(size = 11),
     legend.position = "top"
   ) +
   labs(
@@ -615,7 +633,7 @@ ess5_totals %>%
   )
 
 ggsave(
-  filename = "../tmp/figures/fig09_panel.png",
+  filename = "../tmp/figures/fig09_panel_w5.png",
   width = 300,
   height = 160,
   units = "mm"
@@ -628,46 +646,21 @@ ggsave(
 ## Figure 9 for ESS4 ------------
 
 
-var_labs_w4 <-  bind_rows(
-  filter(adopt_rates_w4_hh, !variable %in% c("dtmz", "maize_cg")), 
-  adopt_rate_dna_w4
-) %>% 
-  distinct(variable, label) 
-
 ess4_totals <- bind_rows(
   mutate(make_sheet(ess4_cs)$df, sample = "all"), 
   mutate(make_sheet(ess4_pnl)$df, sample = "panel")
 ) %>% 
-  left_join(var_labs_w4, by = "label") %>% 
-  select(sample, variable, label, total = Total) %>% 
-  filter(
-    !variable %in% c(
-      "hhd_agroind", "hhd_alfa", "hhd_gaya", "hhd_elepgrass", "hhd_sasbaniya", 
-      "hhd_psnp", "hhd_psnp_dir", "hhd_psnp_any", "hhd_dtmz", "qpm",
-      "dtmz"
-    )
+  select(sample, label, total = Total) %>% 
+  left_join(
+    bind_rows(adopt_rates_w4_hh, dna_w4) %>% 
+      distinct(variable, label), 
+    by = "label",
+    multiple = "all"
   ) %>% 
-  # categories of innovations
-  mutate(
-    label = case_match(
-      variable,
-      "hhd_grass" ~ "Forage grasses",
-      .default = label
-    ),
-    type = case_when(
-      str_detect(variable, "hhd_cross_|hhd_livIA|hhd_grass") ~ "Animal agriculture",
-      variable %in% c(
-        "barley_cg", "maize_cg", "sorghum_cg", "hhd_ofsp", "hhd_awassa83"
-      ) ~ "Crop germplasm improvement",
-      variable %in% c(
-        "hhd_rdisp", "hhd_motorpump", "hhd_swc", "hhd_consag1", "hhd_consag2",
-        "hhd_affor", "hhd_mango", "hhd_papaya", "hhd_avocado"
-      ) ~ "Natural resource management"
-    )
-  )
+  select(-label) %>% 
+  inner_join(var_labs, by = c("variable" = "variable_w4")) %>% 
+  select(sample, variable, label, type, total)
 
-
-theme_set(theme_light())
 
 ess4_totals %>% 
   filter(sample == "all") %>% 
@@ -675,8 +668,16 @@ ess4_totals %>%
   ggplot(aes(label, total, fill = type)) +
   geom_col() +
   scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6)) +
+  theme_Publication() +
+  scale_fill_Publication() +
   theme(
-    axis.text.x = element_text(angle = 90),
+    axis.text.x = element_text(
+      angle = 90,
+      size = 10,
+      hjust = 1,
+      vjust = .4
+    ),
+    axis.title.y = element_text(size = 11),
     legend.position = "top"
   ) +
   labs(
@@ -699,8 +700,16 @@ ess4_totals %>%
   ggplot(aes(label, total, fill = type)) +
   geom_col() +
   scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6)) +
+  theme_Publication() +
+  scale_fill_Publication() +
   theme(
-    axis.text.x = element_text(angle = 90),
+    axis.text.x = element_text(
+      angle = 90,
+      size = 10,
+      hjust = 1,
+      vjust = .4
+    ),
+    axis.title.y = element_text(size = 11),
     legend.position = "top"
   ) +
   labs(
