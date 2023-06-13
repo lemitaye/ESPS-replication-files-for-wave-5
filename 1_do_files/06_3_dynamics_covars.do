@@ -102,12 +102,6 @@ append using "${tmp}/dynamics/06_3_covars_w5.dta", force
 
 gen wave5=(wave==5)
 
-gen int_var=(hhd_motorpump*wave5)
-
-
-regress total_cons_ann hhd_motorpump wave5 int_var [pw=pw_panel]
-regress total_cons_ann hhd_motorpump##wave5 [pw=pw_panel]
-
 
 matrix drop _all
  
@@ -115,48 +109,44 @@ foreach covar in $hhcov4 {
 
     foreach var in $adopt {
 
-        reg `covar' `var'##wave5 [pw=pw_panel]
+        qui: reg `covar' `var'##wave5 [pw=pw_panel]
 
         scalar b`covar'`var'     = e(b)[1,8]
         scalar `covar'stder`var' = r(table)[2,8]
         scalar `covar'pval`var'  = r(table)[4,8]
 
-        di b`covar'`var'
-
         matrix bse`covar'`var' = (b`covar'`var')
-        *matrix bse`covar'`var' = (b`covar'`var'\ `covar'stder`var')
-        *matrix rownames bse`covar'`var' = b`var' stder`var'
+        matrix bse`covar'`var' = (b`covar'`var'\ `covar'stder`var')
+        matrix rownames bse`covar'`var' = b`var' stder`var'
         
-        /*/ p-values:
-                
+        // p-values:
+        // "# \ 0" b/c no stars needed for s.e.        
         if (`covar'pval`var'<=0.1 & `covar'pval`var'>0.05)  {
-            matrix mstr`covar'`var' = (3)      // significant at 10% level
+            matrix mstr`covar'`var' = (3 \ 0)      // significant at 10% level
         }
         
         if (`covar'pval`var'  <=0.05 & `covar'pval`var'>0.01)  {
-            matrix mstr`covar'`var' = (2)      // significant at 5% level
+            matrix mstr`covar'`var' = (2 \ 0)      // significant at 5% level
         }
         
         if `covar'pval`var'  <=0.01 {
-            matrix mstr`covar'`var' = (1)      // significant at 1% level
+            matrix mstr`covar'`var' = (1 \ 0)      // significant at 1% level
         }
         
         if `covar'pval`var'   >0.1 {
-            matrix mstr`covar'`var' = (0)       // Non-significant
+            matrix mstr`covar'`var' = (0 \ 0)       // Non-significant
         }
-        */
-        *matrix mstr`covar'`var' = (mstr`covar'`var')
 
         matrix A1`covar' = nullmat(A1`covar')\ bse`covar'`var'
 
-        *matrix A1`covar'_STARS =  nullmat(A1`covar'_STARS)\mstr`covar'`var'
+        matrix A1`covar'_STARS =  nullmat(A1`covar'_STARS)\mstr`covar'`var'
 
     }
 
     matrix colnames A1`covar' = `covar'
 
     matrix C = (nullmat(C), A1`covar')
-    *matrix C_STARS = (nullmat(C_STARS), A1`covar'_STARS)
+    matrix C_STARS = (nullmat(C_STARS), A1`covar'_STARS)
 
 }
 
