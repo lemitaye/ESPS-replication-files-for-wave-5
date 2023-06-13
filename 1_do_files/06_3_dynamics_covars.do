@@ -117,7 +117,7 @@ foreach covar in $hhcov4 {
 
         matrix bse`covar'`var' = (b`covar'`var')
         matrix bse`covar'`var' = (b`covar'`var'\ `covar'stder`var')
-        matrix rownames bse`covar'`var' = b`var' stder`var'
+        
         
         // p-values:
         // "# \ 0" b/c no stars needed for s.e.        
@@ -150,3 +150,27 @@ foreach covar in $hhcov4 {
 
 }
 
+
+local cname ""
+foreach var in $hhcov4 {
+    local lbl : variable label `var'
+    local cname `" `cname' "`lbl'" "'		
+}
+
+local rname ""
+foreach var in $adopt {
+	local lbl : variable label `var'
+	local rname `" `rname' "`lbl'" "s.e." "'		
+}
+
+#delimit ;
+xml_tab C,  save("$table/06_3_dynamics_adopters_chrxs.xml") replace 
+sheet("Table14_dyn", nogridlines)  
+rnames(`rname') cnames(`cname') lines(COL_NAMES 2 LAST_ROW 2)  
+title("Table: Dynamics in correlates of adoption")  font("Times New Roman" 10) 
+cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12 55) 
+	format((SCLR0) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) 
+    (NBCR2) (NBCR2) (NBCR2) (NBCR2))  
+	stars(* 0.1 ** 0.05 *** 0.01)  
+	notes("."); 
+# delimit cr
