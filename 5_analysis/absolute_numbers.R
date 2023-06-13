@@ -493,7 +493,7 @@ openXL(file.path(root, "4_table/absolute_numbers.xlsx"))
 
 # Figure 9 for ESS5 -----------
 
-var_labs <-    bind_rows(
+var_labs_w5 <-    bind_rows(
   filter(adopt_rates_w5_hh, !variable %in% c("dtmz", "maize_cg")), 
   adopt_rate_dna_w5
 ) %>% 
@@ -503,13 +503,13 @@ ess5_totals <- bind_rows(
   mutate(make_sheet(ess5_cs)$df, sample = "all"), 
   mutate(make_sheet(ess5_pnl)$df, sample = "panel")
 ) %>% 
-  left_join(var_labs, by = "label") %>% 
+  left_join(var_labs_w5, by = "label") %>% 
   select(sample, variable, label, total = Total) %>% 
   filter(
     !variable %in% c(
       "hhd_agroind", "hhd_alfalfa", "hhd_deshograss", "hhd_elepgrass", "hhd_lablab",
       "hhd_rhodesgrass", "hhd_sesbaniya", "hhd_sinar", "hhd_vetch", 
-      "hhd_psnp", "hhd_psnp_dir", "hhd_psnp_any"
+      "hhd_psnp", "hhd_psnp_dir", "hhd_psnp_any", "hhd_dtmz"
     )
   ) %>% 
   # categories of innovations
@@ -537,13 +537,17 @@ theme_set(theme_light())
 ess5_totals %>% 
   filter(sample == "all") %>% 
   mutate(label = fct_reorder(label, total)) %>% 
-  ggplot(aes(total, label, fill = type)) +
+  ggplot(aes(label, total, fill = type)) +
   geom_col() +
-  scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6)) +
+  scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6)) +
+  theme(
+    axis.text.x = element_text(angle = 90),
+    legend.position = "top"
+  ) +
   labs(
-    x = "Number of rural households",
-    y = "",
-    fill = "Category",
+    y = "Number of rural households (millions)",
+    x = "",
+    fill = "",
     title = "Number of rural households adopting each CGIAR-related innovation in\nEthiopia, ESS5 (2021/22) - All households"
   )
 
@@ -557,13 +561,17 @@ ggsave(
 ess5_totals %>% 
   filter(sample == "panel") %>% 
   mutate(label = fct_reorder(label, total)) %>% 
-  ggplot(aes(total, label, fill = type)) +
+  ggplot(aes(label, total, fill = type)) +
   geom_col() +
-  scale_x_continuous(labels = unit_format(unit = "M", scale = 1e-6)) +
+  scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6)) +
+  theme(
+    axis.text.x = element_text(angle = 90),
+    legend.position = "top"
+  ) +
   labs(
-    x = "Number of rural households",
-    y = "",
-    fill = "Category",
+    y = "Number of rural households (millions)",
+    x = "",
+    fill = "",
     title = "Number of rural households adopting each CGIAR-related innovation\nin Ethiopia, ESS5 (2021/22) - Panel households"
   )
 
@@ -578,7 +586,96 @@ ggsave(
 
 
 
+# Figure 9 for ESS4 -----------
 
+var_labs_w4 <-  bind_rows(
+  filter(adopt_rates_w4_hh, !variable %in% c("dtmz", "maize_cg")), 
+  adopt_rate_dna_w4
+) %>% 
+  distinct(variable, label) 
+
+ess4_totals <- bind_rows(
+  mutate(make_sheet(ess4_cs)$df, sample = "all"), 
+  mutate(make_sheet(ess4_pnl)$df, sample = "panel")
+) %>% 
+  left_join(var_labs_w4, by = "label") %>% 
+  select(sample, variable, label, total = Total) %>% 
+  filter(
+    !variable %in% c(
+      "hhd_agroind", "hhd_alfa", "hhd_gaya", "hhd_elepgrass", "hhd_sasbaniya", 
+      "hhd_psnp", "hhd_psnp_dir", "hhd_psnp_any", "hhd_dtmz", "qpm",
+      "dtmz"
+    )
+  ) %>% 
+  # categories of innovations
+  mutate(
+    label = case_match(
+      variable,
+      "hhd_grass" ~ "Forage grasses",
+      .default = label
+    ),
+    type = case_when(
+      str_detect(variable, "hhd_cross_|hhd_livIA|hhd_grass") ~ "Animal agriculture",
+      variable %in% c(
+        "barley_cg", "maize_cg", "sorghum_cg", "hhd_ofsp", "hhd_awassa83"
+      ) ~ "Crop germplasm improvement",
+      variable %in% c(
+        "hhd_rdisp", "hhd_motorpump", "hhd_swc", "hhd_consag1", "hhd_consag2",
+        "hhd_affor", "hhd_mango", "hhd_papaya", "hhd_avocado"
+      ) ~ "Natural resource management"
+    )
+  )
+
+
+theme_set(theme_light())
+
+ess4_totals %>% 
+  filter(sample == "all") %>% 
+  mutate(label = fct_reorder(label, total)) %>% 
+  ggplot(aes(label, total, fill = type)) +
+  geom_col() +
+  scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6)) +
+  theme(
+    axis.text.x = element_text(angle = 90),
+    legend.position = "top"
+  ) +
+  labs(
+    y = "Number of rural households (millions)",
+    x = "",
+    fill = "",
+    title = "Number of rural households adopting each CGIAR-related innovation in\nEthiopia, ESS4 (2018/19) - All households"
+  )
+
+ggsave(
+  filename = "../tmp/figures/fig09_all_w4.png",
+  width = 300,
+  height = 160,
+  units = "mm"
+)
+
+ess4_totals %>% 
+  filter(sample == "panel") %>% 
+  mutate(label = fct_reorder(label, total)) %>% 
+  ggplot(aes(label, total, fill = type)) +
+  geom_col() +
+  scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6)) +
+  theme(
+    axis.text.x = element_text(angle = 90),
+    legend.position = "top"
+  ) +
+  labs(
+    y = "Number of rural households (millions)",
+    x = "",
+    fill = "",
+    title = "Number of rural households adopting each CGIAR-related innovation\nin Ethiopia, ESS4 (2018/19) - Panel households"
+  )
+
+ggsave(
+  filename = "../tmp/figures/fig09_panel_w4.png",
+  width = 300,
+  height = 160,
+  units = "mm"
+)
 
 
 
