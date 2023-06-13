@@ -56,7 +56,7 @@ keep household_id $hhcov4 $adopt
 gen wave=4
 
 // merge with tracking file to id panel hhs:
-merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh_pp.dta", keepusing(hh_status)
+merge 1:1 household_id using "${tmp}/dynamics/06_1_track_hh_pp.dta", keepusing(hh_status pw_panel)
 keep if _merge==1 | _merge==3
 drop _merge
 
@@ -100,11 +100,14 @@ append using "${tmp}/dynamics/06_3_covars_w5.dta", force
 
 // Running Diff-in-Diff regression
 
-gen int_var=(total_cons_ann*wave5)
-
 gen wave5=(wave==5)
 
-regress hhd_motorpump total_cons_ann wave5 int_var [pw=pw_panel]
+gen int_var=(hhd_motorpump*wave5)
+
+
+regress total_cons_ann hhd_motorpump wave5 int_var [pw=pw_panel]
+regress total_cons_ann hhd_motorpump##wave5 [pw=pw_panel]
+
 
 matrix drop _all
  
