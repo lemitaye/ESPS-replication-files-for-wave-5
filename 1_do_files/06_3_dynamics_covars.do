@@ -102,6 +102,12 @@ append using "${tmp}/dynamics/06_3_covars_w5.dta", force
 
 gen wave5=(wave==5)
 
+gen int_var = wave5*hhd_motorpump
+
+reg totconswin wave5 hhd_motorpump int_var
+
+reg totconswin wave5##hhd_motorpump 
+
 
 matrix drop _all
  
@@ -111,16 +117,51 @@ foreach covar in $hhcov4 {
 
         qui: reg `covar' `var'##wave5 [pw=pw_panel]
 
-        scalar b`covar'`var'     = e(b)[1,8]
-        scalar `covar'stder`var' = r(table)[2,8]
-        scalar `covar'pval`var'  = r(table)[4,8]
+        scalar bwv5`covar'`var' = r(table)[1,2]
+        scalar bcov`covar'`var' = r(table)[1,4]
+        scalar bint`covar'`var' = r(table)[1,8]
+        scalar bcon`covar'`var' = r(table)[1,9]
 
-        matrix bse`covar'`var' = (b`covar'`var')
-        matrix bse`covar'`var' = (b`covar'`var'\ `covar'stder`var')
+        scalar `covar'sewv5`var' = r(table)[2,2]
+        scalar `covar'secov`var' = r(table)[2,4]
+        scalar `covar'seint`var' = r(table)[2,8]
+        scalar `covar'secon`var' = r(table)[2,9]
+
+        scalar `covar'pwv5`var'  = r(table)[4,2]
+        scalar `covar'pcov`var'  = r(table)[4,4]
+        scalar `covar'pint`var'  = r(table)[4,8]
+        scalar `covar'pcon`var'  = r(table)[4,9]
+
+        matrix bse`covar'`var' = (bwv5`covar'`var' \ `covar'sewv5`var' \ ///
+                                  bcov`covar'`var' \ `covar'secov`var' \ ///
+                                  bint`covar'`var' \ `covar'seint`var' \ ///
+                                  bcon`covar'`var' \ `covar'secon`var')
         
         
         // p-values:
-        // "# \ 0" b/c no stars needed for s.e.        
+        // "# / 0" b/c no stars needed for s.e.  
+        foreach suffix in wv5 cov int con {
+                
+            if (`covar'p`suffix'`var'<=0.1 & `covar'p`suffix'`var'>0.05)  {
+                matrix mstr`covar'`var'`suffix' = (3 / .)      // significant at 10% level
+            }
+            
+            if (`covar'p`suffix'`var'  <=0.05 & `covar'p`suffix'`var'>0.01)  {
+                matrix mstr`covar'`var'`suffix' = (2 / .)      // significant at 5% level
+            }
+            
+            if `covar'p`suffix'`var'  <=0.01 {
+                matrix mstr`covar'`var'`suffix' = (1 / .)      // significant at 1% level
+            }
+            
+            if `covar'p`suffix'`var'   >0.1 {
+                matrix mstr`covar'`var'`suffix' = (0 / .)       // Non-significant
+            }
+        }
+
+        matrix mstr`covar'`var' = (mstr`covar'`var'wv5 \ mstr`covar'`var'cov \ mstr`covar'`var'int \ mstr`covar'`var'con)
+
+       /*      
         if (`covar'pval`var'<=0.1 & `covar'pval`var'>0.05)  {
             matrix mstr`covar'`var' = (3 \ 0)      // significant at 10% level
         }
@@ -136,6 +177,7 @@ foreach covar in $hhcov4 {
         if `covar'pval`var'   >0.1 {
             matrix mstr`covar'`var' = (0 \ 0)       // Non-significant
         }
+        */
 
         matrix A1`covar' = nullmat(A1`covar')\ bse`covar'`var'
 
@@ -160,7 +202,7 @@ foreach var in $hhcov4 {
 local rname ""
 foreach var in $adopt {
 	local lbl : variable label `var'
-	local rname `" `rname' "`lbl'" "s.e." "'		
+	local rname `" `rname' "`lbl'" "." "'		
 }
 
 #delimit ;
