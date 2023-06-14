@@ -136,6 +136,8 @@ foreach covar in $hhcov4 {
                                   bcov`covar'`var' \ `covar'secov`var' \ ///
                                   bint`covar'`var' \ `covar'seint`var' \ ///
                                   bcon`covar'`var' \ `covar'secon`var')
+
+        matrix rownames bse`covar'`var' = Wave5 . `var' . Wave5x`var' . Constant .
         
         
         // p-values:
@@ -143,45 +145,27 @@ foreach covar in $hhcov4 {
         foreach suffix in wv5 cov int con {
                 
             if (`covar'p`suffix'`var'<=0.1 & `covar'p`suffix'`var'>0.05)  {
-                matrix mstr`covar'`var'`suffix' = (3 / .)      // significant at 10% level
+                matrix p`covar'`var'`suffix' = (3 \ .)      // significant at 10% level
             }
             
             if (`covar'p`suffix'`var'  <=0.05 & `covar'p`suffix'`var'>0.01)  {
-                matrix mstr`covar'`var'`suffix' = (2 / .)      // significant at 5% level
+                matrix p`covar'`var'`suffix' = (2 \ .)      // significant at 5% level
             }
             
             if `covar'p`suffix'`var'  <=0.01 {
-                matrix mstr`covar'`var'`suffix' = (1 / .)      // significant at 1% level
+                matrix p`covar'`var'`suffix' = (1 \ .)      // significant at 1% level
             }
             
             if `covar'p`suffix'`var'   >0.1 {
-                matrix mstr`covar'`var'`suffix' = (0 / .)       // Non-significant
+                matrix p`covar'`var'`suffix' = (0 \ .)       // Non-significant
             }
         }
 
-        matrix mstr`covar'`var' = (mstr`covar'`var'wv5 \ mstr`covar'`var'cov \ mstr`covar'`var'int \ mstr`covar'`var'con)
-
-       /*      
-        if (`covar'pval`var'<=0.1 & `covar'pval`var'>0.05)  {
-            matrix mstr`covar'`var' = (3 \ 0)      // significant at 10% level
-        }
-        
-        if (`covar'pval`var'  <=0.05 & `covar'pval`var'>0.01)  {
-            matrix mstr`covar'`var' = (2 \ 0)      // significant at 5% level
-        }
-        
-        if `covar'pval`var'  <=0.01 {
-            matrix mstr`covar'`var' = (1 \ 0)      // significant at 1% level
-        }
-        
-        if `covar'pval`var'   >0.1 {
-            matrix mstr`covar'`var' = (0 \ 0)       // Non-significant
-        }
-        */
+        matrix p`covar'`var' = (p`covar'`var'wv5 \ p`covar'`var'cov \ p`covar'`var'int \ p`covar'`var'con)
 
         matrix A1`covar' = nullmat(A1`covar')\ bse`covar'`var'
 
-        matrix A1`covar'_STARS =  nullmat(A1`covar'_STARS)\mstr`covar'`var'
+        matrix A1`covar'_STARS =  nullmat(A1`covar'_STARS)\p`covar'`var'
 
     }
 
@@ -192,7 +176,7 @@ foreach covar in $hhcov4 {
 
 }
 
-
+/*
 local cname ""
 foreach var in $hhcov4 {
     local lbl : variable label `var'
