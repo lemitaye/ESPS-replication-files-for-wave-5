@@ -37,6 +37,10 @@ merge 1:1 household_id using "${tmp}/dynamics/06_4_cpea_hh_w5.dta"
 keep if _merge==3
 drop _merge
 
+// matrix:
+tab grow_cp_w4 grow_cp_w5
+
+// save
 save "${tmp}/dynamics/06_4_cpea_hh.dta", replace 
 
 
@@ -44,3 +48,25 @@ save "${tmp}/dynamics/06_4_cpea_hh.dta", replace
 use "${raw4}/sect4_pp_w4.dta", clear
 
 merge m:1 household_id using  "${tmp}/dynamics/06_4_cpea_hh.dta"
+keep if _merge==3
+
+
+// Grow cp in wave 4 but stopped in wave 5
+tab s4q01b if grow_cpea_w4==1 & grow_cpea_w5==0, sort
+
+// Grow cp in wave 4 and continued to grow in wave 5
+tab s4q01b if grow_cpea_w4==1 & grow_cpea_w5==1, sort
+
+
+// Crops for households in wave 5
+use "${rawdata}/PP/sect4_pp_w5.dta", clear
+
+merge m:1 household_id using  "${tmp}/dynamics/06_4_cpea_hh.dta"
+keep if _merge==3
+
+
+// Grow cp in wave 4 but stopped in wave 5
+tab s4q01b if grow_cpea_w4==1 & grow_cpea_w5==0, sort
+
+// Grow cp in wave 4 and continued to grow in wave 5
+tab s4q01b if grow_cpea_w4==1 & grow_cpea_w5==1, sort
