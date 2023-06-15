@@ -23,7 +23,7 @@ read_csv_2list <- function(year) {
     file = dir(file.path(root, paste0("2_raw_data/auxiliary/AgSS_extracted/", folder_nm)), 
                full.names = TRUE)
   ) %>%
-    mutate(data = map(file, read_csv, show_col_types = FALSE)) %>%
+    mutate(data = map(file, read_csv, show_col_types = FALSE, na = c("NA", "-", ""))) %>%
     extract(file, "name", paste0(year, "_(.*).csv")) %>%
     deframe()
   
@@ -75,12 +75,67 @@ for (i in seq_along(agss_2013)) {
 }
 
 
+clean_tbl_lst <- function(tbl_lst) {
+  
+  cleaned_tbl_lst <- list()
+  
+  
+  for (i in seq_along(tbl_lst)) {
+    
+    # Find the row index containing "Grain"  
+    grain_row <- which(str_detect(tbl_lst[[i]]$`Unnamed: 0`, "Grain"))
+    
+    # Subset the data frame from the grain_row to the end
+    tbl_cur <- tbl_lst[[i]][(grain_row:nrow(tbl_lst[[i]])), ]
+    
+    
+    tbl_cur <- tbl_cur %>% 
+      select(where(~any(!is.na(.)))) %>% # remove columns with entire NAs
+      select(-1) %>% 
+      rename(
+        crop = 1, area = 2, area_se = 3, area_cv = 4, production = 5,
+        production_se = 6, production_cv = 7
+      ) %>% 
+      filter(!is.na(crop)) %>% 
+      mutate(
+        # crop = str_trim(str_remove(crop, "\\.+")),
+        across(area:production_cv, ~as.numeric(str_remove(., ",")))
+      )
+    
+    
+    cleaned_tbl_lst <- rlist::list.append(cleaned_tbl_lst, tbl_cur)
+    
+  }
+  
+
+  
+  return(cleaned_tbl_lst)
+  
+}
+
+clean_tbl_lst(agss_2022)
+
+
 agss_2013_cleaned <- bind_rows(agss_2013_cleaned_lst) 
 
 
+grain_row <- which(str_detect(agss_2022$Afar$`Unnamed: 0`, "Grain"))
 
+# Subset the data frame from the grain_row to the end
+tbl_cur <- agss_2022$Afar[(grain_row:nrow(agss_2022$Afar)), ]
 
-
+tbl_cur %>% 
+  select(where(~any(!is.na(.)))) %>% # remove columns with entire NAs
+  select(-1) %>% 
+  rename(
+    crop = 1, area = 2, area_se = 3, area_cv = 4, production = 5,
+    production_se = 6, production_cv = 7
+  ) %>% 
+  filter(!is.na(crop)) %>% 
+  mutate(
+    crop = str_trim(str_remove(crop, "\\.+")),
+    across(area:production_cv, ~as.numeric(str_remove(., ",")))
+  )
 
 
 
