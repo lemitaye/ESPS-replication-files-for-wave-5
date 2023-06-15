@@ -84,12 +84,30 @@ clean_tbl_lst <- function(tbl_lst) {
     
   }
   
-  cleaned_tbl_bind <- bind_rows(cleaned_tbl_lst)
+  # cleaned_tbl_bind <- bind_rows(cleaned_tbl_lst)
 
-    
-  return(cleaned_tbl_bind)
+  return(cleaned_tbl_lst)  
+  # return(cleaned_tbl_bind)
   
 }
+
+
+# Fine tuning --------
+
+## 2012/13 -------
+
+clean_tbl_lst(agss_2013) %>% 
+  map(dim)  
+
+## 2013/14 -------
+
+clean_tbl_lst(agss_2014) %>% 
+  map(dim)
+
+## 2014/15
+
+clean_tbl_lst(agss_2015) %>% 
+  map(dim)
 
 
 # apply cleaning function -------
