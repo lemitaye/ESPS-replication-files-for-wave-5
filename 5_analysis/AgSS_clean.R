@@ -13,14 +13,34 @@ library(tidyverse)
 
 
 
+# function to read csv files to list 
+read_csv_2list <- function(year) {
+  
+  year_pr <- year-1
+  folder_nm <- paste0(year_pr, "_", year-2000)
+  
+  agss_year <- tibble(
+    file = dir(file.path(root, paste0("2_raw_data/auxiliary/AgSS_extracted/", folder_nm)), 
+               full.names = TRUE)
+  ) %>%
+    mutate(data = map(file, read_csv, show_col_types = FALSE)) %>%
+    extract(file, "name", paste0(year, "_(.*).csv")) %>%
+    deframe()
+  
+  return(agss_year)
+}
+
 # 2012/13 -------------
 
 # read csv files to a list:
+agss_2013 <- read_csv_2list(2013)
+
+
 agss_2013 <- tibble(
   file = dir(file.path(root, "2_raw_data/auxiliary/AgSS_extracted/2012_13"), 
              full.names = TRUE)
   ) %>%
-  mutate(data = map(file, read_csv)) %>%
+  mutate(data = map(file, read_csv, show_col_types = FALSE)) %>%
   extract(file, "name", "2013_(.*).csv") %>%
   deframe()
 
