@@ -101,7 +101,10 @@ clean_tbl_lst <- function(tbl_lst) {
       filter(!is.na(crop)) %>% 
       mutate(
         # convert to numeric type
-        across(area:production_cv, ~as.numeric(str_replace(., ",", "")))
+        across(area:production_cv, ~as.numeric(str_replace(., ",", ""))),
+        
+        # use regex to remove trailing dots
+        crop = str_replace(crop, "\\.+\\s*\\.+\\s*$", "") %>% str_trim()
       ) %>% 
       suppressWarnings()
     
@@ -121,47 +124,26 @@ clean_tbl_lst <- function(tbl_lst) {
 # Final cleaning ----------
 
 ## 2012/13 ------
-clean_tbl_lst(agss_2013) 
 
+agss_2013_bind <- clean_tbl_lst(agss_2013) 
 
-clean_tbl_lst(agss_2014) 
+agss_2014_bind <- clean_tbl_lst(agss_2014) 
 
+agss_2015_bind <- clean_tbl_lst(agss_2015)
 
+agss_2016_bind <- clean_tbl_lst(agss_2016) 
 
-clean_tbl_lst(agss_2015) %>% 
-  count(region)
+agss_2017_bind <- clean_tbl_lst(agss_2017)
 
+agss_2018_bind <- clean_tbl_lst(agss_2018)
 
-clean_tbl_lst(agss_2016) 
+agss_2019_bind <- clean_tbl_lst(agss_2019)
 
-clean_tbl_lst(agss_2017)
-clean_tbl_lst(agss_2018)
-clean_tbl_lst(agss_2019)
-clean_tbl_lst(agss_2020)
-clean_tbl_lst(agss_2021)
-clean_tbl_lst(agss_2022)
+agss_2020_bind <- clean_tbl_lst(agss_2020)
 
+agss_2021_bind <- clean_tbl_lst(agss_2021)
 
-agss_2013_cleaned <- bind_rows(agss_2013_cleaned_lst) 
-
-
-grain_row <- which(str_detect(agss_2022$Afar$`Unnamed: 0`, "Grain"))
-
-# Subset the data frame from the grain_row to the end
-tbl_cur <- agss_2022$Afar[(grain_row:nrow(agss_2022$Afar)), ]
-
-tbl_cur %>% 
-  select(where(~any(!is.na(.)))) %>% # remove columns with entire NAs
-  select(-1) %>% 
-  rename(
-    crop = 1, area = 2, area_se = 3, area_cv = 4, production = 5,
-    production_se = 6, production_cv = 7
-  ) %>% 
-  filter(!is.na(crop)) %>% 
-  mutate(
-    crop = str_trim(str_remove(crop, "\\.+")),
-    across(area:production_cv, ~as.numeric(str_remove(., ",")))
-  )
+agss_2022_bind <- clean_tbl_lst(agss_2022)
 
 
 
