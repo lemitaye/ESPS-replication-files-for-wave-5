@@ -1,0 +1,78 @@
+
+
+# created on: July 15, 2023
+# purpose: to clean scraped AgSS tables
+
+
+# root directory
+root <- "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Country teams/Ethiopia/LSMS_W5"
+
+
+# load libraries ------
+library(tidyverse)
+
+
+
+# 2012/13 -------------
+
+# read csv files to a list:
+agss_2013 <- tibble(
+  file = dir(file.path(root, "2_raw_data/auxiliary/AgSS_extracted/2012_13"), 
+             full.names = TRUE)
+  ) %>%
+  mutate(data = map(file, read_csv)) %>%
+  extract(file, "name", "2013_(.*).csv") %>%
+  deframe()
+
+agss_2013$Ethiopia %>% 
+  select(-1) 
+
+# Find the row index containing "Grain"  
+grain_row <- which(agss_2013$Ethiopia$`Unnamed: 0` == "Grain")
+# Subset the data frame from the grain_row to the end
+agss_2013$Ethiopia <- agss_2013$Ethiopia[(grain_row:nrow(agss_2013$Ethiopia)), ]
+
+agss_2013$SNNP %>% 
+  filter(`...1` >= 3) %>% 
+  select_if(~ !any(is.na(.))) %>% 
+  select(-1) %>% 
+  rename(
+    crop = 1, area = 2, area_se = 3, area_cv = 4, production = 5,
+    production_se = 6, production_cv = 7
+  )
+
+
+agss_2013_cleaned_lst <- list()
+
+
+for (i in seq_along(agss_2013)) {
+  
+  # Find the row index containing "Grain"  
+  grain_row <- which(agss_2013[[i]]$`Unnamed: 0` == "Grain")
+  
+  # Subset the data frame from the grain_row to the end
+  tbl_cur <- agss_2013[[i]][(grain_row:nrow(agss_2013[[i]])), ]
+  
+  
+  tbl_cur <- tbl_cur %>% 
+    select_if(~ !any(is.na(.))) %>% # remove columns with entire NAs
+    select(-1) %>% 
+    rename(
+      crop = 1, area = 2, area_se = 3, area_cv = 4, production = 5,
+      production_se = 6, production_cv = 7
+    )
+  
+  
+  agss_2013_cleaned_lst <- rlist::list.append(agss_2013_cleaned_lst, tbl_cur)
+  
+}
+
+
+agss_2013_cleaned <- bind_rows(agss_2013_cleaned_lst)
+
+
+
+
+
+
+
