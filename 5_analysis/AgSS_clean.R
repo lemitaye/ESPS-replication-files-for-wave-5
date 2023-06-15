@@ -47,36 +47,7 @@ agss_2022 <- read_csv_2list(2022)
 
 
 
-agss_2013_cleaned_lst <- list()
-
-
-for (i in seq_along(agss_2013)) {
-  
-  # Find the row index containing "Grain"  
-  grain_row <- which(agss_2013[[i]]$`Unnamed: 0` == "Grain")
-  
-  # Subset the data frame from the grain_row to the end
-  tbl_cur <- agss_2013[[i]][(grain_row:nrow(agss_2013[[i]])), ]
-  
-  
-  tbl_cur <- tbl_cur %>% 
-    select_if(~ !any(is.na(.))) %>% # remove columns with entire NAs
-    select(-1) %>% 
-    rename(
-      crop = 1, area = 2, area_se = 3, area_cv = 4, production = 5,
-      production_se = 6, production_cv = 7
-    ) %>% 
-    mutate(
-      crop = str_remove(crop, ""),
-      across(area:production_cv, as.numeric)
-    )
-  
-  
-  agss_2013_cleaned_lst <- rlist::list.append(agss_2013_cleaned_lst, tbl_cur)
-  
-}
-
-
+# function to clean list of raw csv ----------
 clean_tbl_lst <- function(tbl_lst) {
   
   cleaned_tbl_lst <- list()
@@ -121,32 +92,53 @@ clean_tbl_lst <- function(tbl_lst) {
 }
 
 
-# Final cleaning ----------
+# apply cleaning function -------
 
-## 2012/13 ------
+agss_2013_bind <- clean_tbl_lst(agss_2013) %>% 
+  mutate(year = "2012/13")
 
-agss_2013_bind <- clean_tbl_lst(agss_2013) 
+agss_2014_bind <- clean_tbl_lst(agss_2014) %>% 
+  mutate(year = "2013/14")
 
-agss_2014_bind <- clean_tbl_lst(agss_2014) 
+agss_2015_bind <- clean_tbl_lst(agss_2015) %>% 
+  mutate(year = "2014/15")
 
-agss_2015_bind <- clean_tbl_lst(agss_2015)
+agss_2016_bind <- clean_tbl_lst(agss_2016) %>% 
+  mutate(year = "2015/16")
 
-agss_2016_bind <- clean_tbl_lst(agss_2016) 
+agss_2017_bind <- clean_tbl_lst(agss_2017) %>% 
+  mutate(year = "2016/17")
 
-agss_2017_bind <- clean_tbl_lst(agss_2017)
+agss_2018_bind <- clean_tbl_lst(agss_2018) %>% 
+  mutate(year = "2017/18")
 
-agss_2018_bind <- clean_tbl_lst(agss_2018)
+agss_2019_bind <- clean_tbl_lst(agss_2019) %>% 
+  mutate(year = "2018/19")
 
-agss_2019_bind <- clean_tbl_lst(agss_2019)
+agss_2020_bind <- clean_tbl_lst(agss_2020) %>% 
+  mutate(year = "2019/20")
 
-agss_2020_bind <- clean_tbl_lst(agss_2020)
+agss_2021_bind <- clean_tbl_lst(agss_2021) %>% 
+  mutate(year = "2020/21")
 
-agss_2021_bind <- clean_tbl_lst(agss_2021)
-
-agss_2022_bind <- clean_tbl_lst(agss_2022)
-
+agss_2022_bind <- clean_tbl_lst(agss_2022) %>% 
+  mutate(year = "2021/22")
 
 
+# bind all years to one tibble --------
+
+agss_all <- bind_rows(
+  agss_2013_bind,
+  agss_2014_bind,
+  agss_2015_bind,
+  agss_2016_bind,
+  agss_2017_bind,
+  agss_2018_bind,
+  agss_2019_bind,
+  agss_2020_bind,
+  agss_2021_bind,
+  agss_2022_bind
+)
 
 
 
