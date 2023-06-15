@@ -68,7 +68,81 @@ for (i in seq_along(agss_2013)) {
 }
 
 
-agss_2013_cleaned <- bind_rows(agss_2013_cleaned_lst)
+agss_2013_cleaned <- bind_rows(agss_2013_cleaned_lst) 
+
+
+
+# 2013/14 -------------
+
+# read csv files to a list:
+agss_2014 <- tibble(
+  file = dir(file.path(root, "2_raw_data/auxiliary/AgSS_extracted/2013_14"), 
+             full.names = TRUE)
+) %>%
+  mutate(data = map(file, read_csv)) %>%
+  extract(file, "name", "2014_(.*).csv") %>%
+  deframe()
+
+
+
+
+
+
+
+# 2014/15 -------------
+
+# read csv files to a list:
+agss_2015 <- tibble(
+  file = dir(file.path(root, "2_raw_data/auxiliary/AgSS_extracted/2014_15"), 
+             full.names = TRUE)
+) %>%
+  mutate(data = map(file, read_csv)) %>%
+  extract(file, "name", "2015_(.*).csv") %>%
+  deframe()
+
+
+
+
+
+
+# 2015/16 -------------
+
+# read csv files to a list:
+agss_2016 <- tibble(
+  file = dir(file.path(root, "2_raw_data/auxiliary/AgSS_extracted/2015_16"), 
+             full.names = TRUE)
+) %>%
+  mutate(data = map(file, read_csv)) %>%
+  extract(file, "name", "2016_(.*).csv") %>%
+  deframe()
+
+
+
+
+# 2016/17 -------------
+
+# read csv files to a list:
+agss_2017 <- tibble(
+  file = dir(file.path(root, "2_raw_data/auxiliary/AgSS_extracted/2016_17"), 
+             full.names = TRUE)
+) %>%
+  mutate(data = map(file, read_csv)) %>%
+  extract(file, "name", "2017_(.*).csv") %>%
+  deframe()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
