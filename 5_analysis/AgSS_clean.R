@@ -23,7 +23,9 @@ read_csv_2list <- function(year) {
     file = dir(file.path(root, paste0("2_raw_data/auxiliary/AgSS_extracted/", folder_nm)), 
                full.names = TRUE)
   ) %>%
-    mutate(data = map(file, read_csv, show_col_types = FALSE, na = c("NA", "-", ""))) %>%
+    mutate(data = map(
+      file, read_csv, show_col_types = FALSE, na = c("", "NA", "-"))
+      ) %>%
     extract(file, "name", paste0(year, "_(.*).csv")) %>%
     deframe()
   
@@ -83,7 +85,7 @@ clean_tbl_lst <- function(tbl_lst) {
   for (i in seq_along(tbl_lst)) {
     
     # Find the row index containing "Grain"  
-    grain_row <- which(str_detect(tbl_lst[[i]]$`Unnamed: 0`, "Grain"))
+    grain_row <- which(str_detect(tbl_lst[[i]] %>% pull(2), "Grain"))
     
     # Subset the data frame from the grain_row to the end
     tbl_cur <- tbl_lst[[i]][(grain_row:nrow(tbl_lst[[i]])), ]
@@ -98,21 +100,45 @@ clean_tbl_lst <- function(tbl_lst) {
       ) %>% 
       filter(!is.na(crop)) %>% 
       mutate(
-        # crop = str_trim(str_remove(crop, "\\.+")),
-        across(area:production_cv, ~as.numeric(str_remove(., ",")))
-      )
+        # convert to numeric type
+        across(area:production_cv, ~as.numeric(str_replace(., ",", "")))
+      ) %>% 
+      suppressWarnings()
     
     
     cleaned_tbl_lst <- rlist::list.append(cleaned_tbl_lst, tbl_cur)
     
   }
   
+  cleaned_tbl_bind <- bind_rows(cleaned_tbl_lst)
 
-  
-  return(cleaned_tbl_lst)
+    
+  return(cleaned_tbl_bind)
   
 }
 
+
+# Final cleaning ----------
+
+## 2012/13 ------
+clean_tbl_lst(agss_2013) 
+
+
+clean_tbl_lst(agss_2014) 
+
+
+
+clean_tbl_lst(agss_2015) %>% 
+  count(region)
+
+
+clean_tbl_lst(agss_2016) 
+
+clean_tbl_lst(agss_2017)
+clean_tbl_lst(agss_2018)
+clean_tbl_lst(agss_2019)
+clean_tbl_lst(agss_2020)
+clean_tbl_lst(agss_2021)
 clean_tbl_lst(agss_2022)
 
 
