@@ -29,16 +29,19 @@ cpea_wb_list <- map(
 
 cpea_wb_rnm <- cpea_wb_list %>% 
   map(
-    ~select(., 1:5) %>% 
-      rename(
-        region = 1,
-        area_red_cp = 2,
-        prod_red_cp = 3,
-        area_wht_cp = 4,
-        prod_wht_cp = 5
-      )
+    ~rename(
+      .,
+      region = 1,
+      area_red_cp = 2,
+      prod_red_cp = 3,
+      area_wht_cp = 4,
+      prod_wht_cp = 5,
+      area_any_cp = 6,
+      prod_any_cp = 7
+    )
   )
 
+# create year column
 for (i in seq_along(cpea_wb_rnm)) {
   
   year <- names(cpea_wb_rnm)[[i]] %>% str_replace("-", "/")
@@ -49,10 +52,27 @@ for (i in seq_along(cpea_wb_rnm)) {
 
 
 cpea_agss <- bind_rows(cpea_wb_rnm) %>% 
-  select(year, region, everything())
+  select(year, region, everything()) %>% 
+  pivot_longer(
+    cols = area_red_cp:prod_any_cp,
+    names_to = c("measure", "cpea_type"),
+    names_pattern = "(.*)_(.*)_cp",
+    values_to = "value"
+  ) %>% 
+  mutate(
+    measure = recode(measure, "prod" = "production"),
+    cpea_type = recode(cpea_type, "wht" = "White"),
+    across(measure:cpea_type, str_to_title)
+  )
 
 
+# plots
 
+cpea_agss %>% 
+  filter(region == "Ethiopia") %>% 
+  ggplot(aes(year, value, fill = cpea_type)) +
+  geom_col(position = "dodge") +
+  facet_wrap(~measure, scales = "free_y", nrow = 2)
 
 
 
