@@ -141,7 +141,7 @@ ess5_innov <- adopt_rates_w5_hh %>%
   select(region, label, mean, abs_num) %>% 
   arrange(region, label)
 
-ess5_dna <- dna_w5 %>% 
+ess5_dna <- adopt_rate_dna_w5 %>% 
   left_join(pop_rur_w5_all, by = "region") %>% 
   mutate(abs_num = mean * growing_pct * pop_w5_all) %>% 
   filter(region != "National") %>% 
@@ -253,21 +253,21 @@ pop_frm_urb <- reduce(
 
 # Wave 4
 
-ub_w4 <- ubounds_w4 %>% 
-  left_join(pop_rur_w4_all, by = "region") %>% 
-  mutate(abs_num = mean * pct * pop_w4_all, mean_pct = mean * pct) %>% 
-  group_by(region) %>% 
-  summarise(abs_num = sum(abs_num), mean = sum(mean_pct)) %>% 
-  mutate(label = "Upper Bound") 
-
-lb_w4 <- ess4_dna %>% 
-  filter(label == "Maize DNA-fingerprinting") %>% 
-  mutate(label = "Lower Bound")
-
-bd_w4 <- bind_rows(ub_w4, lb_w4) %>% 
-  expand(region, label) %>% 
-  left_join(bind_rows(ub_w4, lb_w4), by = c("region", "label")) %>% 
-  replace_na(list(abs_num = 0, mean = 0))
+# ub_w4 <- bd_means_w4 %>% 
+#   left_join(pop_rur_w4_all, by = "region") %>% 
+#   mutate(abs_num = mean * pct * pop_w4_all, mean_pct = mean * pct) %>% 
+#   group_by(region) %>% 
+#   summarise(abs_num = sum(abs_num), mean = sum(mean_pct)) %>% 
+#   mutate(label = "Upper Bound") 
+# 
+# lb_w4 <- ess4_dna %>% 
+#   filter(label == "Maize DNA-fingerprinting") %>% 
+#   mutate(label = "Lower Bound")
+# 
+# bd_w4 <- bind_rows(ub_w4, lb_w4) %>% 
+#   expand(region, label) %>% 
+#   left_join(bind_rows(ub_w4, lb_w4), by = c("region", "label")) %>% 
+#   replace_na(list(abs_num = 0, mean = 0))
 
 # panel hhs
 
@@ -563,7 +563,7 @@ ess5_totals <- bind_rows(
 ) %>% 
   select(sample, label, total = Total) %>% 
   left_join(
-    bind_rows(adopt_rates_w5_hh, dna_w5) %>% 
+    bind_rows(adopt_rates_w5_hh, adopt_rate_dna_w5) %>% 
       distinct(variable, label), 
     by = "label",
     multiple = "all"
@@ -652,7 +652,7 @@ ess4_totals <- bind_rows(
 ) %>% 
   select(sample, label, total = Total) %>% 
   left_join(
-    bind_rows(adopt_rates_w4_hh, dna_w4) %>% 
+    bind_rows(adopt_rates_w4_hh, adopt_rate_dna_w4) %>% 
       distinct(variable, label), 
     by = "label",
     multiple = "all"
@@ -728,13 +728,94 @@ ggsave(
 
 
 
+# ESS4 & ESS5 on the same figure 
+
+adopt_totals <- bind_rows(
+  ess4_totals %>% 
+    mutate(year = "2018/19"), 
+  ess5_totals %>% 
+    mutate(year = "2021/22")
+  )
+
+ess4_arrng <- ess4_totals %>% 
+  filter(sample == "all") %>% 
+  arrange(total) %>% 
+  pull(label)
+
+# levels <- ess4_arrng %>% union(ess5_totals$label %>% unique())
+
+levels <- c( ess4_arrng[1:12], "Chickpea Kabuli varieties", ess4_arrng[13:length(ess4_arrng)])
+
+## Panel 
+
+adopt_totals %>% 
+  filter(sample == "panel") %>% 
+  mutate(label = factor(label, levels = levels)) %>% 
+  ggplot(aes(label, total, fill = type)) +
+  geom_col() +
+  facet_wrap(~year, nrow = 2) +m
+  scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6)) +
+  theme_Publication() +
+  scale_fill_Publication() +
+  theme(
+    axis.text.x = element_text(
+      angle = 90,
+      size = 10,
+      hjust = 1,
+      vjust = .4
+    ),
+    axis.title.y = element_text(size = 11),
+    legend.position = "top"
+  ) +
+  labs(
+    y = "Number of rural households (millions)",
+    x = "",
+    fill = "",
+    title = "Number of rural households adopting each CGIAR-related innovation\nin Ethiopia, ESS - Panel households"
+  )
+
+ggsave(
+  filename = "../tmp/figures/fig09_panel.png",
+  width = 300,
+  height = 297,
+  units = "mm"
+)
 
 
+## All
 
+adopt_totals %>% 
+  filter(sample == "all") %>% 
+  mutate(label = factor(label, levels = levels)) %>%
+  ggplot(aes(label, total, fill = type)) +
+  geom_col() +
+  facet_wrap(~year, nrow = 2) +
+  scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6)) +
+  theme_Publication() +
+  scale_fill_Publication() +
+  theme(
+    axis.text.x = element_text(
+      angle = 90,
+      size = 10,
+      hjust = 1,
+      vjust = .4
+    ),
+    axis.title.y = element_text(size = 11),
+    legend.position = "top"
+  ) +
+  labs(
+    y = "Number of rural households (millions)",
+    x = "",
+    fill = "",
+    title = "Number of rural households adopting each CGIAR-related innovation\nin Ethiopia, ESS - All households"
+  )
 
-
-
-
+ggsave(
+  filename = "../tmp/figures/fig09_all.png",
+  width = 300,
+  height = 297,
+  units = "mm"
+)
 
 
 
