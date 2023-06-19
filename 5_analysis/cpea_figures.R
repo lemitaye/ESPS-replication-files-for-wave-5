@@ -14,6 +14,7 @@ library(scales)
 
 source("dynamics_presentation/helpers/ggplot_theme_Publication-2.R")
 
+theme_set(theme_light())
 
 
 wb_path <- file.path(root, "2_raw_data/auxiliary/chickpea_agss_area_prod.xlsx")
@@ -63,16 +64,10 @@ cpea_agss <- bind_rows(cpea_wb_rnm) %>%
     values_to = "value"
   ) %>% 
   mutate(
-    measure = recode(measure, "prod" = "production"),
+    measure = recode(measure, "prod" = "production (quintals)", "area" = "area (hectars)"),
     cpea_type = recode(cpea_type, "wht" = "White"),
-    across(measure:cpea_type, str_to_title),
-    region = fct_collapse(
-      region,
-      "SNNP" =  c("SNNP", "Sidama")
-    )
-  ) %>% 
-  group_by(year, region, measure, cpea_type) %>% 
-  summarise(value = sum(value, na.rm = T), .groups = "drop")
+    across(measure:cpea_type, str_to_title)
+  )
 
 
 # plots
@@ -104,17 +99,79 @@ cpea_agss %>%
   theme(legend.position = "top")
 
 cpea_agss %>% 
-  filter(region == "Ethiopia", measure == "Area") %>% 
+  filter(region == "Ethiopia") %>% 
   ggplot(aes(year, value, color = cpea_type, group = cpea_type)) +
-  geom_line() 
+  geom_line() +
+  facet_wrap(~ measure, scales = "free_y", nrow = 2) +
+  scale_y_continuous(labels = comma_format()) +
+  labs(x = "Year", y = "", color = "Chickpea type", 
+       title = "Trend in production of chickpea and area covered by chickpea in Ethiopa,
+       2011/12-2021/22",
+       subtitle = "National aggregate",
+       caption = "Source: AgSS")
+
+ggsave(
+  filename = "../tmp/figures/cpea_eth.png",
+  width = 270,
+  height = 160,
+  units = "mm"
+)
+
+cpea_agss %>% 
+  filter(region == "Ethiopia", measure == "Production (Quintals)") %>% 
+  ggplot(aes(year, value, color = cpea_type, group = cpea_type)) +
+  geom_line() +
+  scale_y_continuous(labels = comma_format()) +
+  labs(x = "Year", y = "", color = "Chickpea type")
+
+
 
 
 cpea_agss %>% 
   filter(region != "Ethiopia", cpea_type == "Any",
          year != "2011/12") %>% 
+  filter(!is.na(value)) %>%  
   ggplot(aes(year, value, color = region, group = region)) +
   geom_line() +
-  facet_wrap(~ measure, scales = "free_y")
+  facet_wrap(~ measure, scales = "free_y", nrow = 2) +
+  scale_y_continuous(labels = comma_format()) +
+  labs(x = "Year", y = "", color = "Region",
+       title = "Production of chickpea and area covered by Any chickpea in Ethiopa,
+       2011/12-2021/22",
+       subtitle = "Disaggregated by region",
+       caption = "Source: AgSS")
+
+
+cpea_agss %>% 
+  filter(region != "Ethiopia", cpea_type == "White",
+         year %in% c("2018/19", "2019/20", "2020/21", "2021/22")) %>% 
+  filter(!is.na(value)) %>%  
+  ggplot(aes(year, value, color = region, group = region)) +
+  geom_line() +
+  facet_wrap(~ measure, scales = "free_y", nrow = 2) +
+  scale_y_continuous(labels = comma_format()) +
+  labs(x = "Year", y = "", color = "Region",
+       title = "Production of chickpea and area covered by White chickpea in Ethiopa,
+       2011/12-2021/22",
+       subtitle = "Disaggregated by region",
+       caption = "Source: AgSS")
+
+
+cpea_agss %>% 
+  filter(region != "Ethiopia", cpea_type == "Red",
+         year %in% c("2018/19", "2019/20", "2020/21", "2021/22")) %>% 
+  filter(!is.na(value)) %>% 
+  ggplot(aes(year, value, color = region, group = region)) +
+  geom_line() +
+  facet_wrap(~ measure, scales = "free_y", nrow = 2) +
+  scale_y_continuous(labels = comma_format()) +
+  labs(x = "Year", y = "", color = "Region",
+       title = "Production of chickpea and area covered by Red chickpea in Ethiopa,
+       2011/12-2021/22",
+       subtitle = "Disaggregated by region",
+       caption = "Source: AgSS")
+
+
 
 
 
