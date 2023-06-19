@@ -38,7 +38,13 @@ keep if _merge==3
 drop _merge
 
 // matrix:
-tab grow_cp_w4 grow_cp_w5
+tab grow_cpea_w4 grow_cpea_w5
+
+// at hh level:
+preserve
+    collapse (max) grow_cpea_w4 grow_cpea_w5, by(household_id)
+    tab grow_cpea_w4 grow_cpea_w5
+restore
 
 // save
 save "${tmp}/dynamics/06_4_cpea_hh.dta", replace 
