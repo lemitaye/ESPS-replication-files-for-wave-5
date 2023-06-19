@@ -10,6 +10,9 @@ root <- "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Co
 # load libraries ------
 library(tidyverse)
 library(readxl)
+library(scales)
+
+source("dynamics_presentation/helpers/ggplot_theme_Publication-2.R")
 
 
 
@@ -62,8 +65,14 @@ cpea_agss <- bind_rows(cpea_wb_rnm) %>%
   mutate(
     measure = recode(measure, "prod" = "production"),
     cpea_type = recode(cpea_type, "wht" = "White"),
-    across(measure:cpea_type, str_to_title)
-  )
+    across(measure:cpea_type, str_to_title),
+    region = fct_collapse(
+      region,
+      "SNNP" =  c("SNNP", "Sidama")
+    )
+  ) %>% 
+  group_by(year, region, measure, cpea_type) %>% 
+  summarise(value = sum(value, na.rm = T), .groups = "drop")
 
 
 # plots
@@ -72,16 +81,40 @@ cpea_agss %>%
   filter(region == "Ethiopia") %>% 
   ggplot(aes(year, value, fill = cpea_type)) +
   geom_col(position = "dodge") +
-  facet_wrap(~measure, scales = "free_y", nrow = 2)
+  facet_wrap(~measure, scales = "free_y", nrow = 2) +
+  scale_y_continuous(labels = comma_format()) +
+  theme_Publication() +
+  scale_fill_Publication() +
+  theme(legend.position = "top") +
+  labs(
+    x = "Year", y = "", fill = "Chickpea type"
+  )
 
 
 
 
+cpea_agss %>% 
+  filter(region != "Ethiopia", measure == "Area") %>% 
+  ggplot(aes(year, value, fill = cpea_type)) +
+  geom_col(position = "dodge") +
+  facet_wrap(~region, scales = "free_y") +
+  scale_y_continuous(labels = comma_format()) +
+  theme_Publication() +
+  scale_fill_Publication() +
+  theme(legend.position = "top")
+
+cpea_agss %>% 
+  filter(region == "Ethiopia", measure == "Area") %>% 
+  ggplot(aes(year, value, color = cpea_type, group = cpea_type)) +
+  geom_line() 
 
 
-
-
-
+cpea_agss %>% 
+  filter(region != "Ethiopia", cpea_type == "Any",
+         year != "2011/12") %>% 
+  ggplot(aes(year, value, color = region, group = region)) +
+  geom_line() +
+  facet_wrap(~ measure, scales = "free_y")
 
 
 
