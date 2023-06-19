@@ -72,31 +72,7 @@ cpea_agss <- bind_rows(cpea_wb_rnm) %>%
 
 # plots
 
-cpea_agss %>% 
-  filter(region == "Ethiopia") %>% 
-  ggplot(aes(year, value, fill = cpea_type)) +
-  geom_col(position = "dodge") +
-  facet_wrap(~measure, scales = "free_y", nrow = 2) +
-  scale_y_continuous(labels = comma_format()) +
-  theme_Publication() +
-  scale_fill_Publication() +
-  theme(legend.position = "top") +
-  labs(
-    x = "Year", y = "", fill = "Chickpea type"
-  )
-
-
-
-
-cpea_agss %>% 
-  filter(region != "Ethiopia", measure == "Area") %>% 
-  ggplot(aes(year, value, fill = cpea_type)) +
-  geom_col(position = "dodge") +
-  facet_wrap(~region, scales = "free_y") +
-  scale_y_continuous(labels = comma_format()) +
-  theme_Publication() +
-  scale_fill_Publication() +
-  theme(legend.position = "top")
+# 1. National aggregate
 
 cpea_agss %>% 
   filter(region == "Ethiopia") %>% 
@@ -117,16 +93,11 @@ ggsave(
   units = "mm"
 )
 
-cpea_agss %>% 
-  filter(region == "Ethiopia", measure == "Production (Quintals)") %>% 
-  ggplot(aes(year, value, color = cpea_type, group = cpea_type)) +
-  geom_line() +
-  scale_y_continuous(labels = comma_format()) +
-  labs(x = "Year", y = "", color = "Chickpea type")
+
+# 2. Regional breakdown
 
 
-
-
+# 2.1 Any chickpea
 cpea_agss %>% 
   filter(region != "Ethiopia", cpea_type == "Any",
          year != "2011/12") %>% 
@@ -141,7 +112,15 @@ cpea_agss %>%
        subtitle = "Disaggregated by region",
        caption = "Source: AgSS")
 
+ggsave(
+  filename = "../tmp/figures/cpea_regions_any.png",
+  width = 270,
+  height = 160,
+  units = "mm"
+)
 
+
+# 2.2 White chickpea
 cpea_agss %>% 
   filter(region != "Ethiopia", cpea_type == "White",
          year %in% c("2018/19", "2019/20", "2020/21", "2021/22")) %>% 
@@ -157,6 +136,15 @@ cpea_agss %>%
        caption = "Source: AgSS")
 
 
+ggsave(
+  filename = "../tmp/figures/cpea_regions_white.png",
+  width = 270,
+  height = 160,
+  units = "mm"
+)
+
+
+# 2.3 Red chickpea
 cpea_agss %>% 
   filter(region != "Ethiopia", cpea_type == "Red",
          year %in% c("2018/19", "2019/20", "2020/21", "2021/22")) %>% 
@@ -171,7 +159,12 @@ cpea_agss %>%
        subtitle = "Disaggregated by region",
        caption = "Source: AgSS")
 
-
+ggsave(
+  filename = "../tmp/figures/cpea_regions_red.png",
+  width = 270,
+  height = 160,
+  units = "mm"
+)
 
 
 
