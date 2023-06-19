@@ -70,7 +70,7 @@ cpea_agss <- bind_rows(cpea_wb_rnm) %>%
   )
 
 
-# plots
+# plots ------------
 
 # 1. National aggregate
 
@@ -80,6 +80,7 @@ cpea_agss %>%
   geom_line() +
   facet_wrap(~ measure, scales = "free_y", nrow = 2) +
   scale_y_continuous(labels = comma_format()) +
+  scale_colour_Publication() +
   labs(x = "Year", y = "", color = "Chickpea type", 
        title = "Trend in production of chickpea and area covered by chickpea in Ethiopa,
        2011/12-2021/22",
@@ -102,10 +103,12 @@ cpea_agss %>%
   filter(region != "Ethiopia", cpea_type == "Any",
          year != "2011/12") %>% 
   filter(!is.na(value)) %>%  
+  mutate(region = fct_reorder(region, value, tail, n = 1, .desc = TRUE)) %>% 
   ggplot(aes(year, value, color = region, group = region)) +
   geom_line() +
   facet_wrap(~ measure, scales = "free_y", nrow = 2) +
   scale_y_continuous(labels = comma_format()) +
+  scale_colour_Publication() +
   labs(x = "Year", y = "", color = "Region",
        title = "Production of chickpea and area covered by Any chickpea in Ethiopa,
        2011/12-2021/22",
@@ -125,10 +128,12 @@ cpea_agss %>%
   filter(region != "Ethiopia", cpea_type == "White",
          year %in% c("2018/19", "2019/20", "2020/21", "2021/22")) %>% 
   filter(!is.na(value)) %>%  
+  mutate(region = fct_reorder(region, value, tail, n = 1, .desc = TRUE)) %>% 
   ggplot(aes(year, value, color = region, group = region)) +
   geom_line() +
   facet_wrap(~ measure, scales = "free_y", nrow = 2) +
   scale_y_continuous(labels = comma_format()) +
+  scale_colour_Publication() +
   labs(x = "Year", y = "", color = "Region",
        title = "Production of chickpea and area covered by White chickpea in Ethiopa,
        2011/12-2021/22",
@@ -149,10 +154,12 @@ cpea_agss %>%
   filter(region != "Ethiopia", cpea_type == "Red",
          year %in% c("2018/19", "2019/20", "2020/21", "2021/22")) %>% 
   filter(!is.na(value)) %>% 
+  mutate(region = fct_reorder(region, value, tail, n = 1, .desc = TRUE)) %>% 
   ggplot(aes(year, value, color = region, group = region)) +
   geom_line() +
   facet_wrap(~ measure, scales = "free_y", nrow = 2) +
   scale_y_continuous(labels = comma_format()) +
+  scale_colour_Publication() +
   labs(x = "Year", y = "", color = "Region",
        title = "Production of chickpea and area covered by Red chickpea in Ethiopa,
        2011/12-2021/22",
