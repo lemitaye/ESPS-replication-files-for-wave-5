@@ -41,11 +41,9 @@ dist_market dist_popcenter
 
 #delimit;
 global adopt   
-hhd_rdisp hhd_motorpump hhd_rotlegume hhd_cresidue1 hhd_cresidue2 hhd_mintil 
-hhd_zerotill hhd_consag1 hhd_consag2 hhd_swc hhd_terr hhd_wcatch hhd_affor hhd_ploc 
-hhd_ofsp hhd_awassa83 hhd_avocado hhd_papaya hhd_mango hhd_fieldp hhd_cross  
-hhd_crlr hhd_crsr hhd_crpo hhd_indprod hhd_grass hhd_psnp maize_cg dtmz hhd_impcr2 
-hhd_impcr1
+hhd_crlr hhd_crsr hhd_crpo hhd_grass maize_cg dtmz hhd_ofsp hhd_awassa83 hhd_rdisp 
+hhd_motorpump hhd_consag1 hhd_consag2 hhd_swc hhd_affor hhd_avocado hhd_papaya 
+hhd_mango hhd_psnp 
 ;
 #delimit cr
 
@@ -63,6 +61,9 @@ drop _merge
 keep if hh_status==3
 
 save "${tmp}/dynamics/06_3_covars_w4.dta", replace
+
+
+* ESS5 ------------------------------
 
 use "${data}/ess5_pp_hh_new.dta", clear
 
@@ -97,17 +98,18 @@ use "${tmp}/dynamics/06_3_covars_w4.dta", clear
 
 append using "${tmp}/dynamics/06_3_covars_w5.dta", force
 
-
-// Running Diff-in-Diff regression
-
 gen wave5=(wave==5)
 
-gen int_var = wave5*hhd_motorpump
 
-reg totconswin wave5 hhd_motorpump int_var
+// Re-labelling some variables
+label var maize_cg      "Maize CG-germplasm"
+label var dtmz          "Drought tolerant maize"
+label var hhd_psnp      "PSNP (Temporary Labor)"
+label var cs4q15        "Distance to the nearest large weekly market (Km)"
 
-reg totconswin wave5##hhd_motorpump 
 
+
+// Running Diff-in-Diff regressions
 
 matrix drop _all
  
@@ -132,12 +134,17 @@ foreach covar in $hhcov4 {
         scalar `covar'pint`var'  = r(table)[4,8]
         scalar `covar'pcon`var'  = r(table)[4,9]
 
+        scalar N  = e(N)
+        scalar F  = e(F)
+        scalar r2 = e(r2)
+
         matrix bse`covar'`var' = (bwv5`covar'`var' \ `covar'sewv5`var' \ ///
                                   bcov`covar'`var' \ `covar'secov`var' \ ///
                                   bint`covar'`var' \ `covar'seint`var' \ ///
-                                  bcon`covar'`var' \ `covar'secon`var')
+                                  bcon`covar'`var' \ `covar'secon`var' \ ///
+                                  N \ r2 \ F)
 
-        matrix rownames bse`covar'`var' = Wave5 . `var' . Wave5x`var' . Constant .
+        matrix rownames bse`covar'`var' = Wave5 . `var' . Wave5x`var' . Constant . N r2 F
         
         
         // p-values:
@@ -161,7 +168,7 @@ foreach covar in $hhcov4 {
             }
         }
 
-        matrix p`covar'`var' = (p`covar'`var'wv5 \ p`covar'`var'cov \ p`covar'`var'int \ p`covar'`var'con)
+        matrix p`covar'`var' = (p`covar'`var'wv5 \ p`covar'`var'cov \ p`covar'`var'int \ p`covar'`var'con \ 0 \ 0 \ 0)
 
         matrix A1`covar' = nullmat(A1`covar')\ bse`covar'`var'
 
@@ -186,7 +193,7 @@ foreach var in $hhcov4 {
 local rname ""
 foreach var in $adopt {
 	local lbl : variable label `var'
-	local rname `" `rname' "Wave 5" "." "`lbl'" "." "Wave 5 x `lbl'" "." "Constant" "." "'		
+	local rname `" `rname' "Wave 5" "." "`lbl'" "." "Wave 5 x `lbl'" "." "Constant" "." "Observations" "R-squared" "F" "'		
 }
 
 #delimit ;
@@ -195,8 +202,8 @@ sheet("Table14_dyn", nogridlines)
 rnames(`rname') cnames(`cname') lines(COL_NAMES 2 LAST_ROW 2)  
 title("Table: Dynamics in correlates of adoption")  font("Times New Roman" 10) 
 cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12 55) 
-	format((SCLR0) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) (NBCR2) 
-    (NBCR2) (NBCR2) (NBCR2) (NBCR2))  
+	format((SCLR0) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) 
+    (NBCR3) (NBCR3) (NBCR3) (NBCR3))  
 	stars(* 0.1 ** 0.05 *** 0.01)  
 	notes(".")
 ; 
