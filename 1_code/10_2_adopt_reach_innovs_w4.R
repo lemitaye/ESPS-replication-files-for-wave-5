@@ -9,24 +9,17 @@
 library(haven)
 library(tidyverse)
 library(labelled)
-library(janitor)
-library(kableExtra)
-library(scales)
-library(ggpubr)
 
 
 # load data ----
-root <- "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Country teams/Ethiopia/LSMS_W5"
+ess4_hh_all <- read_dta("../tmp/dynamics/ess4_hh_all.dta")
 
-ess4_hh_all <- read_dta(file.path(root, "tmp/dynamics/ess4_hh_all.dta"))
+ess4_bounds <- read_dta("../tmp/dynamics/ess4_bounds.dta")
 
-ess4_bounds <- read_dta(file.path(root, "tmp/dynamics/ess4_bounds.dta"))
-
-
-# psnp data (generated in 03_new_innov_ess5.R)
-psnp_hh <- read_csv("dynamics_presentation/data/psnp_hh.csv")
+psnp_hh <- read_csv("../tmp/psnp/psnp_hh.csv")
 
 
+# function to recode regions
 recode_region <- function(tbl, region_var = region) {
   
   suppressWarnings(
@@ -138,7 +131,7 @@ adopt_rates_w4_hh <- bind_rows(
   select(wave, region, variable, label, mean, nobs) %>% 
   bind_rows(psnp_w4_rur)
 
-write_csv(adopt_rates_w4_hh, file = "dynamics_presentation/data/adopt_rates_w4_hh.csv")
+write_csv(adopt_rates_w4_hh, file = "../tmp/adopt_reach/adopt_rates_w4_hh.csv")
 
 
 
@@ -210,7 +203,7 @@ adopt_rate_dna_w4 <- dna_w4 %>%
 
 
 
-write_csv(adopt_rate_dna_w4, file = "dynamics_presentation/data/adopt_rate_dna_w4.csv")
+write_csv(adopt_rate_dna_w4, file = "../tmp/adopt_reach/adopt_rate_dna_w4.csv")
 
 
 
@@ -247,24 +240,5 @@ bd_means_w4 <- bounds_w4 %>%
 
 
 
-write_csv(bd_means_w4, file = "dynamics_presentation/data/bd_means_w4.csv")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+write_csv(bd_means_w4, file = "../tmp/adopt_reach/bd_means_w4.csv")
 

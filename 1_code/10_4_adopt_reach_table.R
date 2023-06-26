@@ -1,52 +1,36 @@
 
+# ----- #
+# Purpose: to create an Excel file with adoption reach estimates using hh weights
+# Author: Lemi Daba (tayelemi@gmail.com)
+# ----- #
 
+
+# load packages ----
 library(haven)
-library(kableExtra)
 library(openxlsx)
 library(tidyverse)
-library(scales)
 
-root <- "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Country teams/Ethiopia/LSMS_W5"
+# load data ----
+track_hh <- read_dta("../tmp/dynamics/06_1_track_hh.dta")
 
-sect_cover_hh_w4 <- read_dta(
-  file.path(root, "/supplemental/replication_files/2_raw_data/ESS4_2018-19/Data/sect_cover_hh_w4.dta")
-  
-  ) %>% 
-  mutate_if(is.labelled, as_factor)
+adopt_rates_w4_hh <- read_csv("../tmp/adopt_reach/adopt_rates_w4_hh.csv")
 
-tabpath <- "C:/Users/l.daba/SPIA Dropbox/Lemi Daba/Apps/Overleaf/ESS_adoption_matrices/tables"
+adopt_rate_dna_w4 <- read_csv("../tmp/adopt_reach/adopt_rate_dna_w4.csv")
 
-adopt_rates_all_hh <- read_csv("dynamics_presentation/adoption_rates_ESS/data/adopt_rates_all_hh.csv")
+adopt_rates_w5_hh <- read_csv("../tmp/adopt_reach/adopt_rates_w5_hh.csv")
 
-adopt_rates_panel_hh <- read_csv("dynamics_presentation/adoption_rates_ESS/data/adopt_rates_panel_hh.csv")
-
-adopt_rates_w4_hh <- read_csv("dynamics_presentation/data/adopt_rates_w4_hh.csv")
-
-adopt_rate_dna_w4 <- read_csv("dynamics_presentation/data/adopt_rate_dna_w4.csv")
-
-adopt_rates_w5_hh <- read_csv("dynamics_presentation/data/adopt_rates_w5_hh.csv")
-
-adopt_rate_dna_w5 <- read_csv("dynamics_presentation/data/adopt_rate_dna_w5.csv")
+adopt_rate_dna_w5 <- read_csv("../tmp/adopt_reach/adopt_rate_dna_w5.csv")
 
 
-wave5_hh_new <- read_dta(file.path(root, "3_report_data/wave5_hh_new.dta"))
+bd_means_w4 <- read_csv("../tmp/adopt_reach/bd_means_w4.csv")
 
-psnp_hh <- read_csv("dynamics_presentation/data/psnp_hh.csv")
-
-bd_means_w4 <- read_csv("dynamics_presentation/data/bd_means_w4.csv")
-
-bd_mean_w5 <- read_csv("dynamics_presentation/data/bd_mean_w5.csv")
-
-ess5_bounds <- read_dta(file.path(root, "tmp/dynamics/ess5_bounds.dta"))
+bd_mean_w5 <- read_csv("../tmp/adopt_reach/bd_mean_w5.csv")
 
 
 
-track_hh <- read_dta(file.path(root, "tmp/dynamics/06_1_track_hh.dta")) 
+# 1. calculate no. of rural & urban households by region for each wave
 
-
-# calculate no. of rural households by region for each wave
-
-# Rural populations
+# Rural populations ----
 
 pop_rur_w4_all <- track_hh %>% 
   filter(wave4==1, locality == "Rural") %>%
@@ -69,7 +53,7 @@ pop_rur_pnl <- track_hh %>%
     data.frame(region = "National", pop_w5_panel = sum(.$pop_w5_panel))
   )
 
-# Urban populations
+# Urban populations ----
 
 pop_urb_w4_all <- track_hh %>% 
   filter(wave4==1, locality == "Urban") %>%
@@ -234,6 +218,7 @@ col_lst <- list(
 )
 
 # Population frame:
+
 pop_frm_rur <- reduce(
   list(pop_rur_w4_all, pop_rur_w5_all, pop_rur_pnl), left_join, by = "region"
   ) %>% 
@@ -250,44 +235,6 @@ pop_frm_urb <- reduce(
 
 
 # Upper and lower bounds
-
-# Wave 4
-
-# ub_w4 <- bd_means_w4 %>% 
-#   left_join(pop_rur_w4_all, by = "region") %>% 
-#   mutate(abs_num = mean * pct * pop_w4_all, mean_pct = mean * pct) %>% 
-#   group_by(region) %>% 
-#   summarise(abs_num = sum(abs_num), mean = sum(mean_pct)) %>% 
-#   mutate(label = "Upper Bound") 
-# 
-# lb_w4 <- ess4_dna %>% 
-#   filter(label == "Maize DNA-fingerprinting") %>% 
-#   mutate(label = "Lower Bound")
-# 
-# bd_w4 <- bind_rows(ub_w4, lb_w4) %>% 
-#   expand(region, label) %>% 
-#   left_join(bind_rows(ub_w4, lb_w4), by = c("region", "label")) %>% 
-#   replace_na(list(abs_num = 0, mean = 0))
-
-# panel hhs
-
-# ub_w4_pnl <- ubounds_w4 %>% 
-#   left_join(pop_rur_pnl, by = "region") %>% 
-#   filter(region != "Tigray") %>% 
-#   mutate(abs_num = mean * pct * pop_w5_panel, mean_pct = mean*pct) %>% 
-#   group_by(region) %>% 
-#   summarise(abs_num = sum(abs_num), mean = sum(mean_pct)) %>% 
-#   mutate(label = "Upper Bound") 
-# 
-# lb_w4_pnl <- ess4_dna_pnl %>% 
-#   filter(label == "Maize DNA-fingerprinting") %>% 
-#   mutate(label = "Lower Bound")
-# 
-# bd_w4_pnl <- bind_rows(ub_w4_pnl, lb_w4_pnl) %>% 
-#   expand(region, label) %>% 
-#   left_join(bind_rows(ub_w4_pnl, lb_w4_pnl), by = c("region", "label")) %>% 
-#   replace_na(list(abs_num = 0, mean = 0))
-
 
 bd_w4 <- bd_means_w4 %>%
   left_join(pop_rur_w4_all, by = "region") %>%
@@ -483,9 +430,9 @@ writeData(
 
 
 # Save the workbook as an Excel file
-saveWorkbook(wb, file.path(root, "4_table/absolute_numbers.xlsx"), overwrite = TRUE)
+saveWorkbook(wb, "../4_table/absolute_numbers.xlsx", overwrite = TRUE)
 
-openXL(file.path(root, "4_table/absolute_numbers.xlsx"))
+openXL("../4_table/absolute_numbers.xlsx")
 
 
 
