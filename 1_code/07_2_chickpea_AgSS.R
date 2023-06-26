@@ -2,22 +2,28 @@
 # created on: July 17, 2023
 # purpose: to produce some figures for chickpea from AgSS
 
-# 
-# root directory
-root <- "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Country teams/Ethiopia/LSMS_W5"
-
 
 # load libraries ------
 library(tidyverse)
 library(readxl)
 library(scales)
 
-source("dynamics_presentation/helpers/ggplot_theme_Publication-2.R")
-
+source("programs/ggplot_theme_Publication-2.R")
 theme_set(theme_light())
 
+# set-up a folder in tmp ----
+if (file.exists("../tmp/chickpea/figures/")) {
+  
+  cat("The folder already exists")
+  
+} else {
+  
+  dir.create("../tmp/chickpea/figures/")
+  
+}
 
-wb_path <- file.path(root, "2_raw_data/auxiliary/chickpea_agss_area_prod.xlsx")
+
+wb_path <- "../2_raw_data/auxiliary/chickpea_agss_area_prod.xlsx"
 
 # read excel sheets
 cpea_wb_list <- map(
@@ -88,7 +94,7 @@ cpea_agss %>%
        caption = "Source: AgSS")
 
 ggsave(
-  filename = "../tmp/figures/cpea_eth.png",
+  filename = "../tmp/chickpea/figures/cpea_eth.png",
   width = 270,
   height = 160,
   units = "mm"
@@ -116,7 +122,7 @@ cpea_agss %>%
        caption = "Source: AgSS")
 
 ggsave(
-  filename = "../tmp/figures/cpea_regions_any.png",
+  filename = "../tmp/chickpea/figures/cpea_regions_any.png",
   width = 270,
   height = 160,
   units = "mm"
@@ -142,7 +148,7 @@ cpea_agss %>%
 
 
 ggsave(
-  filename = "../tmp/figures/cpea_regions_white.png",
+  filename = "../tmp/chickpea/figures/cpea_regions_white.png",
   width = 270,
   height = 160,
   units = "mm"
@@ -167,7 +173,7 @@ cpea_agss %>%
        caption = "Source: AgSS")
 
 ggsave(
-  filename = "../tmp/figures/cpea_regions_red.png",
+  filename = "../tmp/chickpea/figures/cpea_regions_red.png",
   width = 270,
   height = 160,
   units = "mm"

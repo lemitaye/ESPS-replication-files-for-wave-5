@@ -11,6 +11,7 @@
 library(haven)
 library(tidyverse)
 library(scales)
+library(labelled)
 
 # set-up a folder in tmp ----
 if (file.exists("../tmp/chickpea/")) {
@@ -160,7 +161,7 @@ kabuli_plot <- kabuli_bind %>%
 
 
 ggsave(
-  filename = "../tmp/chickpea/kabuli_plot.pdf",
+  filename = "../tmp/chickpea/figures/kabuli_plot.pdf",
   plot = kabuli_plot,
   device = cairo_pdf,
   width = 180,
