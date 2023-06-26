@@ -1,7 +1,19 @@
 
 
-# Comparing crop-germplasm improvements -----
+## Comparing crop-germplasm improvements b/n waves 4 & 5 ----- #
 
+# ----- #
+# Purpose: to compare adoption of improved maize using DNA fingerprinting
+# Author: Lemi Daba (tayelemi@gmail.com)
+# ----- #
+
+
+# load packages ----
+library(haven)
+library(tidyverse)
+library(scales)
+
+# function to recode regions:
 recode_region_dna <- function(tbl, region_var = region) {
   
   suppressWarnings(
@@ -21,16 +33,21 @@ recode_region_dna <- function(tbl, region_var = region) {
   
 }
 
-ess4_dna_hh_new <- read_dta(file.path(root, w4_dir, "ess4_dna_hh_new.dta")) %>% 
+
+# load data ----
+ess4_dna_hh_new <- read_dta("../supplemental/replication_files/3_report_data/ess4_dna_hh_new.dta") %>% 
   filter(!is.na(maize_cg), !is.na(dtmz)) %>%  # retain only maize
   dplyr::select(-c(barley_cg, sorghum_cg)) %>% 
   recode_region_dna(saq01)
 
 
-ess5_dna_hh_new <- read_dta(file.path(root, w5_dir, "03_5_ess5_dna_hh.dta")) %>% 
+ess5_dna_hh_new <- read_dta("../3_report_data/03_5_ess5_dna_hh.dta") %>% 
   recode_region_dna()
 
-ess5_weights_hh <- read_dta(file.path(root, "2_raw_data/data/HH/ESS5_weights_hh.dta"))
+ess5_weights_hh <- read_dta("../2_raw_data/data/HH/ESS5_weights_hh.dta")
+
+
+# functions
 
 summarize_dna_hh <- function(tbl, pw) {
   tbl %>% 
@@ -41,6 +58,8 @@ summarize_dna_hh <- function(tbl, pw) {
     )
 }
 
+
+# Household ----
 
 dna_means_hh_all <- bind_rows(
   ess4_dna_hh_new %>% 
@@ -71,7 +90,7 @@ dna_means_hh_all <- bind_rows(
   ))
 
 
-# panel hhs only 
+## panel hhs only -----
 
 ess4_dna_hh_panel <- ess4_dna_hh_new %>% 
   semi_join(ess5_dna_hh_new,
@@ -125,11 +144,11 @@ dna_means_hh <- bind_rows(
   )
   )
 
-write_csv(dna_means_hh, "dynamics_presentation/data/dna_means_hh.csv")
+write_csv(dna_means_hh, "../tmp/dynamics/dna_means_hh.csv")
 
 
 
-# EA level
+# EA level ------
 
 ess4_dna_ea_all <- ess4_dna_hh_new %>% 
   group_by(region, ea_id) %>% 
@@ -234,4 +253,4 @@ dna_means_ea <- bind_rows(
   )
 
 
-write_csv(dna_means_ea, "dynamics_presentation/data/dna_means_ea.csv")
+write_csv(dna_means_ea, "../tmp/dynamics/dna_means_ea.csv")
