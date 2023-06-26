@@ -11,5 +11,12 @@
 shell rmdir "${tmp}/adopt_reach" /s /q
 mkdir "${tmp}/adopt_reach"
 
+shell rmdir "${tmp}/adopt_reach/figures" /s /q
+mkdir "${tmp}/adopt_reach/figures"
+
+* Program for tables
+do "${code}/programs/descr_tab.do"
+
+
 // Run do files:
 // do 

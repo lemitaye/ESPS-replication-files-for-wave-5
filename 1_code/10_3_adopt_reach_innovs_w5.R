@@ -13,7 +13,7 @@ library(labelled)
 # load data ----
 wave5_hh_new <- read_dta("../3_report_data/wave5_hh_new.dta")
 
-ess5_bounds <- read_dta("../tmp/dynamics/ess5_bounds.dta")
+ess5_bounds <- read_dta("../tmp/adopt_reach/ess5_bounds.dta")
 
 dna_means_hh <- read_csv("../tmp/dynamics/dna_means_hh.csv")
 

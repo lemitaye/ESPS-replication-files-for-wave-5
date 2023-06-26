@@ -14,7 +14,7 @@ library(labelled)
 # load data ----
 ess4_hh_all <- read_dta("../tmp/dynamics/ess4_hh_all.dta")
 
-ess4_bounds <- read_dta("../tmp/dynamics/ess4_bounds.dta")
+ess4_bounds <- read_dta("../tmp/adopt_reach/ess4_bounds.dta")
 
 psnp_hh <- read_csv("../tmp/psnp/psnp_hh.csv")
 

@@ -15,7 +15,7 @@ clear all
 
 * to be added to master later
 global root     "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Country teams/Ethiopia/LSMS_W5"
-global code     "${root}/1_do_files"
+global code     "${root}/1_code"
 global rawdata  "${root}/2_raw_data/data"
 global aux      "${root}/2_raw_data/auxiliary"
 global data     "${root}/3_report_data"

@@ -134,7 +134,7 @@ xml_tab C, save("$table/09_5_ess5_number_bounds.xml") replace sheet("HH_w5", nog
 
 * save ------
 drop sh* ead* impcr*
-save "${tmp}/dynamics/ess5_bounds.dta", replace  
+save "${tmp}/adopt_reach/ess5_bounds.dta", replace  
 
 
 * ESS4 -------------------------------------------------------------------------
@@ -253,4 +253,4 @@ xml_tab C, save("$table/09_5_ess4_number_bounds.xml") replace sheet("HH_w4", nog
 
 * save ------
 drop sh* ead* impcr*
-save "${tmp}/dynamics/ess4_bounds.dta", replace  
+save "${tmp}/adopt_reach/ess4_bounds.dta", replace  

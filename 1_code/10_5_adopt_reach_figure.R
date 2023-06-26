@@ -4,7 +4,12 @@
 # Depends on: 10_4_adopt_reach_table.R
 
 
-source("dynamics_presentation/helpers/ggplot_theme_Publication-2.R")
+# load packages ----
+library(ggplot2)
+library(scales)
+
+
+source("programs/ggplot_theme_Publication-2.R")
 
 ## Figure 9 for ESS5 -----------
 
@@ -113,7 +118,7 @@ ess5_totals %>%
   )
 
 ggsave(
-  filename = "../tmp/figures/fig09_all_w5.png",
+  filename = "../tmp/adopt_reach/figures/fig09_all_w5.png",
   width = 300,
   height = 160,
   units = "mm"
@@ -145,7 +150,7 @@ ess5_totals %>%
   )
 
 ggsave(
-  filename = "../tmp/figures/fig09_panel_w5.png",
+  filename = "../tmp/adopt_reach/figures/fig09_panel_w5.png",
   width = 300,
   height = 160,
   units = "mm"
@@ -200,7 +205,7 @@ ess4_totals %>%
   )
 
 ggsave(
-  filename = "../tmp/figures/fig09_all_w4.png",
+  filename = "../tmp/adopt_reach/figures/fig09_all_w4.png",
   width = 300,
   height = 160,
   units = "mm"
@@ -232,7 +237,7 @@ ess4_totals %>%
   )
 
 ggsave(
-  filename = "../tmp/figures/fig09_panel_w4.png",
+  filename = "../tmp/adopt_reach/figures/fig09_panel_w4.png",
   width = 300,
   height = 160,
   units = "mm"
@@ -265,8 +270,8 @@ adopt_totals %>%
   mutate(label = factor(label, levels = levels)) %>% 
   ggplot(aes(label, total, fill = type)) +
   geom_col() +
-  facet_wrap(~year, nrow = 2) +m
-scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6)) +
+  facet_wrap(~year, nrow = 2) +
+  scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6)) +
   theme_Publication() +
   scale_fill_Publication() +
   theme(
@@ -287,7 +292,7 @@ scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6)) +
   )
 
 ggsave(
-  filename = "../tmp/figures/fig09_panel.png",
+  filename = "../tmp/adopt_reach/figures/fig09_panel.png",
   width = 300,
   height = 297,
   units = "mm"
@@ -323,7 +328,7 @@ adopt_totals %>%
   )
 
 ggsave(
-  filename = "../tmp/figures/fig09_all.png",
+  filename = "../tmp/adopt_reach/figures/fig09_all.png",
   width = 300,
   height = 297,
   units = "mm"
