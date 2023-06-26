@@ -1,12 +1,54 @@
 
-###############################################################################*
-# Comparison for Chickpea Kabuli only (against wave 3) ####
-###############################################################################*
+## Comparison for Chickpea Kabuli only (against wave 3) ---- #
 
-wave3_hh <- read_dta(file.path(root, w4_dir, "wave3_hh.dta"))
-wave3_ea <- read_dta(file.path(root, w4_dir, "wave3_ea.dta"))
+# ----- #
+# Purpose: to generate a figure comparing adoption of chickpea kabuli
+# Author: Lemi Daba (tayelemi@gmail.com)
+# ----- #
 
-wave5_ea_new <- read_dta(file.path(root, w5_dir, "wave5_ea_new.dta"))
+
+# load packages ----
+library(haven)
+library(tidyverse)
+library(scales)
+
+# set-up a folder in tmp ----
+if (file.exists("../tmp/chickpea/")) {
+  
+  cat("The folder already exists")
+  
+} else {
+  
+  dir.create("../tmp/chickpea/")
+  
+}
+
+
+# load data ----
+wave3_hh <- read_dta("../supplemental/replication_files/3_report_data/wave3_hh.dta")
+wave3_ea <- read_dta("../supplemental/replication_files/3_report_data/wave3_ea.dta")
+
+wave5_hh_new <- read_dta("../3_report_data/wave5_hh_new.dta")
+wave5_ea_new <- read_dta("../3_report_data/wave5_ea_new.dta")
+
+# functions ----
+recode_region <- function(tbl) {
+  
+  suppressWarnings(
+    tbl %>% 
+      mutate(
+        region = recode(
+          region, 
+          `1` = "Tigray",
+          `3` = "Amhara",
+          `4` = "Oromia",
+          `7` = "SNNP",
+          `0` = "Other regions"
+        )
+      )
+  )
+  
+}
 
 
 chickpea_tbl <- function(tbl, kab_var, desi_var, pw, hh = TRUE) {
@@ -64,7 +106,7 @@ chickpea_tbl <- function(tbl, kab_var, desi_var, pw, hh = TRUE) {
 }
 
 
-
+# Wrangling -----
 
 mean_kabuli_w3_hh <- wave3_hh %>% 
   recode_region() %>% 
@@ -118,7 +160,7 @@ kabuli_plot <- kabuli_bind %>%
 
 
 ggsave(
-  filename = file.path(root, "LSMS_W5/tmp/figures/kabuli_plot.pdf"),
+  filename = "../tmp/chickpea/kabuli_plot.pdf",
   plot = kabuli_plot,
   device = cairo_pdf,
   width = 180,

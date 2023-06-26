@@ -11,6 +11,17 @@
 library(haven)
 library(tidyverse)
 
+# set-up a folder in tmp ----
+if (file.exists("../tmp/psnp/")) {
+  
+  cat("The folder already exists")
+  
+} else {
+  
+  dir.create("../tmp/psnp/")
+  
+}
+
 
 # load data -----
 ess4_hh_psnp <- read_dta("../supplemental/replication_files/3_report_data/ess4_hh_psnp.dta")
