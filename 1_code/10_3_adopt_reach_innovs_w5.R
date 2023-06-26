@@ -11,7 +11,7 @@ library(tidyverse)
 library(labelled)
 
 # load data ----
-wave5_hh_new <- read_dta("../3_report_data/wave5_hh_new.dta")
+wave5_hh <- read_dta("../3_report_data/wave5_hh_new.dta")
 
 ess5_bounds <- read_dta("../tmp/adopt_reach/ess5_bounds.dta")
 
