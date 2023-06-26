@@ -1,15 +1,32 @@
 
-# PSNP: Special edition ----
+# PSNP: Special edition ---- #
+
+# ----- #
+# Purpose: to create data sets on PSNP adoption in both waves
+# Author: Lemi Daba (tayelemi@gmail.com)
+# ----- #
 
 
-ess4_hh_psnp <- read_dta(file.path(root, w4_dir, "ess4_hh_psnp.dta"))
+# load packages ----
+library(haven)
+library(tidyverse)
+library(labelled)
+library(janitor)
 
-sect14_hh_w4 <- read_dta(file.path(root, 
-                                   "supplemental/replication_files/2_raw_data/ESS4_2018-19/Data/sect14_hh_w4.dta"))
 
-ess5_hh_psnp <- read_dta(file.path(root, w5_dir, "ess5_hh_psnp.dta")) %>% 
+
+# load data -----
+ess4_hh_psnp <- read_dta("../supplemental/replication_files/3_report_data/ess4_hh_psnp.dta")
+
+sect14_hh_w4 <- read_dta("../supplemental/replication_files/2_raw_data/ESS4_2018-19/Data/sect14_hh_w4.dta")
+
+ess5_hh_psnp <- read_dta("../3_report_data/ess5_hh_psnp.dta") %>% 
   mutate(wave = "Wave 5")
 
+ess5_weights_hh <- read_dta("../2_raw_data/data/HH/ESS5_weights_hh.dta")
+
+
+# functions:
 recode_all_regions <- function(tbl, var) {
   
   suppressWarnings(
@@ -44,6 +61,24 @@ relevel_region <- function(tbl) {
     ) %>% 
     suppressWarnings()
 }
+
+mean_tbl <- function(tbl, vars = vars_both, group_vars, pw) {
+  
+  tbl %>% 
+    pivot_longer(all_of(vars), 
+                 names_to = "variable",
+                 values_to = "value") %>% 
+    group_by(pick(group_vars)) %>% 
+    summarise(
+      mean = weighted.mean(value, w = {{pw}}, na.rm = TRUE),
+      nobs = sum(!is.na(value)),
+      .groups = "drop"
+    )
+  
+}
+
+
+# cleaning ----
 
 psnp_w4_dir <- sect14_hh_w4 %>% 
   filter(assistance_cd==1) %>% 
@@ -125,8 +160,6 @@ psnp_all_local <- bind_rows(
 ### Panel households ----
 
 
-ess5_weights_hh <- read_dta(file.path(root, "2_raw_data/data/HH/ESS5_weights_hh.dta"))
-
 psnp_w4_panel <- psnp_w4 %>% 
   semi_join(psnp_w5, by = "household_id") %>% 
   left_join(select(ess5_weights_hh, household_id, pw_panel), 
@@ -170,7 +203,7 @@ psnp_hh <- bind_rows(
     )
   )
 
-write_csv(psnp_hh, file = "dynamics_presentation/data/psnp_hh.csv")
+write_csv(psnp_hh, file = "../tmp/psnp/psnp_hh.csv")
 
 
 ## EA level ----
@@ -200,22 +233,19 @@ collapse_ea_psnp <- function(tbl, group_vars = c("variable", "region")) {
   
 }
 
-psnp_w4 %>% 
-  group_by(ea_id, loca) %>% 
-  collapse_ea_psnp(group_vars = c("variable", "locality"))
 
-nsumm_by_ea_psnp <- function(tbl, name, ...) {
+summ_by_ea_psnp <- function(tbl, name, ...) {
   
   bind_rows(
     
     tbl %>% 
       group_by(ea_id) %>% 
-      collapse_ea(group_vars = c("variable", "locality")) %>% 
+      collapse_ea_psnp(group_vars = c("variable")) %>% 
       mutate(region = "National", wave = name),
     
     tbl %>% 
       group_by(ea_id, region) %>% 
-      collapse_ea(group_vars = c("variable", "region", "locality")) %>% 
+      collapse_ea_psnp(group_vars = c("variable", "region")) %>% 
       mutate(wave = name)
     
   )
@@ -228,7 +258,7 @@ wave_lab <- c("Wave 4", "Wave 5")
 psnp_all_rural <- map(list(psnp_w4, psnp_w5), 
                       ~filter(., locality=="Rural") %>% select(-locality))
 
-psnp_ea_all_rural <- map2(psnp_all_rural, wave_lab, summ_by_ea) %>% 
+psnp_ea_all_rural <- map2(psnp_all_rural, wave_lab, summ_by_ea_psnp) %>% 
   bind_rows()
 
 
@@ -239,7 +269,7 @@ psnp_ea_all_rural <- map2(psnp_all_rural, wave_lab, summ_by_ea) %>%
 psnp_panel_rural <- map(list(psnp_w4_panel, psnp_w5_panel), 
                         ~filter(., locality=="Rural") %>% select(-locality))
 
-psnp_ea_panel_rural <- map2(psnp_panel_rural, wave_lab, summ_by_ea) %>% 
+psnp_ea_panel_rural <- map2(psnp_panel_rural, wave_lab, summ_by_ea_psnp) %>% 
   bind_rows()
 
 
@@ -251,6 +281,7 @@ psnp_ea_rural <- bind_rows(
 ) %>% 
   mutate(label = "PSNP (Direct support + Temporary labor)")
 
-write_csv(psnp_ea_rural, file = "dynamics_presentation/data/psnp_ea_rural.csv")
+# save:
+write_csv(psnp_ea_rural, file = "../tmp/psnp/psnp_ea_rural.csv")
 
 
