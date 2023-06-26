@@ -1,13 +1,26 @@
 
-## Community psnp ----
+## Community psnp ---- #
 
-sect09_com_w4 <- read_dta(file.path(
-  root, 
-  "supplemental/replication_files/2_raw_data/ESS4_2018-19/Data/sect09_com_w4.dta"
-)) 
+# ----- #
+# Purpose: to create a data set on community PSNP adoption in both waves
+# Author: Lemi Daba (tayelemi@gmail.com)
+# ----- #
 
-ess5_community_new <- read_dta(file.path(root, w5_dir, "ess5_community_new.dta")) 
 
+# load packages ----
+library(haven)
+library(tidyverse)
+
+
+# load data ----
+sect09_com_w4 <- read_dta(
+  "../supplemental/replication_files/2_raw_data/ESS4_2018-19/Data/sect09_com_w4.dta"
+)
+
+ess5_community_new <- read_dta("../3_report_data/ess5_community_new.dta")
+
+
+# Wrangling -----
 ess5_comm_psnp <- ess5_community_new %>% 
   mutate_if(is.labelled, as_factor) %>% 
   mutate(
@@ -121,5 +134,5 @@ comm_psnp <- bind_rows(
 ) %>% 
   mutate(variable = "comm_psnp")
 
-write_csv(comm_psnp, file = "dynamics_presentation/data/comm_psnp.csv")
+write_csv(comm_psnp, file = "../tmp/psnp/comm_psnp.csv")
 

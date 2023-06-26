@@ -10,9 +10,6 @@
 # load packages ----
 library(haven)
 library(tidyverse)
-library(labelled)
-library(janitor)
-
 
 
 # load data -----
