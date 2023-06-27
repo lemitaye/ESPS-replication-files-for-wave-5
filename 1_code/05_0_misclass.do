@@ -18,7 +18,8 @@ mkdir "${tmp}/missclass"
 shell rmdir "${tmp}/missclass/tables" /s /q
 mkdir "${tmp}/missclass/tables"
 
-global tables "${tmp}/missclass/tables"
+// Run programs for tables:
+do "${code}/programs/descr_tab.do"
 
 
 /* ---------------------------------------------------------------------------*/
