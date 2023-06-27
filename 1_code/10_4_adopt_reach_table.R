@@ -430,9 +430,9 @@ writeData(
 
 
 # Save the workbook as an Excel file
-saveWorkbook(wb, "../4_table/absolute_numbers.xlsx", overwrite = TRUE)
+saveWorkbook(wb, "../4_table/10_4_absolute_numbers.xlsx", overwrite = TRUE)
 
-openXL("../4_table/absolute_numbers.xlsx")
+openXL("../4_table/10_4_absolute_numbers.xlsx")
 
 
 
