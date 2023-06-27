@@ -23,7 +23,7 @@ if (file.exists("../tmp/chickpea/figures/")) {
 }
 
 
-wb_path <- "../2_raw_data/auxiliary/chickpea_agss_area_prod.xlsx"
+wb_path <- "../supplemental/chickpea_agss_area_prod.xlsx"
 
 # read excel sheets
 cpea_wb_list <- map(

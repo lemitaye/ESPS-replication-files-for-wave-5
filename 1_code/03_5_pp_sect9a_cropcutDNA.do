@@ -21,7 +21,7 @@ duplicates tag barcode22, gen(dup)   // no duplicates
 * duplicates drop barcode22, force
 drop dup
 
-merge 1:1 barcode22 using "${root}/2_raw_data/auxiliary/DNA_with_varinfo_2022_last.dta" 
+merge 1:1 barcode22 using "${supp}/DNA_with_varinfo_2022_last.dta" 
 /*
     Result                      Number of obs
     -----------------------------------------

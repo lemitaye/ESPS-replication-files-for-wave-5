@@ -132,7 +132,7 @@ keep if _m==3
 drop _m
 
 * Merging with Locations and Distances of CG activities
-merge 1:1 ea_id using  "${aux}/dashboard_locations.dta"
+merge 1:1 ea_id using  "${supp}/dashboard_locations.dta"
 /*
 
     Result                           # of obs.
