@@ -18,6 +18,8 @@ shell rmdir "${tmp}/covariates/figures" /s /q
 mkdir "${tmp}/covariates/tables"
 mkdir "${tmp}/covariates/figures"
 
-/* ---------------------------------------------------------------------------*/
+/* Run -----------------------------------------------------------------------*/
 
-* do 
+do "${code}/04_1_covariates_hh.do"
+do "${code}/04_2_covariates_pp.do"
+do "${code}/04_3_covariates_ea.do"

@@ -8,9 +8,8 @@
 * STATA Version: MP 17.0
 ********************************************************************************
 
-/* Paths ---------------------------------------------------------------------*/
 
-clear all
+/* Paths ---------------------------------------------------------------------*/
 
 shell rmdir "${tmp}/missclass" /s /q
 mkdir "${tmp}/missclass"
@@ -18,10 +17,16 @@ mkdir "${tmp}/missclass"
 shell rmdir "${tmp}/missclass/tables" /s /q
 mkdir "${tmp}/missclass/tables"
 
-// Run programs for tables:
+
+/* Program for tables --------------------------------------------------------*/
+
 do "${code}/programs/descr_tab.do"
 
 
-/* ---------------------------------------------------------------------------*/
+/* Run -----------------------------------------------------------------------*/
 
-* do 
+do "${code}/05_1_misclass_purity.do"
+do "${code}/05_2_misclass_year.do"
+do "${code}/05_3_misclass_exotic.do"
+do "${code}/05_4_misclass_dna.do"
+do "${code}/05_5_misclass_source.do"
