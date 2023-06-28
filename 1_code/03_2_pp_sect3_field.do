@@ -6,7 +6,7 @@
 
 * The analysis in this section focuses on natural resource managment (NRM) variables
 
-use "${rawdata}\PP\sect3_pp_w5", clear  
+use "${rawdata}/PP/sect3_pp_w5.dta", clear  
 
 count // 14,878
 distinct household_id  // 2,019 households
@@ -263,7 +263,7 @@ rename saq06 kebele
 
 destring region zone woreda city subcity kebele, force replace
 
-merge m:1 region zone woreda using "${rawdata}\ESS3_ET_local_area_unit_conversion"
+merge m:1 region zone woreda using "${rawdata}/ESS3_ET_local_area_unit_conversion.dta"
 
 /*
     Result                      Number of obs
@@ -346,7 +346,7 @@ replace falloq = 0 if s3q05  ==  2
 lab var falloq "Plot left fallow in the last 5 years"
 
 rename s3q13 s1q00  // s3q13: Who in HH makes primary decisions on [FIELD]?
-merge m:1 holder_id household_id s1q00 using "${rawdata}\PP\sect1_pp_w5"
+merge m:1 holder_id household_id s1q00 using "${rawdata}/PP/sect1_pp_w5.dta"
 drop if _m  ==  2
 drop _m
   
@@ -449,7 +449,7 @@ preserve
     cropt1 cropt2 cropt3 cropm1 cropm2 falloq fplotm extprog irr irrm1 urea ///
     dap nps othfert manure hiredlab lprep soiler plotirr 
 
-    save "${data}\ess5_pp_nrm_plot_new", replace
+    save "${data}/ess5_pp_nrm_plot_new.dta", replace
 restore
 
 
@@ -583,4 +583,4 @@ foreach var in  $conditional {
     }
 }
 
-save "${tmp}\PP_W5S3", replace
+save "${tmp}/pp/PP_W5S3.dta", replace

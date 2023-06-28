@@ -17,7 +17,7 @@ wave4_hh <- read_dta("../supplemental/replication_files/3_report_data/wave4_hh_n
 wave5_hh <- read_dta("../3_report_data/wave5_hh_new.dta")
 
 ess4_hh_psnp <- read_dta("../supplemental/replication_files/3_report_data/ess4_hh_psnp.dta")
-hh_livestock <- read_dta("../3_report_data/01_6_hh_livestock.dta")
+hh_livestock <- read_dta("../3_report_data/01_5_hh_livestock.dta")
 
 
 # some cleaning ----

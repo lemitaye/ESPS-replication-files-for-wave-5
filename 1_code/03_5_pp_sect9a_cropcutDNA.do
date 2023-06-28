@@ -110,10 +110,10 @@ preserve
     
     keep holder_id household_id s5q01a s5q01b s5q02 s5q03_1 s5q03_2
     
-    save "${tmp}/01_3_seed_sources_w5.dta", replace
+    save "${tmp}/pp/01_3_seed_sources_w5.dta", replace
 restore
 
-merge m:1 holder_id household_id using "${tmp}/01_3_seed_sources_w5.dta"
+merge m:1 holder_id household_id using "${tmp}/pp/01_3_seed_sources_w5.dta"
 /*
     Result                      Number of obs
     -----------------------------------------

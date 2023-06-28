@@ -18,7 +18,7 @@ merge 1:1 household_id using "${data}/ess5_pp_hhlevel_parcel_new.dta"
 */
 drop _merge
 
-merge 1:1 household_id using "${tmp}/PP_W5S3"
+merge 1:1 household_id using "${tmp}/pp/PP_W5S3.dta"
 /*
     Result                      Number of obs
     -----------------------------------------
@@ -32,7 +32,7 @@ merge 1:1 household_id using "${tmp}/PP_W5S3"
 
 drop _merge
 
-merge 1:1 household_id using "${tmp}/PP_W4S81"  
+merge 1:1 household_id using "${tmp}/pp/PP_W4S81.dta"  
 /*
     Result                      Number of obs
     -----------------------------------------
@@ -47,7 +47,7 @@ merge 1:1 household_id using "${tmp}/PP_W4S81"
 drop _merge
 
 
-merge 1:1 household_id using "${tmp}/pp_w5s4"
+merge 1:1 household_id using "${tmp}/pp/PP_W5S4.dta"
 /*
     Result                      Number of obs
     -----------------------------------------
@@ -63,7 +63,7 @@ drop _merge
 
 * 8028 Farmer hotline (IVR)
 preserve
-    use "${rawdata}/PP/sect7_pp_w5", clear
+    use "${rawdata}/PP/sect7_pp_w5.dta", clear
 
     tab s7q03b  // s7q03b: Have you ever called the '8028', or agricultural hotline?
     generate hotline=.
@@ -107,7 +107,7 @@ drop _m
 
 /* append with livestock data from hh -------------------------------------------
 
-append using "${data}/01_6_hh_livestock.dta", generate(from_hh)
+append using "${data}/01_5_hh_livestock.dta", generate(from_hh)
 
 // take care of duplicates
 duplicates tag household_id, generate(dup)
@@ -169,5 +169,5 @@ replace othregion = saq01 if saq01==2 | saq01==5 | saq01==6 | saq01==12 | saq01=
 
 
 * save -------------------------------------------------------------------------
-save "${data}/wave5_hh_new", replace
-save "${data}/ess5_pp_hh_new", replace
+save "${data}/wave5_hh_new.dta", replace
+save "${data}/ess5_pp_hh_new.dta", replace

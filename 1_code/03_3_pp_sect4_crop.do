@@ -4,10 +4,11 @@
 * SECTION 4 - PP - CROP VARIETY
 ********************************************************************************
 
-use "${rawdata}\PP\sect4_pp_w5", clear
+use "${rawdata}/PP/sect4_pp_w5.dta", clear
 
 // we want status of filed during this season (s3q03 & s3q03b)
-merge m:1 holder_id household_id parcel_id field_id using "${rawdata}\PP\sect3_pp_w5", keepusing(s3q03 s3q03b) 
+merge m:1 holder_id household_id parcel_id field_id using "${rawdata}/PP/sect3_pp_w5.dta", ///
+	keepusing(s3q03 s3q03b) 
 /*
     Result                           # of obs.
     -----------------------------------------
@@ -89,8 +90,9 @@ replace  impftr = 0 if  cr41 == 1 | cr44 == 1 | cr45 == 1 | cr46 == 1 |
 replace  impftr = 1 if (cr41 == 1 | cr44 == 1 | cr45 == 1 | cr46 == 1 | 
                         cr47 == 1 | cr48 == 1 | cr50 == 1 | cr65 == 1 | 
                         cr66 == 1 | cr75 == 1 | cr84 == 1 | cr112 == 1 | 
-                        cr115 == 1 ) & improv == 1;
-delimit cr
+                        cr115 == 1 ) & improv == 1
+;
+#delimit cr
 
 * Improved roots:
 generate improot = .
@@ -233,7 +235,8 @@ replace hsell=1 if s4q22==1
 replace hsell=0 if s4q22==2
 
 * Merge with plot area to gen % of plot area under maize, sorghum and barley
-merge m:1 parcel_id field_id holder_id household_id ea_id using "${data}\ess5_pp_nrm_plot_new", keepusing(plotarea_sr plotarea_gps plotarea_full)
+merge m:1 parcel_id field_id holder_id household_id ea_id using "${data}/ess5_pp_nrm_plot_new.dta", ///
+	keepusing(plotarea_sr plotarea_gps plotarea_full)
 /*
     Result                      Number of obs
     -----------------------------------------
@@ -278,7 +281,7 @@ foreach x in 1 3 4 7 0  {
 }
 
 * saving:
-save "${tmp}/ess5_pp_plot_crop.dta", replace
+save "${tmp}/pp/ess5_pp_plot_crop.dta", replace
 	
 	
 *Plot level - Crop variety
@@ -313,7 +316,7 @@ preserve
 	lab var seedv1      "Tree seed centers - Youth, NGO, & Research centers"
 	lab var seedv2      "Tree seed centers - Gov't, Private, and Market added"
 
-	save "${data}\ess5_pp_cropvar_plot_new", replace
+	save "${data}/ess5_pp_cropvar_plot_new.dta", replace
 restore
 
 
@@ -498,4 +501,4 @@ foreach i of varlist *impcr72{
 	}
 	
 	
-save "${tmp}\pp_w5s4", replace
+save "${tmp}/pp/PP_W5S4.dta", replace

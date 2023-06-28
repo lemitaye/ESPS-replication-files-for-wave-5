@@ -4,7 +4,7 @@
 * PP - COVER 
 ******************************************************************************** 
 
-use "${rawdata}\PP\sect_cover_pp_w5", clear
+use "${rawdata}/PP/sect_cover_pp_w5.dta", clear
 
 count //2,110
 * tostring saq12, force replace   // What is the reason for converting hh_size (saq12) to string
@@ -51,13 +51,13 @@ lab var hh_ea "Number of households per EA"
 duplicates drop household_id ea_id saq01 saq02 saq03 saq04 saq05 saq06 saq07 /// 
                 saq08, force
 
-save "${data}\w5_coverPP_new", replace
+save "${data}/w5_coverPP_new.dta", replace
 
 ********************************************************************************
 * PP - SECT. 1: HOUSEHOLD ROSTER
 ********************************************************************************
 
-use "${rawdata}\PP\sect1_pp_w5", clear
+use "${rawdata}/PP/sect1_pp_w5.dta", clear
 
 * NOTHING TO RECOVER
 
@@ -65,7 +65,7 @@ use "${rawdata}\PP\sect1_pp_w5", clear
 * PP - SECT. 2:  PARCEL ROSTER
 ********************************************************************************
 
-use "${rawdata}\PP\sect2_pp_w5", clear
+use "${rawdata}/PP/sect2_pp_w5.dta", clear
 
 
 ** Parcel title:
@@ -80,7 +80,7 @@ preserve
     rename  s2q04b_ s1q00         // s1q00 is Individual ID in the hh roster (sect1_pp_w4)
 
     * Individual characteristics
-    merge m:1 holder_id household_id s1q00 using  "${rawdata}\PP\sect1_pp_w5"  // merge with hh roster
+    merge m:1 holder_id household_id s1q00 using  "${rawdata}/PP/sect1_pp_w5.dta"  // merge with hh roster
 
     keep if _merge  ==  3
     drop _merge
@@ -109,7 +109,7 @@ preserve
     drop if s2q07_  == .a & s2q06  ==  1
     // s2q06: Does anyone in HH have the right to sell [PARCEL] or use as collateral?
     rename  s2q07_ s1q00
-    merge m:1 holder_id household_id s1q00 using  "${rawdata}\PP\sect1_pp_w5"
+    merge m:1 holder_id household_id s1q00 using  "${rawdata}/PP/sect1_pp_w5.dta"
     keep if _m  ==  3
     drop _merge
 
@@ -172,7 +172,7 @@ preserve
     lab var frsell "At lest 1 female hh-member has the right to sell the parcel"
     lab var fowner "At lest 1 female hh-member listed as owner in parcel title"
     lab var title "HH has title for the parcel"
-    save "${data}\ess5_pp_hhlevel_parcel_new", replace
+    save "${data}/ess5_pp_hhlevel_parcel_new.dta", replace
 restore
 
-save "${data}\w5_sect2_pp_parcel_new", replace
+save "${data}/w5_sect2_pp_parcel_new.dta", replace

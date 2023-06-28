@@ -4,7 +4,7 @@
 *** LS - Sec.8_1 - Crossbred animals
 ********************************************************************************
 
-use "${rawdata}\PP\sect8_1_ls_w5", clear
+use "${rawdata}/PP/sect8_1_ls_w5.dta", clear
 
 
 generate ls_type=1 if ls_code>=1 & ls_code<=6   // large ruminants (Bulls, Oxen, Cows, Steers, Heifers, and Calves)
@@ -30,7 +30,7 @@ label values ls_type ls_type
 label variable ls_type "Livestok type"
 
 * 8.3 Livestock breeding, health, shelter, water, and feed
-merge m:1 household_id ls_type holder_id using "${rawdata}\PP\sect8_3_ls_w5"
+merge m:1 household_id ls_type holder_id using "${rawdata}/PP/sect8_3_ls_w5.dta"
 
 /*
     Result                      Number of obs
@@ -46,7 +46,7 @@ merge m:1 household_id ls_type holder_id using "${rawdata}\PP\sect8_3_ls_w5"
 drop _merge
 
 *8.4 Milk and egg production, animal power, and dung
-merge 1:1 household_id ls_code holder_id using "${rawdata}\PP\sect8_4_ls_w5"
+merge 1:1 household_id ls_code holder_id using "${rawdata}/PP/sect8_4_ls_w5.dta"
 
 /*
     Result                      Number of obs
@@ -285,7 +285,7 @@ foreach i in agroind cowpea elepgrass deshograss sesbaniya sinar lablab alfalfa 
 
 
 *Plot level - Animal agriculture
-save "${data}\ess5_pp_livestock_plot_new", replace
+save "${data}/ess5_pp_livestock_plot_new.dta", replace
 
 
 * Collapse at the hh-level
@@ -390,7 +390,7 @@ lab var po_vetch             "Poultry: Vetch"
 lab var po_rhodesgrass       "Poultry: Rhodes Grass"
 
 
-save "${tmp}\PP_W4S81", replace
+save "${tmp}/pp/PP_W4S81.dta", replace
 
 * Cross bred animals: by eartag
 * Better information from self-reporting
