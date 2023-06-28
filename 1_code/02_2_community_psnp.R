@@ -7,11 +7,6 @@
 # ----- #
 
 
-# load packages ----
-library(haven)
-library(tidyverse)
-
-
 # load data ----
 sect09_com_w4 <- read_dta(
   "../supplemental/replication_files/2_raw_data/ESS4_2018-19/Data/sect09_com_w4.dta"

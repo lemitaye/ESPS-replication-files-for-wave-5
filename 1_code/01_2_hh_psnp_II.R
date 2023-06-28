@@ -7,10 +7,6 @@
 # ----- #
 
 
-# load packages ----
-library(haven)
-library(tidyverse)
-
 # set-up a folder in tmp ----
 if (file.exists("../tmp/psnp/")) {
   

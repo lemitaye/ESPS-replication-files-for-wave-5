@@ -3,11 +3,6 @@
 # purpose: to produce some figures for chickpea from AgSS
 
 
-# load libraries ------
-library(tidyverse)
-library(readxl)
-library(scales)
-
 source("programs/ggplot_theme_Publication-2.R")
 theme_set(theme_light())
 

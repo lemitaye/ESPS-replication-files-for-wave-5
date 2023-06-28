@@ -4,10 +4,6 @@
 # Depends on: 10_4_adopt_reach_table.R
 
 
-# load packages ----
-library(ggplot2)
-library(scales)
-
 
 source("programs/ggplot_theme_Publication-2.R")
 

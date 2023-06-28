@@ -5,11 +5,6 @@
 # ----- #
 
 
-# load packages ----
-library(haven)
-library(tidyverse)
-library(labelled)
-
 # load data ----
 wave5_hh <- read_dta("../3_report_data/wave5_hh_new.dta")
 

@@ -8,11 +8,6 @@
 # ----- #
 
 
-# load packages ----
-library(haven)
-library(tidyverse)
-library(scales)
-
 # function to recode regions:
 recode_region_dna <- function(tbl, region_var = region) {
   

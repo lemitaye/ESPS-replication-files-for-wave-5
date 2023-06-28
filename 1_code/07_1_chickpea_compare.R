@@ -7,12 +7,6 @@
 # ----- #
 
 
-# load packages ----
-library(haven)
-library(tidyverse)
-library(scales)
-library(labelled)
-
 # set-up a folder in tmp ----
 if (file.exists("../tmp/chickpea/")) {
   

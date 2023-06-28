@@ -5,12 +5,6 @@
 # ----- #
 
 
-# load packages ----
-library(haven)
-library(tidyverse)
-library(labelled)
-
-
 # load data ----
 ess4_hh_all <- read_dta("../tmp/dynamics/ess4_hh_all.dta")
 

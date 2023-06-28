@@ -5,11 +5,6 @@
 # ----- #
 
 
-# load packages ----
-library(haven)
-library(openxlsx)
-library(tidyverse)
-
 # load data ----
 track_hh <- read_dta("../tmp/dynamics/06_1_track_hh.dta")
 
