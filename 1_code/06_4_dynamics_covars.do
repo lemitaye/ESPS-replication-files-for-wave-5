@@ -197,7 +197,7 @@ foreach var in $adopt {
 }
 
 #delimit ;
-xml_tab C,  save("$table/06_3_dynamics_adopters_chrxs.xml") replace 
+xml_tab C,  save("$table/06_4_dynamics_adopters_chrxs.xml") replace 
 sheet("Table14_dyn", nogridlines)  
 rnames(`rname') cnames(`cname') lines(COL_NAMES 2 LAST_ROW 2)  
 title("Table: Dynamics in correlates of adoption")  font("Times New Roman" 10) 

@@ -14,6 +14,12 @@ use "${supp}/replication_files/3_report_data/ess4_pp_cov_new.dta", clear
 
 drop sh_* s2* s3* s4* 
 
+// merge with data on geo-covariates:
+merge 1:1 household_id using "${raw4}/ETH_HouseholdGeovariables_Y4.dta", ///
+    keepusing(dist_road dist_market dist_border dist_popcenter dist_admhq)
+keep if _merge==1 | _merge==3
+drop _merge
+
 // recode 100 to 1 for dummies for consistency:
 for var hhd_treadle-hhd_ploc hhd_cross-hhd_grass lr_livIA-sr_grass ///
     hhd_ofsp-hhd_fieldp hhd_impcr1-ead_impccr: recode X (100=1)
@@ -124,7 +130,7 @@ preserve
 restore
 
 preserve
-    use "${tmp}/missclass/06_3_misclass_year.dta", clear
+    use "${tmp}/missclass/05_2_misclass_year.dta", clear
 
     gen correct_w5=.
     replace correct_w5=1 if maize_tp1==1 | maize_tn1==1
@@ -184,7 +190,7 @@ foreach var in $hhinnov {
     est clear
     estpost tab `var'_w4 `var'_w5
 
-    esttab . using "${tmp}/dynamics/tables/05_2_adoption_matrix_`var'.tex", replace ///
+    esttab . using "${tmp}/dynamics/tables/06_3_adoption_matrix_`var'.tex", replace ///
         cell(b pct(fmt(2) par) par) unstack noobs nonumber mtitle("Wave 5") ///
         collabels(none) modelwidth(15) ///
         label booktabs title("`lbl'") eqlabels(, lhs("Wave 4"))
@@ -209,16 +215,31 @@ foreach var in $hhinnov {
     replace `var'_d_d = 1 if `var'_w4==0 & `var'_w5==0
 } 
 
-rename nom_totcons_aeq nmtotcons
-rename income_offfarm incofffarm
-rename  total_cons_ann_win totconswin
+rename nom_totcons_aeq     nmtotcons
+rename income_offfarm      incofffarm
+rename total_cons_ann_win  totconswin
+rename parcesizeHA_w4      parcesizeHA
+rename fem_head_w4         fem_head
+rename fowner_w4           fowner
+rename flivman_w4          flivman
+rename hhd_flab_w4         hhd_flab
+rename age_head_w4         age_head
+rename consq1_w4           consq1
+rename consq2_w4           consq2
+rename asset_index_w4      asset_index
+rename pssetindex_w4       pssetindex
+rename dist_road_w4        dist_road
+rename dist_market_w4      dist_market
+rename dist_popcenter_w4   distpop
 
 #delimit;
 global hhcovar   
     parcesizeHA fem_head fowner flivman hhd_flab age_head yrseduc nmtotcons  
-    consq1 consq2 asset_index pssetindex incofffarm dist_road dist_market dist_popcenter
+    consq1 consq2 asset_index pssetindex incofffarm dist_road dist_market 
+    distpop
 ;
 #delimit cr
+
 
 matrix drop _all
  
@@ -293,7 +314,7 @@ foreach var in $adopt {
 }
 */
 #delimit ;
-xml_tab C,  save("${tmp}/dynamics/tables/05_2_matrix_reg.xml") replace 
+xml_tab C,  save("${table}/06_3_matrix_reg.xml") replace 
 sheet("regs", nogridlines)  
 /*rnames(`rname')*/ cnames(`cname') lines(COL_NAMES 2 LAST_ROW 2)  
 title(Table 1: ESPS5 - Correlates of adoption (only for panel households))  font("Times New Roman" 10) 
