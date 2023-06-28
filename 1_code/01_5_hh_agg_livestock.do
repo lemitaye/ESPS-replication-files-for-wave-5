@@ -114,7 +114,7 @@ foreach i in largerum smallrum poultry {
 }
 
 * save -------------------------------------------------------------------------
-save "${tmp}/01_2_ess5_hh_livestock.dta", replace
+save "${tmp}/hh/01_5_ess5_hh_livestock.dta", replace
 
 
 * Collapse at the hh-level -----------------------------------------------------
@@ -186,5 +186,5 @@ drop _merge
 order pw_panel, after(saq01)
 
 * save - hh level --------------------------------------------------------------
-save "${data}/01_6_hh_livestock.dta", replace
+save "${data}/01_5_hh_livestock.dta", replace
 
