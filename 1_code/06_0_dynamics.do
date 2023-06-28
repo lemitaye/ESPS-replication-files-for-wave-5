@@ -8,6 +8,7 @@
 * STATA Version: MP 17.0
 ********************************************************************************
 
+
 /* Paths ---------------------------------------------------------------------*/
 
 shell rmdir "${tmp}/dynamics" /s /q
@@ -19,6 +20,11 @@ mkdir "${tmp}/dynamics/tables"
 mkdir "${tmp}/dynamics/figures"
 
 
-/* ---------------------------------------------------------------------------*/
+/* Run -----------------------------------------------------------------------*/
 
-* do 
+do "${code}/06_1_dynamics_tracking.do"
+// Source "${code}/06_2_dynamics_adopt_rates.R" from RStudio
+do "${code}/06_3_dynamics_adopt_matrix.do"
+do "${code}/06_4_dynamics_covars.do"
+// Source "${code}/06_5_dynamics_maizeDNA.R" from RStudio
+// Source "${code}/06_6_dynamics_new_innovs_w5.R" from RStudio

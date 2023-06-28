@@ -9,13 +9,16 @@
 * STATA Version: MP 17.0
 ********************************************************************************
 
-// Run programs for tables:
+
+/* programs for tables: ----------------------------------------------------- */
+
 do "${code}/programs/descr_tab.do"
 do "${code}/programs/covar_regress.do"
 do "${code}/programs/gen_synergy.do"
 
 
-// Run do files:
+/* Run ---------------------------------------------------------------------- */
+
 do "${code}/09_1_tables_adopt_rates.do"
 do "${code}/09_2_tables_covar_dstats.do"
 do "${code}/09_3_tables_covar_regs.do"
