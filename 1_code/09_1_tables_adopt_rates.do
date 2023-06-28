@@ -169,11 +169,8 @@ xml_tab C,  save("$table/09_1_ess5_adoption_rates.xml") append sheet("EA_w5_pane
 
 use "${data}/ess5_dna_new.dta", clear
 
-rename region region_oth
-rename saq01 region
-
 // create matrix:
-descr_tab "dtmz maize_cg" "3 4 7 13 15" pw_w5
+descr_tab dtmz maize_cg, regions("3 4 7 13 15") wt(pw_w5)
 
 local rname ""
 foreach var in dtmz maize_cg {
@@ -182,7 +179,7 @@ foreach var in dtmz maize_cg {
 }
 
 #delimit;
-xml_tab C, save("$table/09_1_adoption_rates.xml") append sheet("DNA", nogridlines)  
+xml_tab C, save("$table/09_1_ess5_adoption_rates.xml") append sheet("DNA", nogridlines)  
 rnames(`rname' "Total No. of obs. per region") ///
 cnames(`cnames')  ceq("Amhara"  "Amhara"  "Amhara"  "Amhara" "Amhara" "Oromia" 
 "Oromia" "Oromia" "Oromia" "Oromia" "SNNP"  "SNNP"  "SNNP"  "SNNP" "SNNP" 

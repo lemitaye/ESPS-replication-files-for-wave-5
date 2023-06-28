@@ -23,7 +23,7 @@ drop _merge
 
 // merge with dna tracking file (imported from a separate project on DNA)
 preserve
-    use "${supp}/track_dna_hh.dta", clear
+    use "${tmp}/dynamics/06_1_track_dna_hh.dta", clear
     rename hh_status hh_status_dna
     
     tempfile track_dna_hh
@@ -136,7 +136,7 @@ keep if maize_cg!=.  // retain only maize (vs. barley & sorghum)
 
 // merge with dna tracking file (imported from a separate project on DNA)
 preserve
-    use "${supp}/track_dna_hh.dta", clear
+    use "${tmp}/dynamics/06_1_track_dna_hh.dta", clear
     rename hh_status hh_status_dna
     
     tempfile track_dna_hh

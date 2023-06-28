@@ -194,3 +194,40 @@ order household_id ea_id region locality wave4 wave5 hh_status pw_w4 pw_w5 pw_pa
 
 
 save "${tmp}/dynamics/06_1_track_hh.dta", replace
+
+
+
+** MAIZE-DNA TRACKING ----------------------------------------------------------
+
+** Household level-----------------------
+
+use "${dataw4}/ess4_dna_hh_new.dta", clear
+
+keep if !missing(maize_cg)  // retian only Maize
+drop barley_cg sorghum_cg
+rename saq01 region_w4
+rename ea_id ea_id_w4
+
+tempfile dna_hh_w4
+save `dna_hh_w4'
+
+use "${data}/03_5_ess5_dna_hh.dta", clear
+
+rename region region_w5
+rename ea_id ea_id_w5
+keep household_id ea_id_w5 region_w5 sccq01b
+
+merge 1:1 household_id using `dna_hh_w4', force
+
+rename _merge hh_status
+rename ea_id_w4 ea_id
+rename sccq01b tracked_panel
+
+label define _merge 1 "1. Newly added in ESPS5", modify
+label define _merge 2 "2. Dropped in ESPS5", modify
+label define _merge 3 "3. Matched ", modify
+
+label var tracked_panel "Tracked for crop-cut b/c hh was in wave 4"
+
+
+save "${tmp}/dynamics/06_1_track_dna_hh.dta", replace
