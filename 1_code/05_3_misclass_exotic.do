@@ -360,3 +360,7 @@ lines(SCOL_NAMES 2 COL_NAMES 2 LAST_ROW 2)
 notes("Point estimates are weighted sample means.") 
 ;
 #delimit cr
+
+
+* save -----------
+save "${tmp}/missclass/05_3_misclass_exotic.dta", replace
