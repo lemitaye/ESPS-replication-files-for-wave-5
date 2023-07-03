@@ -176,6 +176,57 @@ ggsave(
 
 
 
+# Calculating sum for each year ----------
+
+cpea_sum_area <- cpea_agss %>% 
+  filter(measure == "Area (Hectars)", region != "Ethiopia", 
+         cpea_type== "Any", year!="2011/12") %>% 
+  select(-measure, -cpea_type) %>% 
+  group_by(year, region = ifelse(region %in% c("SNNP", "Sidama"), "SNNP", region)) %>%
+  summarise(value = sum(value), .groups = "drop") %>% 
+  pivot_wider(
+    names_from = region,
+    values_from = value
+  ) %>% 
+  rowwise() %>%
+  mutate(National = sum(c_across(Afar:Tigray), na.rm = T))
+
+cpea_sum_prod <- cpea_agss %>% 
+  filter(measure == "Production (Quintals)", region != "Ethiopia", 
+         cpea_type== "Any", year!="2011/12") %>% 
+  select(-measure, -cpea_type) %>% 
+  group_by(year, region = ifelse(region %in% c("SNNP", "Sidama"), "SNNP", region)) %>%
+  summarise(value = sum(value), .groups = "drop") %>% 
+  pivot_wider(
+    names_from = region,
+    values_from = value
+  ) %>% 
+  rowwise() %>%
+  mutate(National = sum(c_across(Afar:Tigray), na.rm = T))
+
+
+# create a workbook
+wb <- createWorkbook()
+
+# set global options
+options(openxlsx.borderColour = "#4F80BD")
+options(openxlsx.borderStyle = "thin")
+modifyBaseFont(wb, fontSize = 11, fontName = "Times New Roman")
+
+# Add a worksheet
+addWorksheet(wb, "Area (Hectars)") 
+addWorksheet(wb, "Production (Quintals)") 
+
+# write data 
+writeData(wb, sheet = "Area (Hectars)", cpea_sum_area, startCol = 1, startRow = 2,
+          keepNA = TRUE, na.string = "-")
+writeData(wb, sheet = "Production (Quintals)", cpea_sum_prod, startCol = 1, startRow = 2,
+          keepNA = TRUE, na.string = "-")
+
+# Save the workbook as an Excel file
+saveWorkbook(wb, "../4_table/07_2_cpea_sums.xlsx", overwrite = TRUE)
+
+openXL("../4_table/07_2_cpea_sums.xlsx")
 
 
 
