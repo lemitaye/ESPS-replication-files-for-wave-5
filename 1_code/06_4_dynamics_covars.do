@@ -111,13 +111,13 @@ label var cs4q15        "Distance to the nearest large weekly market (Km)"
 
 // Running Diff-in-Diff regressions
 
-matrix drop _all
+matrix drop _all 
  
-foreach covar in $hhcov4 {
+foreach covar in $adopt {
 
-    foreach var in $adopt {
+    foreach var in $hhcov4 {
 
-        qui: reg `covar' `var'##wave5 [pw=pw_panel]
+        qui: reg `var' `covar'##wave5 [pw=pw_panel]
 
         scalar bwv5`covar'`var' = r(table)[1,2]
         scalar bcov`covar'`var' = r(table)[1,4]
@@ -185,13 +185,13 @@ foreach covar in $hhcov4 {
 
 
 local cname ""
-foreach var in $hhcov4 {
+foreach var in $adopt {
     local lbl : variable label `var'
     local cname `" `cname' "`lbl'" "'		
 }
 
 local rname ""
-foreach var in $adopt {
+foreach var in $hhcov4 {
 	local lbl : variable label `var'
 	local rname `" `rname' "Wave 5" "." "`lbl'" "." "Wave 5 x `lbl'" "." "Constant" "." "Observations" "R-squared" "F" "'		
 }
