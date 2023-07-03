@@ -1,3 +1,11 @@
+
+
+library(tidyverse)
+library(haven)
+library(openxlsx)
+
+root <- "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Country teams/Ethiopia/LSMS_W5"
+
 # Productive asset indices -------------
 
 sect11_hh_w5 <- read_dta(file.path(root, "2_raw_data/data/HH", "sect11_hh_w5.dta"))
@@ -92,3 +100,65 @@ kbl(
   # column_spec(2:7, width = "5em", latex_valign = "b") %>% 
   kable_styling(latex_options = c("striped", "hold_position")) %>% 
   save_kable(file.path(tab_path, "passet_tab_panel.tex"))
+
+
+# List of assets: ---------
+
+asset_list <- sect11_hh_w4 %>% 
+  mutate(asset_cd = as_factor(asset_cd)) %>% 
+  distinct(asset_cd)
+
+prod_assets_list <- prod_assets %>% 
+  filter(wave == "Wave 4") %>% 
+  distinct(asset_cd)
+
+
+# create a workbook
+wb <- createWorkbook()
+
+# set global options
+options(openxlsx.borderColour = "#4F80BD")
+options(openxlsx.borderStyle = "thin")
+modifyBaseFont(wb, fontSize = 10, fontName = "Times New Roman")
+
+# Add a worksheet
+addWorksheet(wb, "Assets") 
+addWorksheet(wb, "Productive assets") 
+
+# write data 
+writeData(wb, sheet = "Assets", asset_list, startCol = 1, startRow = 1)
+writeData(wb, sheet = "Productive assets", prod_assets_list, startCol = 1, startRow = 1)
+
+# Save the workbook as an Excel file
+saveWorkbook(wb, "Assets_list.xlsx", overwrite = TRUE)
+
+openXL("Assets_list.xlsx")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
