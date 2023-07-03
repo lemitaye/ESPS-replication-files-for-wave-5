@@ -198,7 +198,7 @@ foreach var in $hhcov4 {
 
 #delimit ;
 xml_tab C,  save("$table/06_4_dynamics_adopters_chrxs.xml") replace 
-sheet("Table14_dyn", nogridlines)  
+sheet("Tab14_dyn", nogridlines)  
 rnames(`rname') cnames(`cname') lines(COL_NAMES 2 LAST_ROW 2)  
 title("Table: Dynamics in correlates of adoption")  font("Times New Roman" 10) 
 cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12 55) 
@@ -209,3 +209,106 @@ cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12
 ; 
 #delimit cr
 
+
+
+* A version with all rural households -------------------------------------
+
+for var $adopt: replace X=0 if X==.
+
+matrix drop _all 
+ 
+foreach covar in $adopt {
+
+    foreach var in $hhcov4 {
+
+        qui: reg `var' `covar'##wave5 [pw=pw_panel]
+
+        scalar bwv5`covar'`var' = r(table)[1,2]
+        scalar bcov`covar'`var' = r(table)[1,4]
+        scalar bint`covar'`var' = r(table)[1,8]
+        scalar bcon`covar'`var' = r(table)[1,9]
+
+        scalar `covar'sewv5`var' = r(table)[2,2]
+        scalar `covar'secov`var' = r(table)[2,4]
+        scalar `covar'seint`var' = r(table)[2,8]
+        scalar `covar'secon`var' = r(table)[2,9]
+
+        scalar `covar'pwv5`var'  = r(table)[4,2]
+        scalar `covar'pcov`var'  = r(table)[4,4]
+        scalar `covar'pint`var'  = r(table)[4,8]
+        scalar `covar'pcon`var'  = r(table)[4,9]
+
+        scalar N  = e(N)
+        scalar F  = e(F)
+        scalar r2 = e(r2)
+
+        matrix bse`covar'`var' = (bwv5`covar'`var' \ `covar'sewv5`var' \ ///
+                                  bcov`covar'`var' \ `covar'secov`var' \ ///
+                                  bint`covar'`var' \ `covar'seint`var' \ ///
+                                  bcon`covar'`var' \ `covar'secon`var' \ ///
+                                  N \ r2 \ F)
+
+        matrix rownames bse`covar'`var' = Wave5 . `var' . Wave5x`var' . Constant . N r2 F
+        
+        
+        // p-values:
+        // "# / 0" b/c no stars needed for s.e.  
+        foreach suffix in wv5 cov int con {
+                
+            if (`covar'p`suffix'`var'<=0.1 & `covar'p`suffix'`var'>0.05)  {
+                matrix p`covar'`var'`suffix' = (3 \ 0)      // significant at 10% level
+            }
+            
+            if (`covar'p`suffix'`var'  <=0.05 & `covar'p`suffix'`var'>0.01)  {
+                matrix p`covar'`var'`suffix' = (2 \ 0)      // significant at 5% level
+            }
+            
+            if `covar'p`suffix'`var'  <=0.01 {
+                matrix p`covar'`var'`suffix' = (1 \ 0)      // significant at 1% level
+            }
+            
+            if `covar'p`suffix'`var'   >0.1 {
+                matrix p`covar'`var'`suffix' = (0 \ 0)       // Non-significant
+            }
+        }
+
+        matrix p`covar'`var' = (p`covar'`var'wv5 \ p`covar'`var'cov \ p`covar'`var'int \ p`covar'`var'con \ 0 \ 0 \ 0)
+
+        matrix A1`covar' = nullmat(A1`covar')\ bse`covar'`var'
+
+        matrix A1`covar'_STARS =  nullmat(A1`covar'_STARS)\p`covar'`var'
+
+    }
+
+    matrix colnames A1`covar' = `covar'
+
+    matrix C = (nullmat(C), A1`covar')
+    matrix C_STARS = (nullmat(C_STARS), A1`covar'_STARS)
+
+}
+
+
+local cname ""
+foreach var in $adopt {
+    local lbl : variable label `var'
+    local cname `" `cname' "`lbl'" "'		
+}
+
+local rname ""
+foreach var in $hhcov4 {
+	local lbl : variable label `var'
+	local rname `" `rname' "Wave 5" "." "`lbl'" "." "Wave 5 x `lbl'" "." "Constant" "." "Observations" "R-squared" "F" "'		
+}
+
+#delimit ;
+xml_tab C,  save("$table/06_4_dynamics_adopters_chrxs.xml") apppend 
+sheet("Tab14_dyn_all", nogridlines)  
+rnames(`rname') cnames(`cname') lines(COL_NAMES 2 LAST_ROW 2)  
+title("Table: Dynamics in correlates of adoption")  font("Times New Roman" 10) 
+cw(0 110, 1 55, 2 55, 3 55, 4 55, 5 55, 6 55, 7 55, 8 55, 9 55, 10 55, 11 55, 12 55) 
+	format((SCLR0) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) (NBCR3) 
+    (NBCR3) (NBCR3) (NBCR3) (NBCR3))  
+	stars(* 0.1 ** 0.05 *** 0.01)  
+	notes(".")
+; 
+#delimit cr
