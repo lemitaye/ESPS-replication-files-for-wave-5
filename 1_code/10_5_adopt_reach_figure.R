@@ -329,3 +329,85 @@ ggsave(
   height = 297,
   units = "mm"
 )
+
+
+
+
+adopt_totals %>% 
+  filter(sample == "all") %>% 
+  mutate(label = factor(label, levels = levels)) %>%
+  ggplot(aes(label, total)) +
+  geom_col_pattern(
+    aes(fill = type, pattern = year), 
+    colour='black',
+    position = "dodge",
+    pattern_spacing = .025
+  ) +
+  scale_pattern_manual(values = c('pch', 'none')) +
+  theme(
+    axis.text.x = element_text(
+      angle = 90,
+      size = 10,
+      hjust = 1,
+      vjust = .4
+    ),
+    axis.title.y = element_text(size = 11),
+    legend.position = "top"
+  )
+
+adopt_totals %>% 
+  filter(sample == "all") %>% 
+  mutate(label = factor(label, levels = levels)) %>%
+  ggplot(aes(label, total, fill = type, alpha = year)) +
+  geom_col(position = "dodge") +
+  scale_alpha_discrete(range = c(0.45, 1)) +
+  scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6)) +
+  theme_Publication() +
+  scale_fill_Publication() +
+  theme(
+    axis.text.x = element_text(
+      angle = 90,
+      size = 10,
+      hjust = 1,
+      vjust = .4
+    ),
+    axis.title.y = element_text(size = 11),
+    legend.position = "top"
+  ) +
+  labs(
+    y = "Number of rural households (millions)",
+    x = "",
+    fill = "",
+    alpha = "",
+    title = "Number of rural households adopting each CGIAR-related innovation\nin Ethiopia, ESS - All households"
+  )
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
