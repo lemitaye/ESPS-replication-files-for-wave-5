@@ -1,4 +1,3 @@
-
 # Figure 9 (in v.1 report): Totals ---------------------
 
 # Depends on: 10_4_adopt_reach_table.R
@@ -11,56 +10,51 @@ source("programs/ggplot_theme_Publication-2.R")
 
 var_labs <- as_tibble_col(
   c(
-    "hhd_livIA", "hhd_avocado", "hhd_kabuli", "hhd_consag1", 
-    "hhd_consag2", "hhd_cross_largerum", "hhd_cross_poultry", "hhd_cross_smallrum", 
-    "hhd_grass", "hhd_mango", "hhd_motorpump", "hhd_papaya", "hhd_rdisp", 
+    "hhd_livIA", "hhd_avocado", "hhd_kabuli", "hhd_consag1",
+    "hhd_consag2", "hhd_cross_largerum", "hhd_cross_poultry", "hhd_cross_smallrum",
+    "hhd_grass", "hhd_mango", "hhd_motorpump", "hhd_papaya", "hhd_rdisp",
     "hhd_swc", "hhd_awassa83", "hhd_ofsp", "hhd_treadle", "hhd_maize_cg",
     "barley_cg", "sorghum_cg"
   ),
-  column_name = "variable" 
-) %>% 
+  column_name = "variable"
+) %>%
   mutate(
     # labels of innovations
     label = case_match(
       variable,
-      "hhd_livIA"          ~ "Artificial insemination delivery",
-      "hhd_avocado"        ~ "Avocado trees",
-      "hhd_kabuli"         ~ "Chickpea Kabuli varieties",
-      "hhd_consag1"        ~ "Conservation Agriculture / MT*",
-      "hhd_consag2"        ~ "Conservation Agriculture / ZT*",
-      "hhd_cross_largerum" ~ "Large ruminants crossbreeds", 
-      "hhd_cross_poultry"  ~ "Poultry crossbreeds",
+      "hhd_livIA" ~ "Artificial insemination delivery",
+      "hhd_avocado" ~ "Avocado trees",
+      "hhd_kabuli" ~ "Chickpea Kabuli varieties",
+      "hhd_consag1" ~ "Conservation Agriculture / MT*",
+      "hhd_consag2" ~ "Conservation Agriculture / ZT*",
+      "hhd_cross_largerum" ~ "Large ruminants crossbreeds",
+      "hhd_cross_poultry" ~ "Poultry crossbreeds",
       "hhd_cross_smallrum" ~ "Small ruminants crossbreeds",
-      "hhd_grass"          ~ "Forage grasses",
-      "hhd_mango"          ~ "Mango trees",
-      "hhd_motorpump"      ~ "Motorized pumps",
-      "hhd_papaya"         ~ "Papaya trees", 
-      "hhd_rdisp"          ~ "River dispersion", 
-      "hhd_swc"            ~ "Soil & Water Conservation practices",
-      "hhd_awassa83"       ~ "Sweet potato Awassa-83 variety",
-      "hhd_ofsp"           ~ "Sweet potato OFSP varieties", 
-      "hhd_treadle"        ~ "Treadle pumps",
-      "hhd_maize_cg"       ~ "Maize varieties",
-      "barley_cg"          ~ "Barley varieties",
-      "sorghum_cg"         ~ "Sorghum varieties"
+      "hhd_grass" ~ "Forage grasses",
+      "hhd_mango" ~ "Mango trees",
+      "hhd_motorpump" ~ "Motorized pumps",
+      "hhd_papaya" ~ "Papaya trees",
+      "hhd_rdisp" ~ "River dispersion",
+      "hhd_swc" ~ "Soil & Water Conservation practices",
+      "hhd_awassa83" ~ "Sweet potato Awassa-83 variety",
+      "hhd_ofsp" ~ "Sweet potato OFSP varieties",
+      "hhd_treadle" ~ "Treadle pumps",
+      "hhd_maize_cg" ~ "Maize varieties",
+      "barley_cg" ~ "Barley varieties",
+      "sorghum_cg" ~ "Sorghum varieties"
     ),
-    
+
     # categories of innovations
     type = case_when(
-      
       str_detect(variable, "hhd_cross_|hhd_livIA|hhd_grass") ~ "Animal agriculture",
-      
       variable %in% c(
         "hhd_maize_cg", "hhd_kabuli", "hhd_ofsp", "hhd_awassa83", "barley_cg", "sorghum_cg"
       ) ~ "Crop germplasm improvement",
-      
       variable %in% c(
-        "hhd_rdisp", "hhd_treadle", "hhd_motorpump", "hhd_swc", "hhd_consag1", 
+        "hhd_rdisp", "hhd_treadle", "hhd_motorpump", "hhd_swc", "hhd_consag1",
         "hhd_consag2", "hhd_affor", "hhd_mango", "hhd_papaya", "hhd_avocado"
       ) ~ "Natural resource management"
-      
     ),
-    
     variable_w4 = case_match(
       variable,
       "hhd_maize_cg" ~ "maize_cg",
@@ -71,26 +65,26 @@ var_labs <- as_tibble_col(
 
 
 ess5_totals <- bind_rows(
-  mutate(make_sheet(ess5_cs)$df, sample = "all"), 
+  mutate(make_sheet(ess5_cs)$df, sample = "all"),
   mutate(make_sheet(ess5_pnl)$df, sample = "panel")
-) %>% 
-  select(sample, label, total = Total) %>% 
+) %>%
+  select(sample, label, total = Total) %>%
   left_join(
-    bind_rows(adopt_rates_w5_hh, adopt_rate_dna_w5) %>% 
-      distinct(variable, label), 
+    bind_rows(adopt_rates_w5_hh, adopt_rate_dna_w5) %>%
+      distinct(variable, label),
     by = "label",
     multiple = "all"
-  ) %>% 
-  select(-label) %>% 
-  inner_join(var_labs, by = "variable") %>% 
+  ) %>%
+  select(-label) %>%
+  inner_join(var_labs, by = "variable") %>%
   select(sample, variable, label, type, total)
 
 
 # theme_set(theme_light())
 
-ess5_totals %>% 
-  filter(sample == "all") %>% 
-  mutate(label = fct_reorder(label, total)) %>% 
+ess5_totals %>%
+  filter(sample == "all") %>%
+  mutate(label = fct_reorder(label, total)) %>%
   ggplot(aes(label, total, fill = type)) +
   geom_col() +
   scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6)) +
@@ -120,9 +114,9 @@ ggsave(
   units = "mm"
 )
 
-ess5_totals %>% 
-  filter(sample == "panel") %>% 
-  mutate(label = fct_reorder(label, total)) %>% 
+ess5_totals %>%
+  filter(sample == "panel") %>%
+  mutate(label = fct_reorder(label, total)) %>%
   ggplot(aes(label, total, fill = type)) +
   geom_col() +
   scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6)) +
@@ -160,31 +154,31 @@ ggsave(
 
 
 ess4_totals <- bind_rows(
-  mutate(make_sheet(ess4_cs)$df, sample = "all"), 
+  mutate(make_sheet(ess4_cs)$df, sample = "all"),
   mutate(make_sheet(ess4_pnl)$df, sample = "panel")
-) %>% 
-  select(sample, label, total = Total) %>% 
+) %>%
+  select(sample, label, total = Total) %>%
   left_join(
-    bind_rows(adopt_rates_w4_hh, adopt_rate_dna_w4) %>% 
-      distinct(variable, label), 
+    bind_rows(adopt_rates_w4_hh, adopt_rate_dna_w4) %>%
+      distinct(variable, label),
     by = "label",
     multiple = "all"
-  ) %>% 
+  ) %>%
   bind_rows(
     data.frame(
       sample = c("all", "panel"),
-      total = c(677591, 677591),   # numbers from the first report (see p. 42)
+      total = c(677591, 677591), # numbers from the first report (see p. 42)
       variable = c("hhd_kabuli", "hhd_kabuli")
     )
-  ) %>% 
-  select(-label) %>% 
-  inner_join(var_labs, by = c("variable" = "variable_w4")) %>% 
+  ) %>%
+  select(-label) %>%
+  inner_join(var_labs, by = c("variable" = "variable_w4")) %>%
   select(sample, variable, label, type, total)
 
 
-ess4_totals %>% 
-  filter(sample == "all") %>% 
-  mutate(label = fct_reorder(label, total)) %>% 
+ess4_totals %>%
+  filter(sample == "all") %>%
+  mutate(label = fct_reorder(label, total)) %>%
   ggplot(aes(label, total, fill = type)) +
   geom_col() +
   scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6)) +
@@ -214,9 +208,9 @@ ggsave(
   units = "mm"
 )
 
-ess4_totals %>% 
-  filter(sample == "panel") %>% 
-  mutate(label = fct_reorder(label, total)) %>% 
+ess4_totals %>%
+  filter(sample == "panel") %>%
+  mutate(label = fct_reorder(label, total)) %>%
   ggplot(aes(label, total, fill = type)) +
   geom_col() +
   scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6)) +
@@ -248,29 +242,29 @@ ggsave(
 
 
 
-# ESS4 & ESS5 on the same figure 
+# ESS4 & ESS5 on the same figure
 
 adopt_totals <- bind_rows(
-  ess4_totals %>% 
-    mutate(year = "2018/19"), 
-  ess5_totals %>% 
+  ess4_totals %>%
+    mutate(year = "2018/19"),
+  ess5_totals %>%
     mutate(year = "2021/22")
 )
 
-ess4_arrng <- ess4_totals %>% 
-  filter(sample == "all") %>% 
-  arrange(total) %>% 
+ess4_arrng <- ess4_totals %>%
+  filter(sample == "all") %>%
+  arrange(total) %>%
   pull(label)
 
 # levels <- ess4_arrng %>% union(ess5_totals$label %>% unique())
 
 # levels <- c( ess4_arrng[1:12], "Chickpea Kabuli varieties", ess4_arrng[13:length(ess4_arrng)])
 
-## Panel 
+## Panel
 
-adopt_totals %>% 
-  filter(sample == "panel") %>% 
-  mutate(label = factor(label, levels = ess4_arrng)) %>% 
+adopt_totals %>%
+  filter(sample == "panel") %>%
+  mutate(label = factor(label, levels = ess4_arrng)) %>%
   ggplot(aes(label, total, fill = type)) +
   geom_col() +
   facet_wrap(~year, nrow = 2) +
@@ -304,8 +298,8 @@ ggsave(
 
 ## All
 
-adopt_totals %>% 
-  filter(sample == "all") %>% 
+adopt_totals %>%
+  filter(sample == "all") %>%
   mutate(label = factor(label, levels = ess4_arrng)) %>%
   ggplot(aes(label, total, fill = type)) +
   geom_col() +
@@ -338,39 +332,10 @@ ggsave(
 )
 
 
+# Dodged position (side-by-side) - estimates using longitudinal weights
 
-adopt_totals %>% 
-  filter(sample == "all") %>% 
-  mutate(label = factor(label, levels = levels)) %>%
-  ggplot(aes(label, total, fill = type, alpha = year)) +
-  geom_col(position = "dodge") +
-  scale_alpha_discrete(range = c(0.45, 1)) +
-  scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6)) +
-  theme_Publication() +
-  scale_fill_Publication() +
-  theme(
-    axis.text.x = element_text(
-      angle = 90,
-      size = 10,
-      hjust = 1,
-      vjust = .4
-    ),
-    axis.title.y = element_text(size = 11),
-    legend.position = "top"
-  ) +
-  labs(
-    y = "Number of rural households (millions)",
-    x = "",
-    fill = "",
-    alpha = "",
-    title = "Number of rural households adopting each CGIAR-related innovation\nin Ethiopia, ESS - All households"
-  )
-
-
-
-
-adopt_totals %>% 
-  filter(sample == "panel", !variable %in% c("barley_cg", "sorghum_cg")) %>% 
+adopt_totals %>%
+  filter(sample == "panel", !variable %in% c("barley_cg", "sorghum_cg")) %>%
   mutate(label = factor(label, levels = ess4_arrng)) %>%
   ggplot(aes(label, total, fill = type, alpha = year)) +
   geom_col(position = "dodge") +
@@ -395,32 +360,14 @@ adopt_totals %>%
     fill = "",
     alpha = "",
     title = "Number of rural households adopting each CGIAR-related innovation in Ethiopia, ESS -
-    Change between 2018/19 (ESS4) and 2021/22 (ESS5)",
+    change between 2018/19 (ESS4) and 2021/22 (ESS5)",
     caption = "Note: Calculation based on logitudinal weights. For Chickpea Kabuli varieties, comparision is between 2015/16 (ESS3) and 2021/22 (ESS5)"
   )
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ggsave(
+  filename = "../tmp/adopt_reach/figures/fig09_panel_II.png",
+  width = 300,
+  height = 200,
+  units = "mm"
+)
