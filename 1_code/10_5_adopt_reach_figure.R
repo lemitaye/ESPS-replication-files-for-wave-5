@@ -170,6 +170,13 @@ ess4_totals <- bind_rows(
     by = "label",
     multiple = "all"
   ) %>% 
+  bind_rows(
+    data.frame(
+      sample = c("all", "panel"),
+      total = c(677591, 677591),   # numbers from the first report (see p. 42)
+      variable = c("hhd_kabuli", "hhd_kabuli")
+    )
+  ) %>% 
   select(-label) %>% 
   inner_join(var_labs, by = c("variable" = "variable_w4")) %>% 
   select(sample, variable, label, type, total)
@@ -257,13 +264,13 @@ ess4_arrng <- ess4_totals %>%
 
 # levels <- ess4_arrng %>% union(ess5_totals$label %>% unique())
 
-levels <- c( ess4_arrng[1:12], "Chickpea Kabuli varieties", ess4_arrng[13:length(ess4_arrng)])
+# levels <- c( ess4_arrng[1:12], "Chickpea Kabuli varieties", ess4_arrng[13:length(ess4_arrng)])
 
 ## Panel 
 
 adopt_totals %>% 
   filter(sample == "panel") %>% 
-  mutate(label = factor(label, levels = levels)) %>% 
+  mutate(label = factor(label, levels = ess4_arrng)) %>% 
   ggplot(aes(label, total, fill = type)) +
   geom_col() +
   facet_wrap(~year, nrow = 2) +
@@ -299,7 +306,7 @@ ggsave(
 
 adopt_totals %>% 
   filter(sample == "all") %>% 
-  mutate(label = factor(label, levels = levels)) %>%
+  mutate(label = factor(label, levels = ess4_arrng)) %>%
   ggplot(aes(label, total, fill = type)) +
   geom_col() +
   facet_wrap(~year, nrow = 2) +
@@ -332,29 +339,6 @@ ggsave(
 
 
 
-
-adopt_totals %>% 
-  filter(sample == "all") %>% 
-  mutate(label = factor(label, levels = levels)) %>%
-  ggplot(aes(label, total)) +
-  geom_col_pattern(
-    aes(fill = type, pattern = year), 
-    colour='black',
-    position = "dodge",
-    pattern_spacing = .025
-  ) +
-  scale_pattern_manual(values = c('pch', 'none')) +
-  theme(
-    axis.text.x = element_text(
-      angle = 90,
-      size = 10,
-      hjust = 1,
-      vjust = .4
-    ),
-    axis.title.y = element_text(size = 11),
-    legend.position = "top"
-  )
-
 adopt_totals %>% 
   filter(sample == "all") %>% 
   mutate(label = factor(label, levels = levels)) %>%
@@ -385,6 +369,35 @@ adopt_totals %>%
 
 
 
+adopt_totals %>% 
+  filter(sample == "panel", !variable %in% c("barley_cg", "sorghum_cg")) %>% 
+  mutate(label = factor(label, levels = ess4_arrng)) %>%
+  ggplot(aes(label, total, fill = type, alpha = year)) +
+  geom_col(position = "dodge") +
+  scale_alpha_discrete(range = c(0.45, 1)) +
+  scale_y_continuous(labels = unit_format(unit = "", scale = 1e-6)) +
+  theme_Publication() +
+  scale_fill_Publication() +
+  theme(
+    axis.text.x = element_text(
+      angle = 90,
+      size = 10,
+      hjust = 1,
+      vjust = .4
+    ),
+    axis.title.y = element_text(size = 11),
+    legend.position = "top"
+  ) +
+  guides(alpha = "none") +
+  labs(
+    y = "Number of rural households (millions)",
+    x = "",
+    fill = "",
+    alpha = "",
+    title = "Number of rural households adopting each CGIAR-related innovation in Ethiopia, ESS -
+    Change between 2018/19 (ESS4) and 2021/22 (ESS5)",
+    caption = "Note: Calculation based on logitudinal weights. For Chickpea Kabuli varieties, comparision is between 2015/16 (ESS3) and 2021/22 (ESS5)"
+  )
 
 
 
