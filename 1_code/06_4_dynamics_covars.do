@@ -40,7 +40,7 @@ dist_market dist_popcenter
 #delimit cr
 
 #delimit;
-global adopt   
+global adopt4   
 hhd_crlr hhd_crsr hhd_crpo hhd_grass maize_cg dtmz hhd_ofsp hhd_awassa83 hhd_rdisp 
 hhd_motorpump hhd_consag1 hhd_consag2 hhd_swc hhd_affor hhd_avocado hhd_papaya 
 hhd_mango hhd_psnp 
@@ -48,9 +48,9 @@ hhd_mango hhd_psnp
 #delimit cr
 
 // recode from 100 to 1
-for var $adopt: replace X=1 if X==100
+for var $adopt4: replace X=1 if X==100
 
-keep household_id $hhcov4 $adopt
+keep household_id $hhcov4 $adopt4
 gen wave=4
 
 // merge with tracking file to id panel hhs:
@@ -73,9 +73,12 @@ rename hhd_cross_smallrum hhd_crsr
 rename hhd_cross_poultry hhd_crpo
 rename hhd_agroind hhd_indprod
 
+drop hhd_grass
+rename hhd_grassII hhd_grass
+
 replace hhd_impcr2=. if maize_cg==.
 
-keep household_id $adopt
+keep household_id $adopt4
 gen wave=5
 
 // merge with tracking file to id panel hhs:
@@ -86,7 +89,7 @@ drop _merge
 keep if hh_status==3
 
 // merge with wave 4 covariates
-merge 1:1 household_id using "${tmp}/dynamics/06_3_covars_w4.dta", keepusing($covar)
+merge 1:1 household_id using "${tmp}/dynamics/06_3_covars_w4.dta", keepusing($hhcov4)
 drop _merge
 
 // save
@@ -107,6 +110,25 @@ label var dtmz          "Drought tolerant maize"
 label var hhd_psnp      "PSNP (Temporary Labor)"
 label var cs4q15        "Distance to the nearest large weekly market (Km)"
 
+// some new variables (aggregates)
+gen     hhd_ofspaws = .
+replace hhd_ofspaws = 0 if hhd_ofsp==0 & hhd_awassa83==0
+replace hhd_ofspaws = 1 if hhd_ofsp==1 | hhd_awassa83==1
+
+gen     hhd_tree = .
+replace hhd_tree = 0 if hhd_avocado==0 & hhd_papaya==0 & hhd_mango==0
+replace hhd_tree = 1 if hhd_avocado==1 | hhd_papaya==1 | hhd_mango==1
+
+label var hhd_ofspaws "Sweet potato: OFSP or Awassa83"
+label var hhd_tree    "Avocado, Mango, or Papaya tree"
+
+// global of adoption dummies to keep
+#delimit;
+global adopt
+hhd_crlr hhd_crpo hhd_grass maize_cg dtmz hhd_ofspaws 
+hhd_rdisp hhd_motorpump hhd_consag1 hhd_swc hhd_affor hhd_tree hhd_psnp 
+;
+#delimit cr
 
 
 // Running Diff-in-Diff regressions
@@ -301,7 +323,7 @@ foreach var in $hhcov4 {
 }
 
 #delimit ;
-xml_tab C,  save("$table/06_4_dynamics_adopters_chrxs.xml") apppend 
+xml_tab C,  save("$table/06_4_dynamics_adopters_chrxs.xml") append 
 sheet("Tab14_dyn_all", nogridlines)  
 rnames(`rname') cnames(`cname') lines(COL_NAMES 2 LAST_ROW 2)  
 title("Table: Dynamics in correlates of adoption")  font("Times New Roman" 10) 
