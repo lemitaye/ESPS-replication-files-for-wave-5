@@ -271,8 +271,14 @@ generate grass=.
 replace grass=0 if elepgrass==0 & deshograss==0 & sesbaniya==0 & sinar==0 & lablab==0 & alfalfa==0 & vetch==0 & rhodesgrass==0
 replace grass=1 if elepgrass==1 | deshograss==1 | sesbaniya==1 | sinar==1 | lablab==1 | alfalfa==1 | vetch==1 | rhodesgrass==1
 
+// Grass: Elephant, Sesbaniya, Alfalfa, Rhodes (Gaya) [overlap with wave 4]
+generate grassII=.
+replace grassII=0 if elepgrass==0 & sesbaniya==0 & alfalfa==0 & rhodesgrass==0
+replace grassII=1 if elepgrass==1 | sesbaniya==1 | alfalfa==1 | rhodesgrass==1
 
-foreach i in agroind cowpea elepgrass deshograss sesbaniya sinar lablab alfalfa vetch rhodesgrass grass {
+
+
+foreach i in agroind cowpea elepgrass deshograss sesbaniya sinar lablab alfalfa vetch rhodesgrass grass grassII {
     *Dummy for hh 
     egen hhd_`i'=max(`i'), by(household_id)
 
@@ -355,6 +361,7 @@ lab var hhd_alfalfa          "Feed and Forage: Alfalfa"
 lab var hhd_vetch            "Feed and Forage: Vetch"
 lab var hhd_rhodesgrass      "Feed and Forage: Rhodes Grass"
 lab var hhd_grass            "Grass: Elephant, Desho, Sesbaniya, Sinar, Lablab, Alfalfa, Vetch, & Rhodes"
+lab var hhd_grassII          "Grass: Elephant, Sesbaniya, Alfalfa, & Rhodes (Gaya)"
 
 lab var lr_agroind           "Large ruminants: Agro-industry"
 lab var lr_cowpea            "Large ruminants: Cowpea" 
