@@ -47,13 +47,14 @@ innovs_w5 <- c(
   # forages:
   "hhd_agroind", "hhd_elepgrass", "hhd_deshograss", "hhd_sesbaniya", "hhd_sinar", 
   "hhd_lablab", "hhd_alfalfa", "hhd_vetch", "hhd_rhodesgrass", "hhd_grass",
+  "hhd_grassII",
   
   # crop-germplasm improvment:
   "maize_cg", "dtmz", "hhd_ofsp", "hhd_awassa83", "hhd_kabuli", 
   
   # Natural resoruce management:
-  "hhd_rdisp", "hhd_treadle", "hhd_motorpump", "hhd_swc", "hhd_consag1", "hhd_consag2", "hhd_affor", 
-  "hhd_mango", "hhd_papaya", "hhd_avocado"
+  "hhd_rdisp", "hhd_treadle", "hhd_motorpump", "hhd_swc", "hhd_consag1", 
+  "hhd_consag2", "hhd_affor", "hhd_mango", "hhd_papaya", "hhd_avocado"
   )
 
 
