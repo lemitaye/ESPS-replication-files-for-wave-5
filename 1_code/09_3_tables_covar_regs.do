@@ -35,6 +35,18 @@ rename hhd_cross_poultry crpoultry
 rename total_cons_ann_win totconswin
 rename nom_totcons_aeq nmtotcons
 
+// some new variables (aggregates)
+gen hhd_ofspawassa = .
+replace hhd_ofspawassa = 0 if hhd_ofsp==0 & hhd_awassa83==0
+replace hhd_ofspawassa = 1 if hhd_ofsp==1 | hhd_awassa83==1
+
+gen hhd_tree = .
+replace hhd_tree = 0 if hhd_avocado==0 & hhd_papaya==0 & hhd_mango==0
+replace hhd_tree = 1 if hhd_avocado==1 | hhd_papaya==1 | hhd_mango==1
+
+label var hhd_ofspawassa "Sweet potato: OFSP or Awassa83"
+label var hhd_tree       "Avocado, Mango, or Papaya tree"
+
 
 * HH level ----
 
@@ -49,11 +61,11 @@ dist_road dist_market dist_popcenter
 #delimit;
 global adopt     
 hhd_rdisp hhd_motorpump hhd_rotlegume hhd_cresidue1 hhd_cresidue2 hhd_mintil 
-hhd_zerotill hhd_consag1 hhd_consag2 hhd_swc hhd_terr hhd_wcatch hhd_affor 
-hhd_ploc hhd_ofsp hhd_awassa83 hhd_kabuli hhd_seedv1 hhd_seedv2 hhd_malt hhd_durum 
-hhd_avocado hhd_papaya hhd_mango hhd_fieldp hhd_psnp maize_cg dtmz hhd_agroind 
-hhd_grass hhd_cross crlargerum crsmallrum crpoultry hhd_impcr1 hhd_impcr2 hhd_impcr6 
-hhd_impcr8
+hhd_zerotill hhd_consag1 hhd_consag2 hhd_swc hhd_terr hhd_wcatch hhd_affor hhd_ploc 
+hhd_ofsp hhd_awassa83 hhd_ofspawassa hhd_kabuli hhd_seedv1 hhd_seedv2 hhd_malt hhd_durum 
+hhd_avocado hhd_papaya hhd_mango hhd_tree hhd_fieldp hhd_psnp maize_cg dtmz hhd_agroind 
+hhd_grass hhd_grassII hhd_cross crlargerum crsmallrum crpoultry hhd_impcr1 hhd_impcr2 
+hhd_impcr6 hhd_impcr8
 ;
 #delimit cr
 
@@ -238,6 +250,18 @@ rename hhd_sweetpotato hhd_sp
 rename  total_cons_ann_win totconswin
 replace hhd_impcr2=. if maize_cg==.
 
+// some new variables (aggregates)
+gen hhd_ofspawassa = .
+replace hhd_ofspawassa = 0 if hhd_ofsp==0 & hhd_awassa83==0
+replace hhd_ofspawassa = 100 if hhd_ofsp==100 | hhd_awassa83==100
+
+gen hhd_tree = .
+replace hhd_tree = 0 if hhd_avocado==0 & hhd_papaya==0 & hhd_mango==0
+replace hhd_tree = 100 if hhd_avocado==100 | hhd_papaya==100 | hhd_mango==100
+
+label var hhd_ofspawassa "Sweet potato: OFSP or Awassa83"
+label var hhd_tree       "Avocado, Mango, or Papaya tree"
+
 #delimit;
 global hhcov4
 hhd_flab flivman parcesizeHA asset_index pssetindex income_offfarm total_cons_ann 
@@ -250,9 +274,9 @@ dist_market dist_popcenter
 global adopt4     
 hhd_rdisp hhd_motorpump hhd_rotlegume hhd_cresidue1 hhd_cresidue2 hhd_mintil 
 hhd_zerotill hhd_consag1 hhd_consag2 hhd_swc hhd_terr hhd_wcatch hhd_affor hhd_ploc 
-hhd_ofsp hhd_awassa83 hhd_avocado hhd_papaya hhd_mango  hhd_fieldp hhd_sp hhd_cross  
-hhd_crlr  hhd_crpo  hhd_indprod hhd_grass hhd_psnp maize_cg sorghum_cg barley_cg 
-dtmz hhd_impcr2 hhd_impcr1
+hhd_ofsp hhd_awassa83 hhd_ofspawassa hhd_avocado hhd_papaya hhd_mango hhd_tree 
+hhd_fieldp hhd_sp hhd_cross hhd_crlr hhd_crpo hhd_indprod hhd_grass hhd_psnp 
+maize_cg sorghum_cg barley_cg dtmz hhd_impcr2 hhd_impcr1
 ;
 #delimit cr
 
