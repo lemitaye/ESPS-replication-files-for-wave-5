@@ -56,18 +56,18 @@ recode_region <- function(tbl) {
   suppressWarnings(
     tbl %>% 
       mutate(
-        region = recode(
+        region = case_match(
           region, 
-          `1` = "Tigray",
-          `2` = "Afar",
-          `3` = "Amhara",
-          `4` = "Oromia",
-          `5` = "Somali",
-          `6` = "Benishangul Gumuz",
-          `7` = "SNNP",
-          `12` = "Gambela",
-          `13` = "Harar",
-          `15` = "Dire Dawa"
+          1 ~ "Tigray",
+          2 ~ "Afar",
+          3 ~ "Amhara",
+          4 ~ "Oromia",
+          5 ~ "Somali",
+          6 ~ "Benishangul Gumuz",
+          7 ~ "SNNP",
+          12 ~ "Gambela",
+          13 ~ "Harar",
+          15 ~ "Dire Dawa"
           )
       )
   )

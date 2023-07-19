@@ -34,21 +34,50 @@ merge 1:1 household_id using `track_dna_hh', keepusing(hh_status_dna)
 keep if _merge==1 | _merge==3
 drop _merge
 
-local vars nrm ca crop tree animal breed breed2 psnp psnp2 rotlegume cresidue mintillage zerotill  
-
+// New variable (by Karen's request)
 rename maize_cg maize
-lab var maize "Maize-CG germplasm"
+
+gen maizedtmz = .
+replace maizedtmz=0 if dtmz==0 & maize==0
+replace maizedtmz=1 if dtmz==1 | maize==1
+
+lab var maizedtmz "Maize-CG + DTMZ"
+lab var maize     "Maize-CG germplasm"
+
+local vars nrm ca crop tree animal breed breed2 psnp psnp2 rotlegume cresidue ///
+    mintillage zerotill grass
+
+local vars2  maizedtmz maize dtmz
+
 
 foreach var of local vars {
     local lbl : variable label `var'
-    local lbl2 : variable label maize
 
-    generate `var'_maize=(`var'*maize) 
-    label variable `var'_maize `"`lbl' & `lbl2'"'
+    foreach i of local vars2 {
+        local lbl2 : variable label `i'
+        cap generate `var'_`i'=(`var'*`i') 
+        cap label variable `var'_`i' `"`lbl' & `lbl2'"'
+    }
 }
 
+  
 #delimit;
 global intdna 
+nrm         maizedtmz   nrm_maizedtmz
+ca          maizedtmz   ca_maizedtmz 
+crop        maizedtmz   crop_maizedtmz 
+tree        maizedtmz   tree_maizedtmz 
+animal      maizedtmz   animal_maizedtmz 
+breed       maizedtmz   breed_maizedtmz 
+breed2      maizedtmz   breed2_maizedtmz 
+psnp        maizedtmz   psnp_maizedtmz 
+psnp2       maizedtmz   psnp2_maizedtmz 
+rotlegume   maizedtmz   rotlegume_maizedtmz 
+cresidue    maizedtmz   cresidue_maizedtmz 
+mintillage  maizedtmz   mintillage_maizedtmz 
+zerotill    maizedtmz   zerotill_maizedtmz 
+grass       maizedtmz   grass_maizedtmz
+
 nrm         maize   nrm_maize
 ca          maize   ca_maize 
 crop        maize   crop_maize 
@@ -62,6 +91,22 @@ rotlegume   maize   rotlegume_maize
 cresidue    maize   cresidue_maize 
 mintillage  maize   mintillage_maize 
 zerotill    maize   zerotill_maize 
+grass       maize   grass_maize
+
+nrm         dtmz   nrm_dtmz
+ca          dtmz   ca_dtmz 
+crop        dtmz   crop_dtmz 
+tree        dtmz   tree_dtmz 
+animal      dtmz   animal_dtmz 
+breed       dtmz   breed_dtmz 
+breed2      dtmz   breed2_dtmz 
+psnp        dtmz   psnp_dtmz 
+psnp2       dtmz   psnp2_dtmz 
+rotlegume   dtmz   rotlegume_dtmz 
+cresidue    dtmz   cresidue_dtmz 
+mintillage  dtmz   mintillage_dtmz 
+zerotill    dtmz   zerotill_dtmz 
+grass       dtmz   grass_dtmz
 ;
 #delimit cr		
 
@@ -101,7 +146,7 @@ notes(Point estimates are weighted sample means.)
 // All DNA sample
 
 // construct matrix:
-descr_tab $intdna, regions("3 4 7 13 15") wt(pw_w5)
+descr_tab $intdna, regions("3") wt(pw_w5)
 
 // export
 xml_tab C, save("$table/09_4_ess5_synergies_dna.xml") replace sheet("HH_DNA_w5", nogridlines) ///
@@ -112,7 +157,7 @@ xml_tab C, save("$table/09_4_ess5_synergies_dna.xml") replace sheet("HH_DNA_w5",
 // Only panel DNA sample
 
 // construct matrix:
-descr_tab $intdna if hh_status_dna==3, regions("3 4 7 13 15") wt(pw_panel)
+descr_tab $intdna if hh_status_dna==3, regions("3") wt(pw_panel)
 
 // export
 xml_tab C, save("$table/09_4_ess5_synergies_dna.xml") append sheet("HH_DNA_w5_panel", nogridlines) ///
@@ -124,7 +169,7 @@ save "${data}/synergies_dna_hh_ess5.dta", replace
 
 
 
-* ESS4 (HH level) --------------------------
+* ESS4 (HH level) --------------------------------------------------------------
 
 use "${dataw4}/ess4_dna_hh_new.dta", clear
 
@@ -181,22 +226,80 @@ replace psnp2=1 if hhd_psnp==1 | hhd_psnp_dir==1
 label var psnp2 "PSNP (both)"
 
 rename maize_cg maize
-lab var maize "Maize-CG germplasm"
 
-local vars nrm ca crop tree animal breed breed2 psnp psnp2 rotlegume cresidue mintillage zerotill  
+gen maizedtmz = .
+replace maizedtmz=0 if dtmz==0 & maize==0
+replace maizedtmz=1 if dtmz==1 | maize==1
+
+lab var maizedtmz "Maize-CG + DTMZ"
+lab var maize     "Maize-CG germplasm"
+
+local vars nrm ca crop tree animal breed breed2 psnp psnp2 rotlegume cresidue ///
+    mintillage zerotill 
+
+local vars2  maizedtmz maize dtmz
+
 
 foreach var of local vars {
     local lbl : variable label `var'
-    local lbl2 : variable label maize
 
-    generate `var'_maize=(`var'*maize) 
-    label variable `var'_maize `"`lbl' & `lbl2'"'
+    foreach i of local vars2 {
+        local lbl2 : variable label `i'
+        cap generate `var'_`i'=(`var'*`i') 
+        cap label variable `var'_`i' `"`lbl' & `lbl2'"'
+    }
 }
+
+#delimit;
+global intdna4 
+nrm         maizedtmz   nrm_maizedtmz
+ca          maizedtmz   ca_maizedtmz 
+crop        maizedtmz   crop_maizedtmz 
+tree        maizedtmz   tree_maizedtmz 
+animal      maizedtmz   animal_maizedtmz 
+breed       maizedtmz   breed_maizedtmz 
+breed2      maizedtmz   breed2_maizedtmz 
+psnp        maizedtmz   psnp_maizedtmz 
+psnp2       maizedtmz   psnp2_maizedtmz 
+rotlegume   maizedtmz   rotlegume_maizedtmz 
+cresidue    maizedtmz   cresidue_maizedtmz 
+mintillage  maizedtmz   mintillage_maizedtmz 
+zerotill    maizedtmz   zerotill_maizedtmz 
+
+nrm         maize   nrm_maize
+ca          maize   ca_maize 
+crop        maize   crop_maize 
+tree        maize   tree_maize 
+animal      maize   animal_maize 
+breed       maize   breed_maize 
+breed2      maize   breed2_maize 
+psnp        maize   psnp_maize 
+psnp2       maize   psnp2_maize 
+rotlegume   maize   rotlegume_maize 
+cresidue    maize   cresidue_maize 
+mintillage  maize   mintillage_maize 
+zerotill    maize   zerotill_maize 
+
+nrm         dtmz   nrm_dtmz
+ca          dtmz   ca_dtmz 
+crop        dtmz   crop_dtmz 
+tree        dtmz   tree_dtmz 
+animal      dtmz   animal_dtmz 
+breed       dtmz   breed_dtmz 
+breed2      dtmz   breed2_dtmz 
+psnp        dtmz   psnp_dtmz 
+psnp2       dtmz   psnp2_dtmz 
+rotlegume   dtmz   rotlegume_dtmz 
+cresidue    dtmz   cresidue_dtmz 
+mintillage  dtmz   mintillage_dtmz 
+zerotill    dtmz   zerotill_dtmz 
+;
+#delimit cr		
 
 * All DNA sample in wave 4
 
 // construct matrix:
-descr_tab $intdna, regions("3 4 7 13 15") wt(pw_w4)
+descr_tab $intdna4, regions("3 4 7 13 15") wt(pw_w4)
 
 // export
 xml_tab C, save("$table/09_4_ess4_synergies_dna.xml") replace sheet("HH_DNA_w4", nogridlines) ///
@@ -206,7 +309,7 @@ xml_tab C, save("$table/09_4_ess4_synergies_dna.xml") replace sheet("HH_DNA_w4",
 * Panel DNA sample in wave 4
 
 // construct matrix:
-descr_tab $intdna if hh_status_dna==3, regions("3 4 7 13 15") wt(pw_panel)
+descr_tab $intdna4 if hh_status_dna==3, regions("3 4 7 13 15") wt(pw_panel)
 
 // export
 xml_tab C, save("$table/09_4_ess4_synergies_dna.xml") append sheet("HH_DNA_w4_panel", nogridlines) ///

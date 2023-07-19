@@ -152,9 +152,55 @@ rename poultry_cross  hhd_crpo
 // run program to create interactions 
 gen_synergy hhd 
 
+// additional variables only for wave 5
+clonevar grass = hhd_grass
+
+lab var grass "All forages in wave 5"
+
+local vars  grass
+
+local vars2 nrm ca crop tree animal breed breed2 psnp psnp2 rotlegume cresidue ///
+    mintillage zerotill ca1 ca2 ca3 ca4 ca5
+
+
+foreach var of local vars {
+    local lbl : variable label `var'
+
+    foreach i of local vars2 {
+        local lbl2 : variable label `i'
+        cap generate `var'_`i'=(`var'*`i') 
+        cap label variable `var'_`i' `"`lbl' & `lbl2'"'
+    }
+}
+
+#delimit;
+global intw5 
+$int 
+grass     nrm         grass_nrm
+grass     ca          grass_ca 
+grass     crop        grass_crop 
+grass     tree        grass_tree 
+grass     animal      grass_animal 
+grass     breed       grass_breed 
+grass     breed2      grass_breed2 
+grass     psnp        grass_psnp 
+grass     psnp2       grass_psnp2 
+grass     rotlegume   grass_rotlegume 
+grass     cresidue    grass_cresidue 
+grass     mintillage  grass_mintillage 
+grass     zerotill    grass_zerotill 
+grass     ca1         grass_ca1 
+grass     ca2         grass_ca2 
+grass     ca3         grass_ca3 
+grass     ca4         grass_ca4 
+grass     ca5         grass_ca5
+;
+#delimit cr	
+
+
 // prep:
 local rname ""
-foreach var in $int {
+foreach var in $intw5 {
     local lbl : variable label `var'
     local rname `"  `rname'   "`lbl'" "'		
 }	
@@ -197,7 +243,7 @@ CA5 = Crop residue cover - Zero tillage.")
 #delimit cr	
 
 // construct matrix:
-descr_tab $int, regions("2 3 4 5 6 7 12 13 15") wt(pw_w5)
+descr_tab $intw5, regions("2") wt(pw_w5)
 
 // export
 xml_tab C, save("$table/09_4_ess5_synergies.xml") replace sheet("HH_w5", nogridlines) ///
@@ -208,7 +254,7 @@ xml_tab C, save("$table/09_4_ess5_synergies.xml") replace sheet("HH_w5", nogridl
 // only for panel households:
 
 // matrix:
-descr_tab $int if hh_status==3, regions("2 3 4 5 6 7 12 13 15") wt(pw_panel)
+descr_tab $intw5 if hh_status==3, regions("2") wt(pw_panel)
 
 // export
 xml_tab C, save("$table/09_4_ess5_synergies.xml") append sheet("HH_w5_panel", nogridlines) ///

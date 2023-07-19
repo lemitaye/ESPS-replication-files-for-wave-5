@@ -37,6 +37,7 @@ global tmp      "${root}/tmp"
 
 global dataw4   "${supp}/replication_files/3_report_data"
 global raw4     "${supp}/replication_files/2_raw_data/ESS4_2018-19/Data"
+global raw3     "${supp}/replication_files/2_raw_data/ESS3_2015-16/Data"
 
 
 *------------------------------------------------------------------------------*

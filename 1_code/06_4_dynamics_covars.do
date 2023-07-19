@@ -22,6 +22,7 @@ drop _merge
 merge 1:1 household_id using "${raw4}/ETH_HouseholdGeovariables_Y4.dta", ///
     keepusing(dist_road dist_market dist_border dist_popcenter dist_admhq)
 keep if _merge==1 | _merge==3
+
 drop _merge
 
 rename nom_totcons_aeq      nmtotcons
@@ -29,6 +30,31 @@ rename hhd_mintillage       hhd_mintil
 rename  total_cons_ann_win  totconswin
 
 replace hhd_impcr2=. if maize_cg==.
+
+// Add direct assistance PSNP for wave 4
+preserve
+    use "${raw4}/sect14_hh_w4.dta", clear
+
+    keep if assistance_cd==1
+
+    gen hhd_psnp_dir=.
+    replace hhd_psnp_dir=0 if s14q01==2
+    replace hhd_psnp_dir=1 if s14q01==1
+
+    keep household_id hhd_psnp_dir
+    label var hhd_psnp_dir "Direct support through PSNP"
+
+    tempfile psnp_direct
+    save `psnp_direct'
+restore
+
+merge 1:1 household_id using `psnp_direct'
+keep if _merge==1 | _merge==3
+drop _merge
+
+generate hhd_psnp_any=.
+replace hhd_psnp_any=0 if hhd_psnp==0 & hhd_psnp_dir==0
+replace hhd_psnp_any=1 if hhd_psnp==1 | hhd_psnp_dir==1
 
 // global of covariates and innovations to keep (for both waves)
 #delimit;
@@ -43,13 +69,15 @@ dist_market dist_popcenter
 global adopt4   
 hhd_crlr hhd_crsr hhd_crpo hhd_grass maize_cg dtmz hhd_ofsp hhd_awassa83 hhd_rdisp 
 hhd_motorpump hhd_consag1 hhd_consag2 hhd_swc hhd_affor hhd_avocado hhd_papaya 
-hhd_mango hhd_psnp 
+hhd_mango hhd_psnp hhd_psnp_any
 ;
 #delimit cr
 
 // recode from 100 to 1
 for var $adopt4: replace X=1 if X==100
 
+
+// retain relevant variables
 keep household_id $hhcov4 $adopt4
 gen wave=4
 
@@ -103,13 +131,6 @@ append using "${tmp}/dynamics/06_3_covars_w5.dta", force
 
 gen wave5=(wave==5)
 
-
-// Re-labelling some variables
-label var maize_cg      "Maize CG-germplasm"
-label var dtmz          "Drought tolerant maize"
-label var hhd_psnp      "PSNP (Temporary Labor)"
-label var cs4q15        "Distance to the nearest large weekly market (Km)"
-
 // some new variables (aggregates)
 gen     hhd_ofspaws = .
 replace hhd_ofspaws = 0 if hhd_ofsp==0 & hhd_awassa83==0
@@ -119,6 +140,14 @@ gen     hhd_tree = .
 replace hhd_tree = 0 if hhd_avocado==0 & hhd_papaya==0 & hhd_mango==0
 replace hhd_tree = 1 if hhd_avocado==1 | hhd_papaya==1 | hhd_mango==1
 
+
+// Re-labelling some variables
+label var maize_cg      "Maize CG-germplasm"
+label var dtmz          "Drought tolerant maize"
+label var hhd_psnp      "PSNP (Temporary Labor)"
+label var cs4q15        "Distance to the nearest large weekly market (Km)"
+label var hhd_psnp_any  "At least 1 member benefits from PSNP - Either"
+
 label var hhd_ofspaws "Sweet potato: OFSP or Awassa83"
 label var hhd_tree    "Avocado, Mango, or Papaya tree"
 
@@ -126,7 +155,7 @@ label var hhd_tree    "Avocado, Mango, or Papaya tree"
 #delimit;
 global adopt
 hhd_crlr hhd_crpo hhd_grass maize_cg dtmz hhd_ofspaws 
-hhd_rdisp hhd_motorpump hhd_consag1 hhd_swc hhd_affor hhd_tree hhd_psnp 
+hhd_rdisp hhd_consag1 hhd_swc hhd_affor hhd_tree hhd_psnp hhd_psnp_any
 ;
 #delimit cr
 
