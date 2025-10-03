@@ -21,13 +21,14 @@ capture log close
 ssc install xml_tab, replace
 ssc install winsor2, replace
 ssc install estout, replace
+ssc install distinct, replace
 */
 
 *------------------------------------------------------------------------------*
 *  DIRECTORIES
 *------------------------------------------------------------------------------*
 
-global root     "C:/Users/l.daba/SPIA Dropbox/SPIA General/5. OBJ.3 - Data collection/Country teams/Ethiopia/LSMS_W5"
+global root     "C:\Users\user\OneDrive\SPIA\Ethiopia\LSMS_W5_new\LSMS_W5"
 global code     "${root}/1_code"
 global rawdata  "${root}/2_raw_data/data"
 global data     "${root}/3_report_data"
@@ -44,6 +45,7 @@ global raw3     "${supp}/replication_files/2_raw_data/ESS3_2015-16/Data"
 *  RUN
 *------------------------------------------------------------------------------*
 
+set more off
 * Household -----------
 do "${code}/01_0_hh.do"
 

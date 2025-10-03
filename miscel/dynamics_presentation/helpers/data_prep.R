@@ -17,21 +17,28 @@ psnp_hh <- read_csv("data/psnp_hh.csv")
 
 comm_psnp <- read_csv("data/comm_psnp.csv")
 
+grass_means <- read_csv("data/grass_means.csv")
+
 
 
 # cleaning ----
 
 adoption_rates <- bind_rows(
   adopt_rates_all_hh %>% 
+    filter(variable != "hhd_grass") %>% 
     mutate(sample = "All households/EA", level = "Household"),
   adopt_rates_panel_hh %>% 
+    filter(variable != "hhd_grass") %>% 
     mutate(sample = "Panel households/EA", level = "Household"),
   adopt_rates_all_ea %>% 
+    filter(variable != "ead_grass") %>% 
     mutate(sample = "All households/EA", level = "EA"),
   adopt_rates_panel_ea %>% 
+    filter(variable != "ead_grass") %>% 
     mutate(sample = "Panel households/EA", level = "EA"),
   dna_means_hh,
-  dna_means_ea
+  dna_means_ea,
+  grass_means
 ) %>% 
   filter(region != "Tigray") %>% 
   mutate(

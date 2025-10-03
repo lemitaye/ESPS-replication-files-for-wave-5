@@ -71,7 +71,9 @@ ess5_totals <- bind_rows(
   select(sample, label, total = Total) %>%
   left_join(
     bind_rows(adopt_rates_w5_hh, adopt_rate_dna_w5) %>%
-      distinct(variable, label),
+      distinct(variable, label) %>% 
+      filter(variable != "hhd_grass") %>% 
+      mutate(variable = recode(variable, "hhd_grassII" = "hhd_grass")),
     by = "label",
     multiple = "all"
   ) %>%

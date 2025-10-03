@@ -19,22 +19,22 @@ synergies_dna_ess5 <- read_dta(file.path(root, "3_report_data/synergies_dna_hh_e
 
 
 innovs <- c("nrm", "ca", "tree", "animal", "breed",
-            "psnp2", "maize")
+            "psnp2", "maizedtmz", "maize", "dtmz")
 
 
-innov_w4 <- inner_join(
+innov_w4 <- left_join(
   synergies_hh_ess4 %>% 
-    select(household_id, pw_w4, pw_panel, hh_status, all_of(innovs[-which(innovs=="maize")])),
+    select(household_id, pw_w4, pw_panel, hh_status, all_of(innovs[-which(innovs %in% c("maizedtmz", "maize", "dtmz"))])),
   synergies_dna_ess4 %>% 
-    select(household_id, hh_status_dna, maize),
+    select(household_id, hh_status_dna, maizedtmz, maize, dtmz),
   by = "household_id"
 )
 
-innov_w5 <- inner_join(
+innov_w5 <- left_join(
   synergies_hh_ess5 %>% 
-    select(household_id, pw_w5, pw_panel, hh_status, all_of(innovs[-which(innovs=="maize")])),
+    select(household_id, pw_w5, pw_panel, hh_status, all_of(innovs[-which(innovs %in% c("maizedtmz", "maize", "dtmz"))])),
   synergies_dna_ess5 %>% 
-    select(household_id, hh_status_dna, maize),
+    select(household_id, hh_status_dna, maizedtmz, maize, dtmz),
   by = "household_id"
 )
 

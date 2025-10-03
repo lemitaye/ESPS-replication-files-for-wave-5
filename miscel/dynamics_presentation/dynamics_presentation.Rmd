@@ -303,15 +303,33 @@ gotop::use_gotop()
 
 ## Forages
 
+### Forages that overlap
+
 Adoption of improved forages has shown an increase both at the household level (2.5% to 5.3%) and EA level (4.3% to 20.2%). A large part of this increase can be attributed to significant increases in adoption rates in “Other regions” and Amhara, where in each case, no adoption was observed at the household level in ESS4. In particular, adoption rates in “Other regions” jumped to 13.3% at the household level and 32% at the EA level starting from almost no adoption in ESS4. Most households in some of these regions, like Afar and Somali, are engaged in livestock rearing. A notable increase in adoption was also observed in SNNP at the EA level (12.5% to 22.5%).
 
 
 ```{r forages, echo=FALSE}
 
 adoption_rates %>% 
-  filter(variable %in% c("hhd_grass", "ead_grass")) %>% 
-  plotShiny("Feed and Forages: Elephant Grass, Sesbaniya, & Alfalfa
+  filter(variable %in% c("hhd_grassII", "ead_grassII")) %>% 
+  plotShiny("Forages: Elephant Grass, Sesbaniya, Alfalfa, and Rhodes (Gaya)
 ")
+
+
+```
+
+
+### All forages in each wave
+
+Forages in wave 4 include the above, i.e., Elephant Grass, Sesbaniya, Alfalfa, and Rhodes (Gaya). But forages in wave 5 include, in addition to these, Desho, Sinar, Lablab, and Vetch.
+
+```{r foragesII, echo=FALSE}
+
+adoption_rates %>% 
+  filter(
+    ((wave == "Wave 4" & variable == "hhd_grassII") | variable=="hhd_grass") | ((wave == "Wave 4" & variable == "ead_grassII") | variable=="ead_grass")
+  ) %>% 
+  plotShiny("All Forages")
 
 
 ```

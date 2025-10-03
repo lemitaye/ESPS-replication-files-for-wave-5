@@ -21,10 +21,21 @@ keep if _merge==1 | _merge==3
 drop _merge
 
 
+* inflation adjustment for monetary figures using CPI
+* (note: CPI adjustment factor taken from the world bank)
+gen incoff_adj = income_offfarm / 1.768
+gen nmtotcons_adj = nom_totcons_aeq / 1.768
+gen totcons_adj = total_cons_ann / 1.768
+
+label var incoff_adj "Annual Off-farm income in BIRR (Inflation adjusted)"
+label var nmtotcons_adj "Nominal annual consumption per adult equivalent (Inflation adjusted)"
+label var totcons_adj "Total annual consumption (Inflation adjusted)"
+
+
 #delimit;
 global hhcov5   
-parcesizeHA fem_head fowner flivman hhd_flab age_head nom_totcons_aeq consq1 
-consq2 asset_index pssetindex income_offfarm dist_road dist_market dist_popcenter
+parcesizeHA fem_head fowner flivman hhd_flab age_head nom_totcons_aeq nmtotcons_adj consq1 
+consq2 asset_index pssetindex income_offfarm incoff_adj dist_road dist_market dist_popcenter
 ;
 #delimit cr
 

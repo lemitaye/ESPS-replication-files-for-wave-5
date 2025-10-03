@@ -47,14 +47,37 @@ replace hhd_tree = 1 if hhd_avocado==1 | hhd_papaya==1 | hhd_mango==1
 label var hhd_ofspawassa "Sweet potato: OFSP or Awassa83"
 label var hhd_tree       "Avocado, Mango, or Papaya tree"
 
+* transform hh dist vars to log
+gen ldist_road = log(dist_road) 
+gen ldist_market = log(dist_market)
+gen ldist_popcen = log(dist_popcenter)
+
+label var ldist_road "Log HH Distance in (KMs) to Nearest Major Road"
+label var ldist_market "Log HH Distance in (KMs) to Nearest Market"
+label var ldist_popcen "Log HH Distance in (KMs) to Nearest Population Center with +20,000"
+
+* inflation adjustment for monetary figures using CPI
+* (note: CPI adjustment factor taken from the world bank)
+gen incoff_adj = income_offfarm / 1.768
+gen nmtotcons_adj = nmtotcons / 1.768
+gen totconswin_adj = totconswin / 1.768
+gen totcons_adj = total_cons_ann / 1.768
+
+label var incoff_adj "Annual Off-farm income in BIRR (Inflation adjusted)"
+label var nmtotcons_adj "Nominal annual consumption per adult equivalent (Inflation adjusted)"
+label var totconswin_adj "Total annual consumption-Winsor(p00,p99) (Inflation adjusted)"
+label var totcons_adj "Total annual consumption (Inflation adjusted)"
+
+
 
 * HH level ----
 
 #delimit;
 global hhcov      
-hhd_flab flivman parcesizeHA asset_index pssetindex income_offfarm total_cons_ann 
-totconswin nmtotcons consq1 consq2 adulteq age_head cs4q01_11 cs4q15 cs4q53
-dist_road dist_market dist_popcenter
+hhd_flab flivman parcesizeHA asset_index pssetindex income_offfarm incoff_adj 
+total_cons_ann totcons_adj totconswin totconswin_adj nmtotcons nmtotcons_adj 
+consq1 consq2 adulteq age_head cs4q01_11 cs4q15 cs4q53 dist_road dist_market 
+dist_popcenter ldist_road ldist_market ldist_popcen
 ;
 #delimit cr
 
@@ -262,11 +285,20 @@ replace hhd_tree = 100 if hhd_avocado==100 | hhd_papaya==100 | hhd_mango==100
 label var hhd_ofspawassa "Sweet potato: OFSP or Awassa83"
 label var hhd_tree       "Avocado, Mango, or Papaya tree"
 
+* transform hh dist vars to log
+gen ldist_road = log(dist_road) 
+gen ldist_market = log(dist_market)
+gen ldist_popcen = log(dist_popcenter)
+
+label var ldist_road "Log HH Distance in (KMs) to Nearest Major Road"
+label var ldist_market "Log HH Distance in (KMs) to Nearest Market"
+label var ldist_popcen "Log HH Distance in (KMs) to Nearest Population Center with +20,000"
+
 #delimit;
 global hhcov4
 hhd_flab flivman parcesizeHA asset_index pssetindex income_offfarm total_cons_ann 
 totconswin nmtotcons consq1 consq2 adulteq age_head cs4q011 cs4q15 cs4q53 dist_road 
-dist_market dist_popcenter
+dist_market dist_popcenter ldist_road ldist_market ldist_popcen
 ;
 #delimit cr
 
